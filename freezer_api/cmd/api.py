@@ -32,7 +32,7 @@ from freezer_api.api.common import middleware
 from freezer_api.api import v1
 from freezer_api.api import versions
 
-from freezer_api.common._i18n import _, _LI, _LE, _LC, _LW
+from freezer_api.common._i18n import _, _LI, _LW
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import log

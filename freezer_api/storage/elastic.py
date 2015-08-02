@@ -24,7 +24,7 @@ import elasticsearch
 import logging
 import uuid
 
-from freezer_api.common._i18n import _, _LI, _LE, _LC, _LW
+from freezer_api.common._i18n import _, _LI
 from freezer_api.common.utils import BackupMetadataDoc
 from freezer_api.common.utils import JobDoc
 from freezer_api.common.utils import ActionDoc
@@ -73,7 +73,8 @@ class TypeManager:
             raise freezer_api_exc.StorageEngineError(
                 message=_('Get operation failed: %s') % e)
         if doc['user_id'] != user_id:
-            raise freezer_api_exc.AccessForbidden(_("Document access forbidden"))
+            raise freezer_api_exc.AccessForbidden(
+                _("Document access forbidden"))
         if '_version' in res:
             doc['_version'] = res['_version']
         return doc
@@ -185,7 +186,7 @@ class JobTypeManager(TypeManager):
                 raise freezer_api_exc.DocumentExists(message=e.error)
             raise freezer_api_exc.DocumentNotFound(
                 message=_('Unable to find job to update '
-                          'with id %(id)s. %(e)s') % {'id':job_id, 'e':e})
+                          'with id %(id)s. %(e)s') % {'id': job_id, 'e': e})
         except Exception:
             raise freezer_api_exc.StorageEngineError(
                 message=_('Unable to update job with id %s') % job_id)
@@ -221,7 +222,7 @@ class ActionTypeManager(TypeManager):
                           'with id %s') % action_id)
         except Exception:
             raise freezer_api_exc.StorageEngineError(
-                message=_('Unable to update action with id %s') %action_id)
+                message=_('Unable to update action with id %s') % action_id)
         return version
 
 
@@ -250,8 +251,8 @@ class SessionTypeManager(TypeManager):
             if e.status_code == 409:
                 raise freezer_api_exc.DocumentExists(message=e.error)
             raise freezer_api_exc.DocumentNotFound(
-                    message=_(('Unable to update session '
-                               '%s. %s') % (session_id, e)))
+                message=_(('Unable to update session '
+                           '%s. %s') % (session_id, e)))
 
         except Exception:
             raise freezer_api_exc.StorageEngineError(
@@ -287,10 +288,10 @@ class ElasticSearchEngine(object):
             raise freezer_api_exc.BadDataFormat(message=_('Bad Data Format'))
         backup_id = backup_metadata_doc.backup_id
         existing = self.backup_manager.search(user_id, backup_id)
-        if existing:    # len(existing) > 0
+        if existing:
             raise freezer_api_exc.DocumentExists(
                 message=_('Backup data already existing with ID %s') %
-                        backup_id)
+                backup_id)
         self.backup_manager.insert(backup_metadata_doc.serialize())
         return backup_id
 
@@ -311,7 +312,7 @@ class ElasticSearchEngine(object):
         if client_id is None:
             raise freezer_api_exc.BadDataFormat(message=_('Missing client ID'))
         existing = self.client_manager.search(user_id, client_id)
-        if existing:    # len(existing) > 0
+        if existing:
             raise freezer_api_exc.DocumentExists(
                 message=_('Client already registered with ID %s') % client_id)
         client_doc = {'client': doc,
@@ -352,7 +353,7 @@ class ElasticSearchEngine(object):
 
         version = self.job_manager.update(job_id, valid_patch)
         logging.info(_LI('Job %(id)s updated to version %(version)s') %
-                     {'id':job_id, 'version':version})
+                     {'id': job_id, 'version': version})
         return version
 
     def replace_job(self, user_id, job_id, doc):
@@ -370,7 +371,7 @@ class ElasticSearchEngine(object):
             logging.info(_LI('Job %s created') % job_id)
         else:
             logging.info(_LI('Job %(id)s replaced with version %(version)s' %
-                         {'id':job_id, 'version':version}))
+                         {'id': job_id, 'version': version}))
         return version
 
     def get_action(self, user_id, action_id):
@@ -401,7 +402,7 @@ class ElasticSearchEngine(object):
 
         version = self.action_manager.update(action_id, valid_patch)
         logging.info(_LI('Action %(id)s updated to version %(version)s' %
-                     {'id':action_id, 'version':version}))
+                     {'id': action_id, 'version': version}))
         return version
 
     def replace_action(self, user_id, action_id, doc):
@@ -419,7 +420,7 @@ class ElasticSearchEngine(object):
             logging.info(_LI('Action %s created') % action_id)
         else:
             logging.info(_LI('Action %(id)s replaced with version %(version)s'
-                         % {'id':action_id, 'version':version}))
+                         % {'id': action_id, 'version': version}))
         return version
 
     def get_session(self, user_id, session_id):
@@ -450,7 +451,7 @@ class ElasticSearchEngine(object):
 
         version = self.session_manager.update(session_id, valid_patch)
         logging.info(_LI('Session %(id)s updated to version %(version)s' %
-                     {'id':session_id, 'version':version}))
+                     {'id': session_id, 'version': version}))
         return version
 
     def replace_session(self, user_id, session_id, doc):
@@ -468,5 +469,5 @@ class ElasticSearchEngine(object):
             logging.info(_LI('Session %s created') % session_id)
         else:
             logging.info(_LI('Session %(id)s replaced with version %(version)s'
-                         % {'id':session_id, 'version':version}))
+                         % {'id': session_id, 'version': version}))
         return version

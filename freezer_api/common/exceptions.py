@@ -23,7 +23,7 @@ Hudson (tjh@cryptsoft.com).
 import falcon
 import logging
 
-from freezer_api.common._i18n import _, _LI, _LE, _LC, _LW
+from freezer_api.common._i18n import _
 
 
 class FreezerAPIException(falcon.HTTPError):

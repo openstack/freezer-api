@@ -23,7 +23,7 @@ import logging
 
 from oslo_config import cfg
 
-from freezer_api.common._i18n import _, _LI, _LE, _LC, _LW
+from freezer_api.common._i18n import _, _LI
 from freezer_api.storage import elastic
 
 
