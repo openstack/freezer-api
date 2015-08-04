@@ -57,7 +57,7 @@ CONF.register_cli_opts(logging_cli_opts)
 
 def setup():
     try:
-        log_file = CONF['log-file']         # cli provided
+        log_file = CONF['log_file']         # cli provided
     except:
         log_file = CONF['logging_file']     # .conf file
     logging.basicConfig(
