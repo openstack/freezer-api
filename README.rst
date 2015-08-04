@@ -32,6 +32,7 @@ this will install into /usr/local
 --------------------
 ::
 
+  # sudp cp etc/freezer-api.conf /etc/freezer-api.conf
   # sudo vi /etc/freezer-api.conf
 
 
