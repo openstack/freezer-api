@@ -7,11 +7,12 @@ _translators = oslo_i18n.TranslatorFactory(domain='freezer-api')
 # The primary translation function using the well-known name "_"
 _ = _translators.primary
 
+# contextual_form and plural_from don't work under oslo.i18n 1.5.0
 # The contextual translation function using the name "_C"
-_C = _translators.contextual_form
+# _C = _translators.contextual_form
 
 # The plural translation function using the name "_P"
-_P = _translators.plural_form
+# _P = _translators.plural_form
 
 # Translators for log levels.
 #
