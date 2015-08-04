@@ -22,8 +22,8 @@ Elasticsearch support
 -----------------------
 ::
 
-  # git clone https://github.com/stackforge/freezer.git
-  # cd freezer/freezer_api && sudo python setup.py install
+  # git clone https://github.com/stackforge/freezer-api.git
+  # cd freezer-api && sudo python setup.py install
 
 this will install into /usr/local
 
