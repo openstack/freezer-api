@@ -24,11 +24,11 @@ import unittest
 from mock import Mock, patch
 
 from freezer_api.cmd import api
-from freezer_api.api.common import middleware
+from freezer_api.api import common
 
 class TestAPI(unittest.TestCase):
 
     @patch('freezer_api.storage.elastic.logging')
     def test_auth_install(self, mock_logging):
         app = api.get_application(None)
-        assert isinstance(app, middleware.HealthApp)
+        assert isinstance(app, common.middleware.HealthApp)

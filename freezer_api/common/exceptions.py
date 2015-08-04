@@ -90,7 +90,8 @@ class MethodNotImplemented(FreezerAPIException):
     def handle(ex, req, resp, params):
         raise falcon.HTTPMethodNotAllowed(
             title=_("Bad Method"),
-            description=ex.message)
+            description=ex.message,
+            allowed_methods=['GET', 'POST', 'HEAD', 'PATCH', 'DELETE'])
 
 
 exception_handlers_catalog = [
