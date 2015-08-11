@@ -21,9 +21,10 @@ Hudson (tjh@cryptsoft.com).
 
 import falcon
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.api.common import resource
 
 
-class ActionsCollectionResource(object):
+class ActionsCollectionResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/actions
     """
@@ -35,26 +36,24 @@ class ActionsCollectionResource(object):
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
-        search = req.context.get('doc', {})
+        search = self.json_body(req)
         obj_list = self.db.search_action(user_id=user_id, offset=offset,
                                          limit=limit, search=search)
-        req.context['result'] = {'actions': obj_list}
+        resp.body = {'actions': obj_list}
 
     def on_post(self, req, resp):
         # POST /v1/actions    Creates action entry
-        try:
-            doc = req.context['doc']
-        except KeyError:
+        doc = self.json_body(req)
+        if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-
         user_id = req.get_header('X-User-ID')
         action_id = self.db.add_action(user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201
-        req.context['result'] = {'action_id': action_id}
+        resp.body = {'action_id': action_id}
 
 
-class ActionsResource(object):
+class ActionsResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/actions/{action_id}
     """
@@ -68,7 +67,7 @@ class ActionsResource(object):
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_action(user_id=user_id, action_id=action_id)
         if obj:
-            req.context['result'] = obj
+            resp.body = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -76,26 +75,24 @@ class ActionsResource(object):
         # DELETE /v1/actions/{action_id}     Deletes the specified action
         user_id = req.get_header('X-User-ID')
         self.db.delete_action(user_id=user_id, action_id=action_id)
-        req.context['result'] = {'action_id': action_id}
+        resp.body = {'action_id': action_id}
         resp.status = falcon.HTTP_204
 
     def on_patch(self, req, resp, action_id):
         # PATCH /v1/actions/{action_id}     updates the specified action
         user_id = req.get_header('X-User-ID') or ''
-        doc = req.context.get('doc', {})
+        doc = self.json_body(req)
         new_version = self.db.update_action(user_id=user_id,
                                             action_id=action_id,
                                             patch_doc=doc)
-        req.context['result'] = {'action_id': action_id,
-                                 'version': new_version}
+        resp.body = {'action_id': action_id, 'version': new_version}
 
     def on_post(self, req, resp, action_id):
         # PUT /v1/actions/{job_id}     creates/replaces the specified action
         user_id = req.get_header('X-User-ID') or ''
-        doc = req.context.get('doc', {})
+        doc = self.json_body(req)
         new_version = self.db.replace_action(user_id=user_id,
                                              action_id=action_id,
                                              doc=doc)
         resp.status = falcon.HTTP_201
-        req.context['result'] = {'action_id': action_id,
-                                 'version': new_version}
+        resp.body = {'action_id': action_id, 'version': new_version}

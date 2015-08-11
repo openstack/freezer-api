@@ -20,10 +20,11 @@ Hudson (tjh@cryptsoft.com).
 """
 
 import falcon
+from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
 
 
-class ClientsCollectionResource(object):
+class ClientsCollectionResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/clients
     """
@@ -35,26 +36,25 @@ class ClientsCollectionResource(object):
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
-        search = req.context.get('doc', {})
+        search = self.json_body(req)
         obj_list = self.db.get_client(user_id=user_id, offset=offset,
                                       limit=limit, search=search)
-        req.context['result'] = {'clients': obj_list}
+        resp.body = {'clients': obj_list}
 
     def on_post(self, req, resp):
         # POST /v1/clients    Creates client entry
-        try:
-            doc = req.context['doc']
-        except KeyError:
+        doc = self.json_body(req)
+        if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
         user_id = req.get_header('X-User-ID')
         client_id = self.db.add_client(
             user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201
-        req.context['result'] = {'client_id': client_id}
+        resp.body = {'client_id': client_id}
 
 
-class ClientsResource(object):
+class ClientsResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/clients/{client_id}
     """
@@ -67,7 +67,7 @@ class ClientsResource(object):
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_client(user_id=user_id, client_id=client_id)
         if obj:
-            req.context['result'] = obj[0]
+            resp.body = obj[0]
         else:
             resp.status = falcon.HTTP_404
 
@@ -76,5 +76,5 @@ class ClientsResource(object):
         user_id = req.get_header('X-User-ID')
         self.db.delete_client(
             user_id=user_id, client_id=client_id)
-        req.context['result'] = {'client_id': client_id}
+        resp.body = {'client_id': client_id}
         resp.status = falcon.HTTP_204

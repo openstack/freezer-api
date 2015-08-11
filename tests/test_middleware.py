@@ -22,42 +22,27 @@ Hudson (tjh@cryptsoft.com).
 
 
 import unittest
-#from mock import Mock
-
-import json
-import falcon
+from mock import Mock
 
 from freezer_api.api.common import middleware
 
-from common import FakeReqResp
+class TestHealthApp(unittest.TestCase):
 
+    def test_call_nested_app(self):
+        mock_app = Mock()
+        mock_app.return_value = ['app_body']
+        health_app = middleware.HealthApp(mock_app, 'test_path_78908')
+        environ = {}
+        start_response = Mock()
+        result = health_app(environ, start_response)
+        self.assertEqual(result, ['app_body'])
 
-class TestBackupMetadataDoc(unittest.TestCase):
-
-    def setUp(self):
-        self.json_translator = middleware.JSONTranslator()
-
-    def test_process_request_with_no_body_returns_none(self):
-        req = FakeReqResp()
-        self.assertIsNone(self.json_translator.process_request(req, req))
-
-    def test_process_request_with_positive_length_and_no_body_raises(self):
-        req = FakeReqResp()
-        req.content_length = 1
-        self.assertRaises(falcon.HTTPBadRequest, self.json_translator.process_request, req, req)
-
-    def test_process_response_with_no_result_returns_none(self):
-        req = FakeReqResp()
-        self.assertIsNone(self.json_translator.process_response(req, req, None))
-
-    def test_process_response_create_correct_json_body(self):
-        req = FakeReqResp()
-        d = {'key1': 'value1', 'key2': 'value2'}
-        req.context['result'] = d
-        correct_json_body = json.dumps(d)
-        self.json_translator.process_response(req, req, None)
-        self.assertEqual(correct_json_body, req.body)
-
-    def test_process_request_with_malformed_body_raises(self):
-        req = FakeReqResp(body='{"key2": "value2",{ "key1": "value1"}')
-        self.assertRaises(falcon.HTTPError, self.json_translator.process_request, req, req)
+    def test_return_200_when_paths_match(self):
+        mock_app = Mock()
+        mock_app.return_value = ['app_body']
+        health_app = middleware.HealthApp(mock_app, 'test_path_6789')
+        environ = {'PATH_INFO': 'test_path_6789'}
+        start_response = Mock()
+        result = health_app(environ, start_response)
+        start_response.assert_called_once_with('200 OK', [])
+        self.assertEqual(result, [])

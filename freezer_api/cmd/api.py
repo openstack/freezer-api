@@ -40,7 +40,7 @@ from freezer_api.storage import driver
 
 
 def get_application(db):
-    app = falcon.API(middleware=[middleware.JSONTranslator()])
+    app = falcon.API()
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
@@ -52,6 +52,9 @@ def get_application(db):
     for version_path, endpoints in endpoint_catalog:
         for route, resource in endpoints:
             app.add_route(version_path + route, resource)
+
+    # pylint: disable=no-value-for-parameter
+    app = middleware.json_translator(app)
 
     if 'keystone_authtoken' in config.CONF:
         app = auth_token.AuthProtocol(app, {})

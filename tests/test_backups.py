@@ -36,15 +36,17 @@ class TestBackupsCollectionResource(unittest.TestCase):
         self.mock_db = Mock()
         self.mock_req = Mock()
         self.mock_req.get_header.return_value = {'X-User-ID': fake_data_0_user_id}
-        self.mock_req.context = {}
         self.mock_req.status = falcon.HTTP_200
         self.resource = backups.BackupsCollectionResource(self.mock_db)
+        self.mock_json_body = Mock()
+        self.mock_json_body.return_value = {}
+        self.resource.json_body = self.mock_json_body
 
     def test_on_get_return_empty_list(self):
         self.mock_db.get_backup.return_value = []
         expected_result = {'backups': []}
         self.resource.on_get(self.mock_req, self.mock_req)
-        result = self.mock_req.context['result']
+        result = self.mock_req.body
         self.assertEqual(result, expected_result)
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
@@ -52,7 +54,7 @@ class TestBackupsCollectionResource(unittest.TestCase):
         self.mock_db.get_backup.return_value = [fake_data_0_backup_metadata]
         expected_result = {'backups': [fake_data_0_backup_metadata]}
         self.resource.on_get(self.mock_req, self.mock_req)
-        result = self.mock_req.context['result']
+        result = self.mock_req.body
         self.assertEqual(result, expected_result)
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
@@ -62,12 +64,12 @@ class TestBackupsCollectionResource(unittest.TestCase):
         self.assertRaises(BadDataFormat, self.resource.on_post, self.mock_req, self.mock_req)
 
     def test_on_post_inserts_correct_data(self):
-        self.mock_req.context['doc'] = fake_data_0_backup_metadata
+        self.mock_json_body.return_value = fake_data_0_backup_metadata
         self.mock_db.add_backup.return_value = fake_data_0_wrapped_backup_metadata['backup_id']
         self.resource.on_post(self.mock_req, self.mock_req)
         expected_result = {'backup_id': fake_data_0_wrapped_backup_metadata['backup_id']}
         self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.context['result'], expected_result)
+        self.assertEqual(self.mock_req.body, expected_result)
         self.assertEqual(self.mock_req.status, falcon.HTTP_201)
 
 
@@ -77,28 +79,30 @@ class TestBackupsResource(unittest.TestCase):
         self.mock_db = Mock()
         self.mock_req = Mock()
         self.mock_req.get_header.return_value = {'X-User-ID': fake_data_0_user_id}
-        self.mock_req.context = {}
         self.mock_req.status = falcon.HTTP_200
         self.resource = backups.BackupsResource(self.mock_db)
+        self.mock_json_body = Mock()
+        self.mock_json_body.return_value = {}
+        self.resource.json_body = self.mock_json_body
 
     def test_on_get_return_no_result_and_404_when_not_found(self):
         self.mock_db.get_backup.return_value = []
+        self.mock_req.body = None
         self.resource.on_get(self.mock_req, self.mock_req, fake_data_0_wrapped_backup_metadata['backup_id'])
-        self.assertNotIn('result', self.mock_req.context)
+        self.assertIsNone(self.mock_req.body)
         self.assertEqual(self.mock_req.status, falcon.HTTP_404)
 
     def test_on_get_return_correct_data(self):
         self.mock_db.get_backup.return_value = [fake_data_0_wrapped_backup_metadata]
         expected_result = [fake_data_0_wrapped_backup_metadata]
         self.resource.on_get(self.mock_req, self.mock_req, fake_data_0_wrapped_backup_metadata['backup_id'])
-        result = self.mock_req.context['result']
+        result = self.mock_req.body
         self.assertEqual(result, expected_result)
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
     def test_on_delete_removes_proper_data(self):
-        #self.mock_db.delete_backup.return_value = True
         self.resource.on_delete(self.mock_req, self.mock_req, fake_data_0_backup_id)
-        result = self.mock_req.context['result']
+        result = self.mock_req.body
         expected_result = {'backup_id': fake_data_0_backup_id}
         self.assertEquals(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)
