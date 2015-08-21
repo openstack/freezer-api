@@ -37,7 +37,7 @@ class TestExceptions(unittest.TestCase):
 
     def test_DocumentNotFound(self):
         e = exceptions.DocumentNotFound(message='testing')
-        self.assertRaises(falcon.HTTPNotFound,
+        self.assertRaises(falcon.HTTPError,
                           e.handle, self.ex, self.mock_req, self.mock_req, None)
 
     def test_AccessForbidden(self):

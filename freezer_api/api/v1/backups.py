@@ -20,10 +20,11 @@ Hudson (tjh@cryptsoft.com).
 """
 
 import falcon
+from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
 
 
-class BackupsCollectionResource(object):
+class BackupsCollectionResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/backups
     """
@@ -35,16 +36,15 @@ class BackupsCollectionResource(object):
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
-        search = req.context.get('doc', {})
+        search = self.json_body(req)
         obj_list = self.db.get_backup(user_id=user_id, offset=offset,
                                       limit=limit, search=search)
-        req.context['result'] = {'backups': obj_list}
+        resp.body = {'backups': obj_list}
 
     def on_post(self, req, resp):
         # POST /v1/backups    Creates backup entry
-        try:
-            doc = req.context['doc']
-        except KeyError:
+        doc = self.json_body(req)
+        if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
         user_name = req.get_header('X-User-Name')
@@ -52,10 +52,10 @@ class BackupsCollectionResource(object):
         backup_id = self.db.add_backup(
             user_id=user_id, user_name=user_name, doc=doc)
         resp.status = falcon.HTTP_201
-        req.context['result'] = {'backup_id': backup_id}
+        resp.body = {'backup_id': backup_id}
 
 
-class BackupsResource(object):
+class BackupsResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/backups/{backup_id}
     """
@@ -67,7 +67,7 @@ class BackupsResource(object):
         user_id = req.get_header('X-User-ID')
         obj = self.db.get_backup(user_id=user_id, backup_id=backup_id)
         if obj:
-            req.context['result'] = obj
+            resp.body = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -76,5 +76,5 @@ class BackupsResource(object):
         user_id = req.get_header('X-User-ID')
         self.db.delete_backup(
             user_id=user_id, backup_id=backup_id)
-        req.context['result'] = {'backup_id': backup_id}
+        resp.body = {'backup_id': backup_id}
         resp.status = falcon.HTTP_204

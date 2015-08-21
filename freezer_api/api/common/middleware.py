@@ -19,34 +19,22 @@ Hudson (tjh@cryptsoft.com).
 ========================================================================
 """
 
+from freezer_api.common import exceptions as freezer_api_exc
 import json
+from webob.dec import wsgify
 
-import falcon
 
-
-class JSONTranslator(object):
-
-    def process_request(self, req, resp):
-        if req.content_length in (None, 0):
-            # Nothing to do
-            return
-
-        body = req.stream.read()
-        if not body:
-            raise falcon.HTTPBadRequest('Empty request body',
-                                        'A valid JSON document is required.')
-        try:
-            req.context['doc'] = json.loads(body.decode('utf-8'))
-
-        except (ValueError, UnicodeDecodeError):
-            raise falcon.HTTPError(falcon.HTTP_753,
-                                   'Malformed JSON')
-
-    def process_response(self, req, resp, resource):
-        if 'result' not in req.context:
-            return
-
-        resp.body = json.dumps(req.context['result'])
+@wsgify.middleware
+def json_translator(req, app):
+    resp = req.get_response(app)
+    if resp.body:
+        if isinstance(resp.body, dict):
+            try:
+                resp.body = json.dumps(resp.body)
+            except:
+                raise freezer_api_exc.FreezerAPIException(
+                    'Internal server error: malformed json reply')
+    return resp
 
 
 class HealthApp(object):

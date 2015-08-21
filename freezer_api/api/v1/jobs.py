@@ -21,9 +21,10 @@ Hudson (tjh@cryptsoft.com).
 
 import falcon
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.api.common import resource
 
 
-class JobsCollectionResource(object):
+class JobsCollectionResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/jobs
     """
@@ -35,15 +36,15 @@ class JobsCollectionResource(object):
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
-        search = req.context.get('doc', {})
+        search = self.json_body(req)
         obj_list = self.db.search_job(user_id=user_id, offset=offset,
                                       limit=limit, search=search)
-        req.context['result'] = {'jobs': obj_list}
+        resp.body = {'jobs': obj_list}
 
     def on_post(self, req, resp):
         # POST /v1/jobs    Creates job entry
         try:
-            doc = req.context['doc']
+            doc = self.json_body(req)
         except KeyError:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
@@ -51,10 +52,10 @@ class JobsCollectionResource(object):
         user_id = req.get_header('X-User-ID')
         job_id = self.db.add_job(user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201
-        req.context['result'] = {'job_id': job_id}
+        resp.body = {'job_id': job_id}
 
 
-class JobsResource(object):
+class JobsResource(resource.BaseResource):
     """
     Handler for endpoint: /v1/jobs/{job_id}
     """
@@ -68,7 +69,7 @@ class JobsResource(object):
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_job(user_id=user_id, job_id=job_id)
         if obj:
-            req.context['result'] = obj
+            resp.body = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -76,26 +77,24 @@ class JobsResource(object):
         # DELETE /v1/jobs/{job_id}     Deletes the specified job
         user_id = req.get_header('X-User-ID')
         self.db.delete_job(user_id=user_id, job_id=job_id)
-        req.context['result'] = {'job_id': job_id}
+        resp.body = {'job_id': job_id}
         resp.status = falcon.HTTP_204
 
     def on_patch(self, req, resp, job_id):
         # PATCH /v1/jobs/{job_id}     updates the specified job
         user_id = req.get_header('X-User-ID') or ''
-        doc = req.context.get('doc', {})
+        doc = self.json_body(req)
         new_version = self.db.update_job(user_id=user_id,
                                          job_id=job_id,
                                          patch_doc=doc)
-        req.context['result'] = {'job_id': job_id,
-                                 'version': new_version}
+        resp.body = {'job_id': job_id, 'version': new_version}
 
     def on_post(self, req, resp, job_id):
         # PUT /v1/jobs/{job_id}     creates/replaces the specified job
         user_id = req.get_header('X-User-ID') or ''
-        doc = req.context.get('doc', {})
+        doc = self.json_body(req)
         new_version = self.db.replace_job(user_id=user_id,
                                           job_id=job_id,
                                           doc=doc)
         resp.status = falcon.HTTP_201
-        req.context['result'] = {'job_id': job_id,
-                                 'version': new_version}
+        resp.body = {'job_id': job_id, 'version': new_version}
