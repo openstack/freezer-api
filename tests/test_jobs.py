@@ -24,7 +24,6 @@ import unittest
 from mock import Mock, patch
 
 import random
-import falcon
 import json
 
 from common import *
@@ -142,3 +141,237 @@ class TestJobsResource(unittest.TestCase):
                           self.mock_req,
                           self.mock_req,
                           fake_job_0_job_id)
+
+
+class TestJobsEvent(unittest.TestCase):
+
+    def setUp(self):
+        self.mock_db = Mock()
+        self.mock_req = Mock()
+        self.mock_req.get_header.return_value = fake_session_0['user_id']
+        self.mock_req.status = falcon.HTTP_200
+        self.resource = v1_jobs.JobsEvent(self.mock_db)
+        self.mock_json_body = Mock()
+        self.mock_json_body.return_value = {}
+        self.resource.json_body = self.mock_json_body
+
+    def test_create_resource(self):
+        self.assertIsInstance(self.resource, v1_jobs.JobsEvent)
+
+    def test_on_post_raises_when_unable_to_read_event_from_body(self):
+        self.mock_json_body.return_value = {}
+        self.assertRaises(BadDataFormat, self.resource.on_post,
+                          self.mock_req,
+                          self.mock_req,
+                          'my_job_id')
+
+    def test_on_post_start_event_ok(self):
+        new_version = random.randint(0, 99)
+        self.mock_db.get_job.return_value = {
+            'job_schedule': {
+                'status': 'stop'
+            }
+        }
+        self.mock_db.replace_job.return_value = new_version
+        event = {"start": None}
+        self.mock_json_body.return_value = event
+        expected_result = {'result': 'success'}
+        self.resource.on_post(self.mock_req, self.mock_req, 'my_job_id')
+        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
+        self.assertEqual(self.mock_req.body, expected_result)
+
+
+class TestJobs(unittest.TestCase):
+
+    def test_start_raises_BadDataFormat_when_jobstatus_unexpected(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'complicated',
+                'event': 'boost'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        self.assertRaises(BadDataFormat, job.start)
+
+    def test_start_scheduled_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'scheduled'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.start()
+        self.assertEquals(res, 'already active')
+        self.assertFalse(job.need_update)
+
+    def test_start_running_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'running'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.start()
+        self.assertEquals(res, 'already active')
+        self.assertFalse(job.need_update)
+
+    def test_start_stopped_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'stop'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.start()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'stop')
+        self.assertEqual(job.doc['job_schedule']['event'], 'start')
+        self.assertTrue(job.need_update)
+
+    def test_start_completed_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'completed'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.start()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'stop')
+        self.assertEqual(job.doc['job_schedule']['event'], 'start')
+        self.assertTrue(job.need_update)
+
+    def test_start_job_with_no_status(self):
+        job_doc = {'job_schedule':
+            {
+                'status': ''
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.start()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'stop')
+        self.assertEqual(job.doc['job_schedule']['event'], 'start')
+        self.assertTrue(job.need_update)
+
+    def test_stop_scheduled_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'scheduled'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.stop()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'scheduled')
+        self.assertEqual(job.doc['job_schedule']['event'], 'stop')
+        self.assertTrue(job.need_update)
+
+    def test_stop_running_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'running'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.stop()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'running')
+        self.assertEqual(job.doc['job_schedule']['event'], 'stop')
+        self.assertTrue(job.need_update)
+
+    def test_stop_job_with_no_status(self):
+        job_doc = {'job_schedule':
+            {
+                'status': ''
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.stop()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], '')
+        self.assertEqual(job.doc['job_schedule']['event'], 'stop')
+        self.assertTrue(job.need_update)
+
+    def test_stop_not_active_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'whatever'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.stop()
+        self.assertEquals(res, 'already stopped')
+        self.assertFalse(job.need_update)
+
+    def test_abort_scheduled_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'scheduled'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.abort()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'scheduled')
+        self.assertEqual(job.doc['job_schedule']['event'], 'abort')
+        self.assertTrue(job.need_update)
+
+    def test_abort_running_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'running'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.abort()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], 'running')
+        self.assertEqual(job.doc['job_schedule']['event'], 'abort')
+        self.assertTrue(job.need_update)
+
+    def test_abort_job_with_no_status(self):
+        job_doc = {'job_schedule':
+            {
+                'status': ''
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.abort()
+        self.assertEquals(res, 'success')
+        self.assertEqual(job.doc['job_schedule']['status'], '')
+        self.assertEqual(job.doc['job_schedule']['event'], 'abort')
+        self.assertTrue(job.need_update)
+
+    def test_abort_not_active_job(self):
+        job_doc = {'job_schedule':
+            {
+                'status': 'whatever'
+            }
+        }
+        job = v1_jobs.Job(job_doc)
+        res = job.abort()
+        self.assertEquals(res, 'already stopped')
+        self.assertFalse(job.need_update)
+
+    @patch.object(v1_jobs.Job, 'start')
+    def test_execute_start_event(self, mock_start):
+        job = v1_jobs.Job({})
+        res = job.execute_event('start', 'my_params')
+        mock_start.assert_called_once_with('my_params')
+
+    @patch.object(v1_jobs.Job, 'stop')
+    def test_execute_start_event(self, mock_stop):
+        job = v1_jobs.Job({})
+        res = job.execute_event('stop', 'my_params')
+        mock_stop.assert_called_once_with('my_params')
+
+    @patch.object(v1_jobs.Job, 'abort')
+    def test_execute_start_event(self, mock_abort):
+        job = v1_jobs.Job({})
+        res = job.execute_event('abort', 'my_params')
+        mock_abort.assert_called_once_with('my_params')
+
+    def test_execute_raises_BadDataFormat_when_event_not_implemented(self):
+        job = v1_jobs.Job({})
+        self.assertRaises(BadDataFormat, job.execute_event, 'smile', 'my_params')

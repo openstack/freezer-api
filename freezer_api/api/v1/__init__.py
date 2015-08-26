@@ -63,6 +63,9 @@ def public_endpoints(storage_driver):
         ('/jobs/{job_id}',
          jobs.JobsResource(storage_driver)),
 
+        ('/jobs/{job_id}/event',
+         jobs.JobsEvent(storage_driver)),
+
         ('/actions',
          actions.ActionsCollectionResource(storage_driver)),
 

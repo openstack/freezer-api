@@ -98,3 +98,109 @@ class JobsResource(resource.BaseResource):
                                           doc=doc)
         resp.status = falcon.HTTP_201
         resp.body = {'job_id': job_id, 'version': new_version}
+
+
+class JobsEvent(resource.BaseResource):
+    """
+    Handler for endpoint: /v1/jobs/{job_id}/event
+
+    Actions are passed in the body, for example:
+    {
+        "start": null
+    }
+    """
+    def __init__(self, storage_driver):
+        self.db = storage_driver
+
+    def on_post(self, req, resp, job_id):
+        # POST /v1/jobs/{job_id}/event
+        # requests an event on the specified job
+
+        user_id = req.get_header('X-User-ID') or ''
+        doc = self.json_body(req)
+
+        try:
+            event, params = next(doc.iteritems())
+        except:
+            raise freezer_api_exc.BadDataFormat("Bad event request format")
+
+        job_doc = self.db.get_job(user_id=user_id,
+                                  job_id=job_id)
+        job = Job(job_doc)
+        result = job.execute_event(event, params)
+
+        if job.need_update:
+            self.db.replace_job(user_id=user_id,
+                                job_id=job_id,
+                                doc=job.doc)
+        resp.status = falcon.HTTP_202
+        resp.body = {'result': result}
+
+
+class Job(resource.BaseResource):
+    """
+    A class to manage the events that can be sent upon a
+    Job data structure.
+    It modifies information contained in its document
+    in accordance to the requested event
+    """
+    def __init__(self, doc):
+        self.doc = doc
+        self.event_result = ''
+        self.need_update = False
+        if 'job_schedule' not in doc:
+            doc['job_schedule'] = {}
+        self.job_schedule = doc['job_schedule']
+        self.event_handlers = {'start': self.start,
+                               'stop': self.stop,
+                               'abort': self.abort}
+
+    def execute_event(self, event, params):
+        handler = self.event_handlers.get(event, None)
+        if not handler:
+            raise freezer_api_exc.BadDataFormat("Bad Action Method")
+        try:
+            self.event_result = handler(params)
+        except freezer_api_exc.BadDataFormat:
+            raise
+        except Exception as e:
+            raise freezer_api_exc.FreezerAPIException(e)
+        return self.event_result
+
+    @property
+    def job_status(self):
+        return self.job_schedule.get('status', '')
+
+    @job_status.setter
+    def job_status(self, value):
+        self.job_schedule['status'] = value
+
+    def start(self, params=None):
+        if self.job_status in ["scheduled", "running"]:
+            return 'already active'
+        if self.job_status in ["completed", "stop", ""]:
+            # completed jobs are not acquired by the scheduler
+            self.job_status = 'stop'
+            self.job_schedule['event'] = 'start'
+            self.job_schedule['result'] = ''
+            self.need_update = True
+            return 'success'
+        else:
+            raise freezer_api_exc.BadDataFormat("unable to start a {0} job"
+                                                .format(self.job_status))
+
+    def stop(self, params=None):
+        if self.job_status in ["scheduled", "running", ""]:
+            self.job_schedule['event'] = 'stop'
+            self.need_update = True
+            return 'success'
+        else:
+            return 'already stopped'
+
+    def abort(self, params=None):
+        if self.job_status in ["scheduled", "running", ""]:
+            self.job_schedule['event'] = 'abort'
+            self.need_update = True
+            return 'success'
+        else:
+            return 'already stopped'
