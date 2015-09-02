@@ -21,121 +21,161 @@ Hudson (tjh@cryptsoft.com).
 
 
 clients_mapping = {
-    u'properties': {
-        u'client': {
-            u'properties': {
-                u'client_id': {
-                    u'index': u'not_analyzed',
-                    u'type': u'string',
+    "properties": {
+        "client": {
+            "properties": {
+                "client_id": {
+                    "index": "not_analyzed",
+                    "type": "string",
                 },
-                u'config_id': {
-                    u'index': u'not_analyzed',
-                    u'type': u'string',
+                "config_id": {
+                    "index": "not_analyzed",
+                    "type": "string",
                 },
-                u'description': {
-                    u'type': u'string',
+                "description": {
+                    "type": "string",
                 },
-                u'hostname': {
-                    u'type': u'string',
+                "hostname": {
+                    "type": "string",
                 },
             },
         },
-        u'user_id': {
-            u'index': u'not_analyzed',
-            u'type': u'string',
+        "user_id": {
+            "index": "not_analyzed",
+            "type": "string",
+        },
+        "uuid": {
+            "index": "not_analyzed",
+            "type": "string"
         },
     },
 }
 
 backups_mapping = {
-    u'properties': {
-        u'backup_id': {
-            u'index': u'not_analyzed',
-            u'type': u'string',
+    "properties": {
+        "backup_id": {
+            "index": "not_analyzed",
+            "type": "string",
         },
-        u'backup_metadata': {
-            u'properties': {
-                u'backup_name': {
-                    u'index': u'not_analyzed',
-                    u'type': u'string',
+        "backup_metadata": {
+            "properties": {
+                "action": {
+                    "type": "string",
                 },
-                u'backup_session': {
-                    u'type': u'long',
+                "always_level": {
+                    "type": "boolean",
                 },
-                u'backup_size_compressed': {
-                    u'type': u'long',
+                "backup_media": {
+                    "type": "string",
                 },
-                u'backup_size_uncompressed': {
-                    u'type': u'long',
+                "backup_name": {
+                    "index": "not_analyzed",
+                    "type": "string",
                 },
-                u'broken_links': {
-                    u'index': u'not_analyzed',
-                    u'type': u'string',
+                "backup_session": {
+                    "type": "long",
                 },
-                u'cli': {
-                    u'type': u'string',
+                "backup_size_compressed": {
+                    "type": "long",
                 },
-                u'client_os': {
-                    u'type': u'string',
+                "backup_size_uncompressed": {
+                    "type": "long",
                 },
-                u'compression_alg': {
-                    u'type': u'string',
+                "broken_links": {
+                    "index": "not_analyzed",
+                    "type": "string",
                 },
-                u'container': {
-                    u'index': u'not_analyzed',
-                    u'type': u'string',
+                "cli": {
+                    "type": "string",
                 },
-                u'encrypted': {
-                    u'type': u'boolean',
+                "client_os": {
+                    "type": "string",
                 },
-                u'excluded_files': {
-                    u'type': u'string',
+                "client_version": {
+                    "type": "string",
                 },
-                u'fs_real_path': {
-                    u'type': u'string',
+                "compression_alg": {
+                    "type": "string",
                 },
-                u'host_name': {
-                    u'index': u'not_analyzed',
-                    u'type': u'string',
+                "container": {
+                    "index": "not_analyzed",
+                    "type": "string",
                 },
-                u'level': {
-                    u'type': u'long',
+                "container_segments": {
+                    "type": "string",
                 },
-                u'max_level': {
-                    u'type': u'long',
+                "curr_backup_level": {
+                    "type": "string",
                 },
-                u'mode': {
-                    u'type': u'string',
+                "current_level": {
+                    "type": "string",
                 },
-                u'timestamp': {
-                    u'type': u'long',
+                "dry_run": {
+                    "type": "boolean",
                 },
-                u'total_backup_session_size': {
-                    u'type': u'long',
+                "encrypted": {
+                    "type": "boolean",
                 },
-                u'total_broken_links': {
-                    u'type': u'long',
+                "excluded_files": {
+                    "type": "string",
                 },
-                u'total_directories': {
-                    u'type': u'long',
+                "fs_real_path": {
+                    "type": "string",
                 },
-                u'total_fs_files': {
-                    u'type': u'long',
+                "host_name": {
+                    "index": "not_analyzed",
+                    "type": "string",
                 },
-                u'version': {
-                    u'type': u'string',
+                "hostname": {
+                    "type": "string",
                 },
-                u'vol_snap_path': {
-                    u'type': u'string',
+                "level": {
+                    "type": "long",
+                },
+                "max_level": {
+                    "type": "long",
+                },
+                "meta_data_file": {
+                    "type": "string",
+                },
+                "mode": {
+                    "type": "string",
+                },
+                "path_to_backup": {
+                    "type": "string",
+                },
+                "time_stamp": {
+                    "type": "string",
+                },
+                "timestamp": {
+                    "type": "long",
+                },
+                "total_backup_session_size": {
+                    "type": "long",
+                },
+                "total_broken_links": {
+                    "type": "long",
+                },
+                "total_directories": {
+                    "type": "long",
+                },
+                "total_fs_files": {
+                    "type": "long",
+                },
+                "version": {
+                    "type": "string",
+                },
+                "vol_snap_path": {
+                    "type": "string",
                 },
             },
         },
-        u'user_id': {
-            u'index': u'not_analyzed',
-            u'type': u'string',
+        "user_id": {
+            "index": "not_analyzed",
+            "type": "string",
         },
-        u'user_name': {
-            u'type': u'string',
+        "user_name": {
+            "type": "string",
         },
     },
 }
@@ -164,6 +204,9 @@ jobs_mapping = {
                         },
                         "dry_run": {
                             "type": "boolean"
+                        },
+                        "log_file": {
+                            "type": "string"
                         },
                         "lvm_auto_snap": {
                             "type": "string"
@@ -202,6 +245,9 @@ jobs_mapping = {
                             "type": "long"
                         },
                         "restore_abs_path": {
+                            "type": "string"
+                        },
+                        "restore_from_host": {
                             "type": "string"
                         }
                     }
@@ -279,7 +325,7 @@ jobs_mapping = {
 
 def get_mappings():
     return {
-        u'jobs': jobs_mapping,
-        u'backups': backups_mapping,
-        u'clients': clients_mapping
+        "jobs": jobs_mapping,
+        "backups": backups_mapping,
+        "clients": clients_mapping
     }

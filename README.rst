@@ -10,13 +10,7 @@ Freezer API
 -----------------------------
 ::
 
-  # pip install keystonemiddleware falcon
-
-Elasticsearch support
-::
-
-  # pip install elasticsearch
-
+  # pip install -r requirements.txt
 
 1.2 Install freezer_api
 -----------------------
@@ -25,25 +19,51 @@ Elasticsearch support
   # git clone https://github.com/stackforge/freezer-api.git
   # cd freezer-api && sudo python setup.py install
 
-this will install into /usr/local
-
-
 1.3 edit config file
 --------------------
 ::
 
-  # sudp cp etc/freezer-api.conf /etc/freezer-api.conf
+  # sudo cp etc/freezer-api.conf /etc/freezer-api.conf
   # sudo vi /etc/freezer-api.conf
 
 
-1.4 run simple instance
+1.4 setup/configure the db
+--------------------------
+The currently supported db is Elasticsearch. In case you are using a dedicated instance
+of the server, you'll need to start it. Depending on the OS flavor it might be a:
+::
+
+  # service elasticsearch start
+
+or, on systemd::
+
+  # systemctl start elasticsearch
+
+Elasticsearch needs to know what type of data each document's field contains.
+This information is contained in the "mapping", or schema definition.
+Elasticsearch will use dynamic mapping to try to guess the field type from
+the basic datatypes available in JSON, but some field's properties have to be
+explicitly declared to tune the indexing engine.
+To do that, use the freezer-db-init command:
+::
+
+  # freezer-db-init [db-host]
+
+The url of the db-host is optional and can be automatically guessed from
+/etc/freezer-api.conf
+
+To get information about optional additional parameters:
+::
+
+  freezer-db-init -h
+
+1.5 run simple instance
 -----------------------
 ::
 
   # freezer-api
 
-
-1.5 examples running using uwsgi
+1.6 examples running using uwsgi
 --------------------------------
 ::
 
@@ -70,13 +90,13 @@ backups which share the same container,hostname and backupname
 ===================
 ::
 
-    keystone user-create --name freezer --pass FREEZER_PWD
-    keystone user-role-add --user freezer --tenant service --role admin
+    # keystone user-create --name freezer --pass FREEZER_PWD
+    # keystone user-role-add --user freezer --tenant service --role admin
 
-    keystone service-create --name freezer --type backup \
+    # keystone service-create --name freezer --type backup \
       --description "Freezer Backup Service"
 
-    keystone endpoint-create \
+    # keystone endpoint-create \
       --service-id $(keystone service-list | awk '/ backup / {print $2}') \
       --publicurl http://freezer_api_publicurl:port \
       --internalurl http://freezer_api_internalurl:port \

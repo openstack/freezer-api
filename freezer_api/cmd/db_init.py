@@ -37,16 +37,19 @@ DEFAULT_ES_SERVER_PORT = 9200
 DEFAULT_INDEX = 'freezer'
 
 
+class MergeMappingException(Exception):
+    pass
+
+
 class ElastichsearchEngine(object):
-    def __init__(self, es_url, es_index, test_only, always_yes, verbose):
+    def __init__(self, es_url, es_index, args):
         self.es_url = es_url
         self.es_index = es_index
-        self.test_only = test_only
-        self.always_yes = always_yes
-        self.verbose = verbose
+        self.args = args
+        self.exit_code = os.EX_OK
 
-    def verbose_print(self, message):
-        if self.verbose:
+    def verbose_print(self, message, level=1):
+        if self.args.verbose >= level:
             print(message)
 
     def put_mappings(self, mappings):
@@ -56,6 +59,7 @@ class ElastichsearchEngine(object):
                 print '{0}/{1} MATCHES'.format(self.es_index, es_type)
             else:
                 self.askput_mapping(es_type, mapping)
+        return self.exit_code
 
     def check_index_exists(self):
         url = '{0}/{1}'.format(self.es_url, self.es_index)
@@ -80,16 +84,47 @@ class ElastichsearchEngine(object):
         return mapping == current_mappings.get(es_type, {})
 
     def askput_mapping(self, es_type, mapping):
-        if self.test_only:
+        if self.args.test_only:
             print '{0}/{1} DOES NOT MATCH'.format(self.es_index, es_type)
+            self.exit_code = os.EX_DATAERR
             return
-        prompt_message = ('{0}/{1}/{2} needs to be deleted. '
+        prompt_message = ('{0}/{1}/{2} needs to be updated. '
+                          'Proceed ? (y/n)'
+                          .format(self.es_url,
+                                  self.es_index,
+                                  es_type))
+        if not self.proceed(prompt_message, self.args.yes):
+            return
+
+        self.verbose_print('Trying to upload mappings ...')
+        try:
+            self.put_mapping(es_type, mapping)
+        except MergeMappingException as e:
+            self.verbose_print('Unable to merge mappings.')
+            self.verbose_print(e, 2)
+        else:
+            print "Mappings updated"
+            return
+
+        if self.args.yes and not self.args.erase:
+            # explicit consent to update without explicit consent to erase:
+            # do not erase type and return error code
+            self.exit_code = os.EX_DATAERR
+            print ('{0}/{1} DOES NOT MATCH. '
+                   'Need explicit consent to erase types'
+                   .format(self.es_index, es_type))
+            return
+        prompt_message = ('Type {0}/{1}/{2} needs to be deleted. '
                           'Proceed (y/n) ? '.format(self.es_url,
                                                     self.es_index,
                                                     es_type))
-        if self.always_yes or self.proceed(prompt_message):
-            self.delete_type(es_type)
-            self.put_mapping(es_type, mapping)
+        if not self.proceed(prompt_message, self.args.erase):
+            return
+
+        self.verbose_print('Deleting type {0}'.format(es_type))
+        self.delete_type(es_type)
+        self.verbose_print('Uploading mappings ...')
+        self.put_mapping(es_type, mapping)
 
     def delete_type(self, es_type):
         url = '{0}/{1}/{2}'.format(self.es_url, self.es_index, es_type)
@@ -110,11 +145,11 @@ class ElastichsearchEngine(object):
         if r.status_code == requests.codes.OK:
             print "Type {0} mapping created".format(url)
         else:
-            raise Exception('Type mapping creation error {0}: '
-                            '{1}'.format(r.status_code, r.text))
+            raise MergeMappingException('Type mapping creation error {0}: '
+                                        '{1}'.format(r.status_code, r.text))
 
-    def proceed(self, message):
-        if self.always_yes:
+    def proceed(self, message, assume_yes=False):
+        if assume_yes:
             return True
         while True:
             selection = raw_input(message)
@@ -124,7 +159,7 @@ class ElastichsearchEngine(object):
                 return False
 
 
-def get_args():
+def get_args(mapping_choices):
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument(
         'host', action='store', default='', nargs='?',
@@ -135,15 +170,26 @@ def get_args():
               '(default: {0})'.format(DEFAULT_ES_SERVER_PORT)),
         dest='port', default=0)
     arg_parser.add_argument(
+        '-m', '--mapping', action='store',
+        help=('Specific mapping to upload. Valid choices: {0}'
+              .format(','.join(mapping_choices))),
+        choices=mapping_choices,
+        dest='select_mapping', default='')
+    arg_parser.add_argument(
         '-i', '--index', action='store',
         help='The DB index (default "{0}")'.format(DEFAULT_INDEX),
         dest='index')
     arg_parser.add_argument(
         '-y',  '--yes', action='store_true',
-        help="Automatic confirmation to index removal",
+        help="Automatic confirmation to mapping update",
         dest='yes', default=False)
     arg_parser.add_argument(
-        '-v',  '--verbose', action='store_true',
+        '-e',  '--erase', action='store_true',
+        help=("Enable index deletion in case mapping update "
+              "fails due to incompatible changes"),
+        dest='erase', default=False)
+    arg_parser.add_argument(
+        '-v',  '--verbose', action='count',
         help="Verbose",
         dest='verbose', default=False)
     arg_parser.add_argument(
@@ -241,29 +287,29 @@ def get_db_params(args):
 
 
 def main():
-    args = get_args()
+    mappings = db_mappings.get_mappings()
+
+    args = get_args(mapping_choices=mappings.keys())
 
     elasticsearch_url, elasticsearch_index = get_db_params(args)
 
     es_manager = ElastichsearchEngine(es_url=elasticsearch_url,
                                       es_index=elasticsearch_index,
-                                      test_only=args.test_only,
-                                      always_yes=args.yes,
-                                      verbose=args.verbose)
-
+                                      args=args)
     if args.verbose:
         print "  db url: {0}".format(elasticsearch_url)
         print "db index: {0}".format(elasticsearch_index)
 
-    mappings = db_mappings.get_mappings()
+    if args.select_mapping:
+        mappings = {args.select_mapping: mappings[args.select_mapping]}
 
     try:
-        es_manager.put_mappings(mappings)
+        exit_code = es_manager.put_mappings(mappings)
     except Exception as e:
         print "ERROR {0}".format(e)
         return os.EX_DATAERR
 
-    return os.EX_OK
+    return exit_code
 
 if __name__ == '__main__':
     sys.exit(main())

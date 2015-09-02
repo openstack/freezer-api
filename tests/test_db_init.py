@@ -31,7 +31,8 @@ from freezer_api.cmd.db_init import (ElastichsearchEngine,
                                      parse_config_file,
                                      get_db_params,
                                      main,
-                                     DEFAULT_CONF_PATH)
+                                     DEFAULT_CONF_PATH,
+                                     MergeMappingException)
 
 from freezer_api.common import db_mappings
 
@@ -45,11 +46,15 @@ class TestElasticsearchEngine(unittest.TestCase):
         }
 
         self.mock_resp = Mock()
+        self.mock_args = Mock()
+        self.mock_args.test_only = False
+        self.mock_args.always_yes = False
+        self.mock_args.verbose = 1
+        self.mock_args.select_mapping = ''
+        self.mock_args.erase = False
         self.es_manager = ElastichsearchEngine(es_url='http://test:9333',
                                                es_index='freezerindex',
-                                               test_only=False,
-                                               always_yes=False,
-                                               verbose=True)
+                                               args=self.mock_args)
 
     def test_new(self):
         self.assertIsInstance(self.es_manager, ElastichsearchEngine)
@@ -72,17 +77,19 @@ class TestElasticsearchEngine(unittest.TestCase):
     @patch.object(ElastichsearchEngine, 'proceed')
     @patch.object(ElastichsearchEngine, 'delete_type')
     @patch.object(ElastichsearchEngine, 'put_mapping')
-    def test_askput_calls_delete_and_put_mappunts_when_always_yes(self,
+    def test_askput_calls_delete_and_put_mappings_when_always_yes_and_erase(self,
                                                                   mock_put_mapping,
                                                                   mock_delete_type,
                                                                   mock_proceed):
-        self.es_manager.always_yes = True
+        self.mock_args.yes = True
+        self.mock_args.erase = True
+        mock_put_mapping.side_effect = [MergeMappingException('regular test failure'), 0]
         res = self.es_manager.askput_mapping('jobs', self.test_mappings['jobs'])
+        self.assertTrue(mock_put_mapping.called)
         mock_delete_type.assert_called_once_with('jobs')
-        mock_put_mapping.assert_called_once_with('jobs', self.test_mappings['jobs'])
 
     def test_askput_does_nothing_when_test_only(self):
-        self.es_manager.test_only = True
+        self.mock_args.test_only = True
         res = self.es_manager.askput_mapping('jobs', self.test_mappings['jobs'])
         self.assertEquals(None, res)
 
@@ -176,8 +183,7 @@ class TestElasticsearchEngine(unittest.TestCase):
             _raw_input.assert_called_once_with('are you drunk ?')
 
     def test_proceed_returns_true_when_always_yes(self):
-        self.es_manager.always_yes = True
-        res = self.es_manager.proceed('ask me not')
+        res = self.es_manager.proceed('ask me not', True)
         self.assertTrue(res)
 
     @patch('freezer_api.cmd.db_init.requests')
@@ -210,12 +216,20 @@ class TestElasticsearchEngine(unittest.TestCase):
 
 class TestDbInit(unittest.TestCase):
 
+    def setUp(self):
+        self.mock_args = Mock()
+        self.mock_args.test_only = False
+        self.mock_args.always_yes = False
+        self.mock_args.verbose = 1
+        self.mock_args.select_mapping = ''
+        self.mock_args.erase = False
+
     @patch('freezer_api.cmd.db_init.argparse.ArgumentParser')
     def test_get_args_calls_add_argument(self, mock_ArgumentParser):
         mock_arg_parser = Mock()
         mock_ArgumentParser.return_value = mock_arg_parser
 
-        retval = get_args()
+        retval = get_args([])
         call_count = mock_arg_parser.add_argument.call_count
         self.assertGreater(call_count, 6)
 
@@ -262,8 +276,11 @@ class TestDbInit(unittest.TestCase):
     @patch('freezer_api.cmd.db_init.get_args')
     def test_main_calls_esmanager_put_mappings_with_mappings(self, mock_get_args, mock_get_db_params,
                                                              mock_ElastichsearchEngine):
+        mock_get_args.return_value = self.mock_args
         mock_get_db_params.return_value = Mock(), Mock()
         mock_es_manager = Mock()
+        mock_es_manager.put_mappings.return_value = os.EX_OK
+
         mock_ElastichsearchEngine.return_value = mock_es_manager
 
         res = main()
@@ -276,6 +293,7 @@ class TestDbInit(unittest.TestCase):
     @patch('freezer_api.cmd.db_init.get_args')
     def test_main_return_EX_DATAERR_exitcode_on_error(self, mock_get_args, mock_get_db_params,
                                                     mock_ElastichsearchEngine):
+        mock_get_args.return_value = self.mock_args
         mock_get_db_params.return_value = Mock(), Mock()
         mock_es_manager = Mock()
         mock_ElastichsearchEngine.return_value = mock_es_manager
