@@ -262,10 +262,11 @@ class SessionTypeManager(TypeManager):
 
 class ElasticSearchEngine(object):
 
-    def __init__(self, hosts, index='freezer'):
+    def __init__(self, index='freezer', **kwargs):
         self.index = index
-        self.es = elasticsearch.Elasticsearch(hosts)
-        logging.info(_LI('Using Elasticsearch host %s') % hosts)
+        self.es = elasticsearch.Elasticsearch(**kwargs)
+        logging.info(_LI('Storage backend: Elasticsearch '
+                         'at %s') % kwargs['hosts'])
         self.backup_manager = BackupTypeManager(self.es, 'backups')
         self.client_manager = ClientTypeManager(self.es, 'clients')
         self.job_manager = JobTypeManager(self.es, 'jobs')

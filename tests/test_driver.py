@@ -22,23 +22,51 @@ Hudson (tjh@cryptsoft.com).
 
 
 import unittest
-from mock import patch
+from mock import Mock, patch
 
-from oslo_config import cfg
-
-from freezer_api.common.exceptions import *
-from freezer_api.storage import driver, elastic
+from freezer_api.storage import driver
 
 
 class TestStorageDriver(unittest.TestCase):
 
-    @patch('freezer_api.storage.elastic.logging')
+    @patch('freezer_api.storage.driver.logging')
     def test_get_db_raises_when_db_not_supported(self, mock_logging):
-        cfg.CONF.storage.db = 'nodb'
+        mock_CONF = Mock()
+        mock_CONF.storage.db = 'nodb'
+        driver.CONF = mock_CONF
         self.assertRaises(Exception, driver.get_db)
 
-    @patch('freezer_api.storage.elastic.logging')
-    def test_get_db_elastic(self, mock_logging):
-        cfg.CONF.storage.db = 'elasticsearch'
+    @patch('freezer_api.storage.driver.elastic')
+    @patch('freezer_api.storage.driver.logging')
+    def test_get_db_elastic(self, mock_logging, mock_elastic):
         db = driver.get_db()
-        self.assertIsInstance(db, elastic.ElasticSearchEngine)
+        self.assertTrue(mock_elastic.ElasticSearchEngine)
+
+    @patch('freezer_api.storage.driver.elastic')
+    @patch('freezer_api.storage.driver.logging')
+    def test_get_db_elastic_raises_Exception_when_cert_file_not_found(self, mock_logging, mock_elastic):
+        mock_CONF = Mock()
+        mock_CONF.storage.db = 'elasticsearch'
+        mock_CONF.storage.hosts = 'es_server'
+        mock_CONF.storage.verify_certs = 'False'
+        mock_CONF.storage.ca_certs = 'not_existant'
+        mock_CONF.storage.use_ssl = False
+        mock_CONF.storage.timeout = 43
+        mock_CONF.storage.retries = 37
+        driver.CONF = mock_CONF
+        self.assertRaises(Exception, driver.get_db)
+
+    @patch('freezer_api.storage.driver.elastic')
+    @patch('freezer_api.storage.driver.logging')
+    def test_get_db_elastic_raises_Exception_when_hosts_not_defined(self, mock_logging, mock_elastic):
+        mock_CONF = Mock()
+        mock_CONF.storage.db = 'elasticsearch'
+        mock_CONF.storage.hosts = ''
+        mock_CONF.storage.endpoint = ''
+        mock_CONF.storage.verify_certs = 'False'
+        mock_CONF.storage.ca_certs = ''
+        mock_CONF.storage.use_ssl = False
+        mock_CONF.storage.timeout = 43
+        mock_CONF.storage.retries = 37
+        driver.CONF = mock_CONF
+        self.assertRaises(Exception, driver.get_db)
