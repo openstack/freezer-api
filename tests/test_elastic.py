@@ -376,7 +376,8 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
         mock_elasticsearch.Elasticsearch.return_value = Mock()
-        self.eng = elastic.ElasticSearchEngine('http://elasticservaddr:1997')
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngine(index='freezer', **kwargs)
         self.eng.backup_manager = Mock()
 
     def test_get_backup_userid_and_backup_id_return_ok(self):
@@ -486,7 +487,8 @@ class TestElasticSearchEngine_client(unittest.TestCase):
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
         mock_elasticsearch.Elasticsearch.return_value = Mock()
-        self.eng = elastic.ElasticSearchEngine('http://elasticservaddr:1997')
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngine(index='freezer', **kwargs)
         self.eng.client_manager = Mock()
 
     def test_get_client_userid_and_client_id_return_1elem_list_(self):
@@ -579,7 +581,8 @@ class TestElasticSearchEngine_job(unittest.TestCase):
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
         mock_elasticsearch.Elasticsearch.return_value = Mock()
-        self.eng = elastic.ElasticSearchEngine('http://elasticservaddr:1997')
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngine(index='freezer', **kwargs)
         self.eng.job_manager = Mock()
 
     def test_get_job_userid_and_job_id_return_doc(self):
@@ -713,7 +716,8 @@ class TestElasticSearchEngine_action(unittest.TestCase):
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
         mock_elasticsearch.Elasticsearch.return_value = Mock()
-        self.eng = elastic.ElasticSearchEngine('http://elasticservaddr:1997')
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngine(index='freezer', **kwargs)
         self.eng.action_manager = Mock()
 
     def test_get_action_userid_and_action_id_return_doc(self):
@@ -847,7 +851,8 @@ class TestElasticSearchEngine_session(unittest.TestCase):
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
         mock_elasticsearch.Elasticsearch.return_value = Mock()
-        self.eng = elastic.ElasticSearchEngine('http://elasticservaddr:1997')
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngine(index='freezer', **kwargs)
         self.eng.session_manager = Mock()
 
     def test_get_session_userid_and_session_id_return_doc(self):

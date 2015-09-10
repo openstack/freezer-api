@@ -20,6 +20,7 @@ Hudson (tjh@cryptsoft.com).
 """
 
 import logging
+import os
 
 from oslo_config import cfg
 
@@ -33,10 +34,32 @@ opt_group = cfg.OptGroup(name='storage',
 storage_opts = [
     cfg.StrOpt('db',
                default='elasticsearch',
-               help='specify the storage db to use: elasticsearch (default)'),
+               help='specify the storage db to use (default: elasticsearch'),
+    # use of 'endpoint' parameter name is deprecated, please use 'hosts'
     cfg.StrOpt('endpoint',
+               default='',
+               help='specify the storage hosts (deprecated, use "hosts"'),
+    cfg.StrOpt('hosts',
                default='http://localhost:9200',
-               help='specify the storage endpoint')
+               help='specify the storage hosts'),
+    cfg.StrOpt('index',
+               default='freezer',
+               help='specify the name of the elasticsearch index'),
+    cfg.IntOpt('timeout',
+               default=60,
+               help='specify the connection timeout'),
+    cfg.IntOpt('retries',
+               default=20,
+               help='number of retries to allow before raising and error'),
+    cfg.BoolOpt('use_ssl',
+                default=False,
+                help='explicitly turn on SSL'),
+    cfg.BoolOpt('verify_certs',
+                default=False,
+                help='turn on SSL certs verification'),
+    cfg.StrOpt('ca_certs',
+               default=None,
+               help='path to CA certs on disk'),
 ]
 
 CONF = cfg.CONF
@@ -44,12 +67,29 @@ CONF.register_group(opt_group)
 CONF.register_opts(storage_opts, opt_group)
 
 
+def get_options():
+    if CONF.storage.ca_certs:
+        if not os.path.isfile(CONF.storage.ca_certs):
+            raise Exception('Elasticsearch configuration error: '
+                            'CA_certs file not found ({0})'
+                            .format(CONF.storage.ca_certs))
+
+    hosts = CONF.storage.endpoint or CONF.storage.hosts
+    if not hosts:
+        raise Exception('Elasticsearch configuration error: no host specified')
+
+    opts = dict(CONF.storage)
+    opts.pop('endpoint')
+    opts['hosts'] = hosts.split(',')
+    return opts
+
+
 def get_db():
-    db_engine = CONF.storage.db
+    opts = get_options()
+    db_engine = opts.pop('db')
     if db_engine == 'elasticsearch':
-        endpoint = CONF.storage.endpoint
-        logging.info(_LI('Storage backend: Elasticsearch at %s') % endpoint)
-        db = elastic.ElasticSearchEngine(endpoint)
+        logging.debug(_LI('Elastichsearch config options: %s') % str(opts))
+        db = elastic.ElasticSearchEngine(**opts)
     else:
         raise Exception(_('Database Engine %s not supported') % db_engine)
     return db
