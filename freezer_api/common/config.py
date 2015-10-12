@@ -39,5 +39,5 @@ CONF.register_cli_opts(common_cli_opts)
 
 def parse_args(args=[], usage=None, default_config_files=[]):
     CONF(args=args,
-         project='freezer',
+         project='freezer-api',
          default_config_files=default_config_files)

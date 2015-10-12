@@ -1,0 +1,185 @@
+#!/usr/bin/env bash
+
+# Install and start Freezer service
+
+# add the following to localrc:
+#   enable_service freezer-api
+#
+# Dependencies:
+# - functions
+# - OS_AUTH_URL for auth in api
+# - DEST set to the destination directory
+# - SERVICE_PASSWORD, SERVICE_TENANT_NAME for auth in api
+# - STACK_USER service user
+
+# functions called by the plugin.sh script
+# source plugin.sh <mode> [phase]
+# ---------
+# - <stack>
+#   - <stack> [pre-install]
+#   - <stack> [install]
+#     - install_freezer_api
+#   - <stack> [post-config]
+#     - configure_freezer_api
+#     - create_freezer_api_accounts
+#   - <stack> [extra]
+#     - init_freezer_api
+#     - start_freezer_api
+# - <unstack>
+#   - stop_freezer_api
+# - <clean>
+#   - cleanup_freezer_api
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# Functions
+# ---------
+
+function is_freezer_api_enabled {
+    [[ ,${ENABLED_SERVICES} =~ ,"freezer-api" ]] && return 0
+}
+
+
+# executed during: clean
+function cleanup_freezer_api {
+    sudo rm -f $(apache_site_config_for keystone)
+    ${TOP_DIR}/pkg/elasticsearch.sh uninstall
+}
+
+# executed during: stack install
+function install_freezer_api {
+
+    git_clone $FREEZER_API_REPO $FREEZER_API_DIR $FREEZER_API_BRANCH
+
+    ${TOP_DIR}/pkg/elasticsearch.sh download
+    ${TOP_DIR}/pkg/elasticsearch.sh install
+
+    setup_develop $FREEZER_API_DIR
+
+    if [[ "${FREEZER_API_SERVER_TYPE}" == "uwsgi" ]]; then
+        pip_install 'uwsgi'
+    fi
+}
+
+# executed during: stack post-config
+function configure_freezer_api {
+
+    [ ! -d $FREEZER_API_CONF_DIR ] && sudo mkdir -m 755 -p $FREEZER_API_CONF_DIR
+    sudo chown $USER $FREEZER_API_CONF_DIR
+
+    [ ! -d $FREEZER_API_LOG_DIR ] &&  sudo mkdir -m 755 -p $FREEZER_API_LOG_DIR
+    sudo chown $USER $FREEZER_API_LOG_DIR
+
+    sudo cp $FREEZER_API_DIR/etc/freezer-api.conf $FREEZER_API_CONF_DIR
+
+    iniset $FREEZER_API_CONF 'storage' db elasticsearch
+    iniset $FREEZER_API_CONF 'storage' index freezer
+    iniset $FREEZER_API_CONF 'storage' hosts http://$SERVICE_HOST:9200
+
+    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_protocol $KEYSTONE_AUTH_PROTOCOL
+    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_host $KEYSTONE_AUTH_HOST
+    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_port $KEYSTONE_AUTH_PORT
+    iniset $FREEZER_API_CONF 'keystone_authtoken' admin_user freezer
+    iniset $FREEZER_API_CONF 'keystone_authtoken' admin_password $SERVICE_PASSWORD
+    iniset $FREEZER_API_CONF 'keystone_authtoken' admin_tenant_name $SERVICE_TENANT_NAME
+
+    if [[ "${FREEZER_API_SERVER_TYPE}" == "apache2" ]]; then
+        echo_summary "Configuring Freezer API wsgi app in Apache"
+        configure_apache_freezer_app
+    fi
+
+    # TODO certs and more recent options such as elasticsearch connection parameters
+}
+
+
+# executed during: stack extra
+function init_freezer_api {
+    # this also waits for elasticsearch to start
+    ${TOP_DIR}/pkg/elasticsearch.sh start
+
+    # put elasticsearch mappings
+    freezer-db-init -y -e
+}
+
+
+# executed during: stack extra
+function start_freezer_api {
+    if [[ "${FREEZER_API_SERVER_TYPE}" == "uwsgi" ]]; then
+        run_process freezer-api "uwsgi --http :$FREEZER_API_PORT --need-app --master --module freezer_api.cmd.api:application"
+        sleep 1
+    elif [[ "${FREEZER_API_SERVER_TYPE}" == "apache2" ]]; then
+        enable_apache_site freezer-api
+        restart_apache_server
+        tail_log freezer /var/log/$APACHE_NAME/freezer-api.log
+        tail_log freezer-access /var/log/$APACHE_NAME/freezer-api_access.log
+    fi
+}
+
+
+# executed during: stop
+function stop_freezer_api {
+    ${TOP_DIR}/pkg/elasticsearch.sh stop
+    if [[ "${FREEZER_API_SERVER_TYPE}" == "uwsgi" ]]; then
+        killall -9 uwsgi
+    fi
+    stop_process freezer-api
+}
+
+
+# utility function
+function get_id {
+    echo `"$@" | awk '/ id / { print $4 }'`
+}
+
+
+# executed during: stack post-config
+function create_freezer_api_accounts {
+    #
+    # Setup admin user
+    #
+    SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+    local admin_role=$(get_or_create_role "admin")
+
+    local freezer_user=$(openstack user create \
+                            --password "$SERVICE_PASSWORD" \
+                            --project "$SERVICE_TENANT_NAME" \
+                            --email "freezer@example.com" \
+                            freezer \
+                            | grep " id " | get_field 2)
+
+    get_or_add_user_project_role $admin_role $freezer_user $SERVICE_TENANT_NAME
+
+    #
+    # freezer backup service registration
+    #
+    local freezer_service=$(get_or_create_service "freezer" "backup" "Freezer Backup Service")
+
+    #
+    # freezer backup endpoint registration
+    #
+    get_or_create_endpoint "$freezer_service" \
+         "$REGION_NAME" \
+         "$FREEZER_API_SERVICE_PROTOCOL://$SERVICE_HOST:$FREEZER_API_PORT" \
+         "$FREEZER_API_SERVICE_PROTOCOL://$SERVICE_HOST:$FREEZER_API_PORT" \
+         "$FREEZER_API_SERVICE_PROTOCOL://$SERVICE_HOST:$FREEZER_API_PORT"
+}
+
+
+function configure_apache_freezer_app {
+    local freezer_api_apache_conf=$(apache_site_config_for freezer-api)
+    sudo cp $FREEZER_API_FILES/apache-freezer-api.template $freezer_api_apache_conf
+    sudo sed -e "
+        s|%FREEZER_API_PORT%|$FREEZER_API_PORT|g;
+        s|%SERVICE_HOST%|$SERVICE_HOST|g;
+        s|%USER%|$STACK_USER|g;
+        s|%FREEZER_API_DIR%|$FREEZER_API_DIR|g;
+        s|%APACHE_NAME%|$APACHE_NAME|g;
+        s|%VIRTUALENV%|$venv_path|g
+    " -i $freezer_api_apache_conf
+}
+
+# Restore xtrace
+$XTRACE

@@ -2,6 +2,20 @@
 Freezer API
 ===========
 
+TOC
+===
+::
+
+     1. Installation
+     2. Devstack Plugin
+     3. Concepts and definitions
+     4. API registration
+     5. API routes
+     6. Backup metadata structure
+     7. Freezer Client document structure
+     8. Jobs
+     9. Actions
+    10. Sessions
 
 1. Installation
 ===============
@@ -10,14 +24,14 @@ Freezer API
 -----------------------------
 ::
 
-  # pip install -r requirements.txt
+  # git clone https://github.com/stackforge/freezer-api.git
+  # cd freezer-api && sudo python setup.py install
 
 1.2 Install freezer_api
 -----------------------
 ::
 
-  # git clone https://github.com/stackforge/freezer-api.git
-  # cd freezer-api && sudo python setup.py install
+  # pip install -r requirements.txt
 
 1.3 edit config file
 --------------------
@@ -72,7 +86,46 @@ To get information about optional additional parameters:
   # uwsgi --https :9090,foobar.crt,foobar.key --need-app --master --module freezer_api.cmd.api:application
 
 
-2. Concepts and definitions
+2. Devstack Plugin
+==================
+
+2.1 Edit local.conf
+-------------------
+
+To configure the Freezer API with DevStack, you will need to enable the
+freezer-api plugin by adding one line to the [[local|localrc]] section
+of your local.conf file::
+
+    enable_plugin freezer-api <GITURL> [GITREF]
+
+where::
+
+    <GITURL> is the URL of a freezer-api repository
+    [GITREF] is an optional git ref (branch/ref/tag).  The default is master.
+
+For example::
+
+    enable_plugin freezer-api https://github.com/stackforge/freezer-api.git master
+
+
+2.2 Plugin Options
+------------------
+The plugin makes use of apache2 by default.
+To use the *uwsgi* server set the following environment variable::
+
+    export FREEZER_API_SERVER_TYPE=uwsgi
+
+The default port is *9090*. To configure the api to listen on a different port
+set the variable FREEZER_API_PORT.
+For example to make use of port 19090 use::
+
+    export FREEZER_API_PORT=19090
+
+For more information, see:
+http://docs.openstack.org/developer/devstack/plugins.html
+
+
+3. Concepts and definitions
 ===========================
 
 *hostname* is _probably_ going to be the host fqdn.
@@ -86,7 +139,7 @@ defined as "container_hostname_backupname" identifies a group of related
 backups which share the same container,hostname and backupname
 
 
-3. API registration
+4. API registration
 ===================
 ::
 
@@ -104,7 +157,7 @@ backups which share the same container,hostname and backupname
       --region regionOne
 
 
-4. API routes
+5. API routes
 =============
 
 General
@@ -177,7 +230,7 @@ Freezer sessions management
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
 
-5. Backup metadata structure
+6. Backup metadata structure
 ============================
 NOTE: sizes are in MB
 ::
@@ -228,7 +281,7 @@ It stores and returns the information provided in this form:
     }
 
 
-6. Freezer Client document structure
+7. Freezer Client document structure
 ====================================
 
 Identifies a freezer client for the purpose of sending action
@@ -253,7 +306,7 @@ client_type document embeds the client_info and adds user_id::
     }
 
 
-7. Jobs
+8. Jobs
 =======
 A job describes a single action to be executed by a freezer client, for example a backup, or a restore.
 It contains the necessary information as if they were provided on the command line.
@@ -330,7 +383,7 @@ job document structure::
     }
 
 
-7.1 Scheduling Time Information
+8.1 Scheduling Time Information
 -------------------------------
 
 Three types of scheduling can be identified:
@@ -340,13 +393,13 @@ Three types of scheduling can be identified:
 
 Each type has specific parameters which can be given.
 
-7.1.1 date scheduling
+8.1.1 date scheduling
 ---------------------
 ::
 
   "schedule_date":      : datetime isoformat
 
-7.1.2 interval scheduling
+8.1.2 interval scheduling
 -------------------------
 ::
 
@@ -355,7 +408,7 @@ Each type has specific parameters which can be given.
   "schedule_start_date" : datetime isoformat
   "schedule_end_date"   : datetime isoformat
 
-7.1.3 cron-like scheduling
+8.1.3 cron-like scheduling
 --------------------------
 ::
 
@@ -371,7 +424,7 @@ Each type has specific parameters which can be given.
   "schedule_start_date" : datetime isoformat
   "schedule_end_date"   : datetime isoformat
 
-7.2 Job examples
+8.2 Job examples
 ----------------
 
 example backup freezer_action::
@@ -514,7 +567,7 @@ Finished job with result::
 
 
 
-8 Actions
+9 Actions
 =========
 Actions are stored only to facilitate the assembling of different actions into jobs in the web UI.
 They are not directly used by the scheduler.
@@ -548,7 +601,7 @@ When a job is added to a session, the scheduling time of the session is copied i
 job data structure, so that any job belonging to the same session will start at the same time.
 
 
-9.1 Session Data Structure
+10.1 Session Data Structure
 --------------------------
 ::
 
@@ -583,7 +636,7 @@ job data structure, so that any job belonging to the same session will start at 
     "user_id": string
   }
 
-9.2 Session actions
+10.2 Session actions
 -------------------
 When the freezer scheduler running on a node wants to start a session,
 it sends a POST request to the following endpoint: ::
@@ -592,7 +645,7 @@ it sends a POST request to the following endpoint: ::
 
 The body of the request bears the action and parameters
 
-9.2.1 Session START action
+109.2.1 Session START action
 --------------------------
 ::
 
@@ -610,7 +663,7 @@ Example of a succesfull response: ::
         'session_tag': 23
     }
 
-8.2.2 Session STOP action
+10.2.2 Session STOP action
 -------------------------
 ::
 
@@ -622,7 +675,7 @@ Example of a succesfull response: ::
         }
     }
 
-8.3 Session-Job association
+10.3 Session-Job association
 ---------------------------
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session

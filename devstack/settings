@@ -1,0 +1,21 @@
+# Defaults
+# --------
+
+# Set up default directories
+FREEZER_API_DIR=$DEST/freezer-api
+FREEZER_API_FILES=${FREEZER_API_DIR}/devstack/files
+FREEZER_API_CONF_DIR=${FREEZER_API_CONF_DIR:-/etc}
+FREEZER_API_CONF=$FREEZER_API_CONF_DIR/freezer-api.conf
+FREEZER_API_LOG_DIR=$DEST/logs
+
+# Freezer API repository
+FREEZER_API_REPO=${FREEZER_API_REPO:-${GIT_BASE}/stackforge/freezer-api.git}
+FREEZER_API_BRANCH=${FREEZER_API_BRANCH:-master}
+
+# supported servers: "apache2", "uwsgi"
+FREEZER_API_SERVER_TYPE=${FREEZER_API_SERVER_TYPE:-apache2}
+
+FREEZER_API_SERVICE_PROTOCOL=http
+FREEZER_API_PORT=9090
+
+enable_service freezer-api
