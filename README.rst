@@ -24,7 +24,7 @@ TOC
 -----------------------------
 ::
 
-  # git clone https://github.com/stackforge/freezer-api.git
+  # git clone https://git.openstack.org/openstack/freezer-api.git
   # cd freezer-api && sudo python setup.py install
 
 1.2 Install freezer_api
@@ -105,7 +105,7 @@ where::
 
 For example::
 
-    enable_plugin freezer-api https://github.com/stackforge/freezer-api.git master
+    enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git master
 
 
 2.2 Plugin Options

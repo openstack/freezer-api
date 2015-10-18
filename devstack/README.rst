@@ -15,7 +15,7 @@ where::
 
 For example::
 
-    enable_plugin freezer-api https://github.com/stackforge/freezer-api.git master
+    enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git master
 
 
 The plugin makes use of apache2 by default.
