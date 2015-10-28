@@ -52,6 +52,7 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.mock_args.verbose = 1
         self.mock_args.select_mapping = ''
         self.mock_args.erase = False
+        self.mock_args.replicas = 0
         self.es_manager = ElastichsearchEngine(es_url='http://test:9333',
                                                es_index='freezerindex',
                                                args=self.mock_args)
@@ -62,14 +63,24 @@ class TestElasticsearchEngine(unittest.TestCase):
     @patch.object(ElastichsearchEngine, 'check_index_exists')
     @patch.object(ElastichsearchEngine, 'mapping_match')
     @patch.object(ElastichsearchEngine, 'askput_mapping')
-    def test_put_mappings_does_nothing_when_mappings_match(self, mock_askput_mapping, mock_mapping_match, mock_check_index_exists):
+    @patch.object(ElastichsearchEngine, 'set_number_of_replicas')
+    def test_put_mappings_does_nothing_when_mappings_match(self,
+                                                           mock_set_number_of_replicas,
+                                                           mock_askput_mapping,
+                                                           mock_mapping_match,
+                                                           mock_check_index_exists):
         self.es_manager.put_mappings(self.test_mappings)
         self.assertEquals(mock_askput_mapping.call_count, 0)
 
     @patch.object(ElastichsearchEngine, 'check_index_exists')
     @patch.object(ElastichsearchEngine, 'mapping_match')
     @patch.object(ElastichsearchEngine, 'askput_mapping')
-    def test_put_mappings_calls_askput_when_mappings_match_not(self, mock_askput_mapping, mock_mapping_match, mock_check_index_exists):
+    @patch.object(ElastichsearchEngine, 'set_number_of_replicas')
+    def test_put_mappings_calls_askput_when_mappings_match_not(self,
+                                                               mock_set_number_of_replicas,
+                                                               mock_askput_mapping,
+                                                               mock_mapping_match,
+                                                               mock_check_index_exists):
         mock_mapping_match.return_value = False
         self.es_manager.put_mappings(self.test_mappings)
         self.assertEquals(mock_askput_mapping.call_count, 3)
@@ -77,10 +88,12 @@ class TestElasticsearchEngine(unittest.TestCase):
     @patch.object(ElastichsearchEngine, 'proceed')
     @patch.object(ElastichsearchEngine, 'delete_type')
     @patch.object(ElastichsearchEngine, 'put_mapping')
+    @patch.object(ElastichsearchEngine, 'set_number_of_replicas')
     def test_askput_calls_delete_and_put_mappings_when_always_yes_and_erase(self,
-                                                                  mock_put_mapping,
-                                                                  mock_delete_type,
-                                                                  mock_proceed):
+                                                                            mock_set_number_of_replicas,
+                                                                            mock_put_mapping,
+                                                                            mock_delete_type,
+                                                                            mock_proceed):
         self.mock_args.yes = True
         self.mock_args.erase = True
         mock_put_mapping.side_effect = [MergeMappingException('regular test failure'), 0]
@@ -254,20 +267,22 @@ class TestDbInit(unittest.TestCase):
         mock_config = Mock()
         mock_ConfigParser.return_value = mock_config
         mock_config.get.side_effect = lambda *x: {('storage', 'endpoint'): 'http://iperuranio:1999',
-                                                  ('storage', 'index'): 'ohyes'}[x]
-        host, port, index = parse_config_file('dontcare')
+                                                  ('storage', 'index'): 'ohyes',
+                                                  ('storage', 'number_of_replicas'): '10'}[x]
+        host, port, index, replicas = parse_config_file('dontcare')
         self.assertEquals(host, 'iperuranio')
         self.assertEquals(port, 1999)
         self.assertEquals(index, 'ohyes')
+        self.assertEquals(replicas, 10)
 
     @patch('freezer_api.cmd.db_init.parse_config_file')
     def test_get_db_params_returns_args_parameters(self, mock_parse_config_file):
-        mock_parse_config_file.return_value = (None, None, None)
+        mock_parse_config_file.return_value = (None, None, None, None   )
         mock_args = Mock()
         mock_args.host = 'pumpkin'
         mock_args.port = 12345
         mock_args.index = 'ciccio'
-        elasticsearch_url, elasticsearch_index = get_db_params(mock_args)
+        elasticsearch_url, elasticsearch_index, elasticsearch_replicas = get_db_params(mock_args)
         self.assertEquals(elasticsearch_url, 'http://pumpkin:12345')
         self.assertEquals(elasticsearch_index, 'ciccio')
 
@@ -277,7 +292,7 @@ class TestDbInit(unittest.TestCase):
     def test_main_calls_esmanager_put_mappings_with_mappings(self, mock_get_args, mock_get_db_params,
                                                              mock_ElastichsearchEngine):
         mock_get_args.return_value = self.mock_args
-        mock_get_db_params.return_value = Mock(), Mock()
+        mock_get_db_params.return_value = 'url', 'index', 0
         mock_es_manager = Mock()
         mock_es_manager.put_mappings.return_value = os.EX_OK
 
@@ -294,7 +309,7 @@ class TestDbInit(unittest.TestCase):
     def test_main_return_EX_DATAERR_exitcode_on_error(self, mock_get_args, mock_get_db_params,
                                                     mock_ElastichsearchEngine):
         mock_get_args.return_value = self.mock_args
-        mock_get_db_params.return_value = Mock(), Mock()
+        mock_get_db_params.return_value = 'url', 'index', 0
         mock_es_manager = Mock()
         mock_ElastichsearchEngine.return_value = mock_es_manager
 

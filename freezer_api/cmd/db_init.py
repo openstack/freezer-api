@@ -35,6 +35,7 @@ from freezer_api.common import db_mappings
 DEFAULT_CONF_PATH = '/etc/freezer-api.conf'
 DEFAULT_ES_SERVER_PORT = 9200
 DEFAULT_INDEX = 'freezer'
+DEFAULT_REPLICAS = 2
 
 
 class MergeMappingException(Exception):
@@ -52,6 +53,20 @@ class ElastichsearchEngine(object):
         if self.args.verbose >= level:
             print(message)
 
+    def set_number_of_replicas(self):
+        url = '{0}/{1}/_settings'.format(self.es_url,
+                                         self.es_index)
+        body_dict = {"number_of_replicas": int(self.args.replicas)}
+        self.verbose_print('PUT {0}\n{1}'.format(url, body_dict))
+        r = requests.put(url, data=json.dumps(body_dict))
+        self.verbose_print("response: {0}".format(r))
+        if r.status_code == requests.codes.OK:
+            print "Replica number set to {0}".format(self.args.replicas)
+        else:
+            raise MergeMappingException('Error setting the replica number,'
+                                        ' {0}: {1}'
+                                        .format(r.status_code, r.text))
+
     def put_mappings(self, mappings):
         self.check_index_exists()
         for es_type, mapping in mappings.iteritems():
@@ -59,6 +74,7 @@ class ElastichsearchEngine(object):
                 print '{0}/{1} MATCHES'.format(self.es_index, es_type)
             else:
                 self.askput_mapping(es_type, mapping)
+        self.set_number_of_replicas()
         return self.exit_code
 
     def check_index_exists(self):
@@ -200,7 +216,12 @@ def get_args(mapping_choices):
         '-c', '--config-file', action='store',
         help='Config file with the db information',
         dest='config_file', default='')
-
+    arg_parser.add_argument(
+        '-r', '--replicas', action='store',
+        help='Set the value for the number replicas in the DB index '
+             '(default {0} when not specified here nor in config file)'
+             .format(DEFAULT_REPLICAS),
+        dest='replicas', default=False)
     return arg_parser.parse_args()
 
 
@@ -216,18 +237,23 @@ def parse_config_file(fname):
     Read host URL from config-file
 
     :param fname: config-file path
-    :return: (host, port, db_index)
+    :return: (host, port, db_index, number_of_replicas)
     """
     if not fname:
         return None, 0, None
 
-    host, port, index = None, 0, None
+    host, port, index, number_of_replicas = None, 0, None, 0
 
     config = ConfigParser.ConfigParser()
     config.read(fname)
     try:
-        endpoint = config.get('storage', 'endpoint')
-        match = re.search(r'^http://([^:]+):([\d]+)$', endpoint)
+        if config.has_option('storage', 'endpoint'):
+            endpoint = config.get('storage', 'endpoint')
+        elif config.has_option('storage', 'hosts'):
+            endpoint = config.get('storage', 'hosts')
+        else:
+            endpoint = ''
+        match = re.search(r'^http://([^:]+):([\d]+)', endpoint)
         if match:
             host = match.group(1)
             port = int(match.group(2))
@@ -237,7 +263,11 @@ def parse_config_file(fname):
         index = config.get('storage', 'index')
     except:
         pass
-    return host, int(port), index
+    try:
+        number_of_replicas = config.get('storage', 'number_of_replicas')
+    except:
+        pass
+    return host, int(port), index, int(number_of_replicas)
 
 
 def get_db_params(args):
@@ -247,14 +277,15 @@ def get_db_params(args):
     file /etc/freezer-api.conf
 
     :param args: argparsed command line arguments
-    :return: (elasticsearch_url, elastichsearch_index)
+    :return: (elasticsearch_url, elastichsearch_index, number_of_replicas)
     """
     conf_fname = args.config_file or find_config_file()
 
     if args.verbose:
         print "using config file: {0}".format(conf_fname)
 
-    conf_host, conf_port, conf_db_index = parse_config_file(conf_fname)
+    conf_host, conf_port, conf_db_index, number_of_replicas = \
+        parse_config_file(conf_fname)
 
     # host lookup
     #   1) host arg (before ':')
@@ -283,7 +314,7 @@ def get_db_params(args):
     # 3) string DEFAULT_INDEX
     elasticsearch_index = args.index or conf_db_index or DEFAULT_INDEX
 
-    return elasticsearch_url, elasticsearch_index
+    return elasticsearch_url, elasticsearch_index, number_of_replicas
 
 
 def main():
@@ -291,7 +322,10 @@ def main():
 
     args = get_args(mapping_choices=mappings.keys())
 
-    elasticsearch_url, elasticsearch_index = get_db_params(args)
+    elasticsearch_url, elasticsearch_index, elasticsearch_replicas = \
+        get_db_params(args)
+
+    args.replicas = args.replicas or elasticsearch_replicas or DEFAULT_REPLICAS
 
     es_manager = ElastichsearchEngine(es_url=elasticsearch_url,
                                       es_index=elasticsearch_index,
