@@ -223,6 +223,7 @@ class TestActionDoc(unittest.TestCase):
         mock_uuid.uuid4.return_value = mock_uuid
         mock_uuid.hex = 'hotforteacher'
         action_doc = get_fake_action_0()
+        action_doc.pop('action_id')
         res_doc = utils.ActionDoc.create(action_doc, 'dude')
         self.assertEqual(res_doc['user_id'], 'dude')
         self.assertEqual(res_doc['action_id'], 'hotforteacher')
