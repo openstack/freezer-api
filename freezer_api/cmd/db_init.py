@@ -236,7 +236,7 @@ def parse_config_file(fname):
     :return: (host, port, db_index, number_of_replicas)
     """
     if not fname:
-        return None, 0, None
+        return None, 0, None, 0
 
     host, port, index, number_of_replicas = None, 0, None, 0
 
