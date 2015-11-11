@@ -38,6 +38,10 @@ class MergeMappingException(Exception):
     pass
 
 
+class NumberOfReplicasException(Exception):
+    pass
+
+
 class ElastichsearchEngine(object):
     def __init__(self, es_url, es_index, args):
         self.es_url = es_url
@@ -49,9 +53,40 @@ class ElastichsearchEngine(object):
         if self.args.verbose >= level:
             print(message)
 
-    def set_number_of_replicas(self):
+    def set_number_of_replicas(self, n):
+        if self.number_of_replicas_match(n):
+            print ('Number of replicas matches. '
+                   'Current value is {0}'.format(n))
+        else:
+            self.askput_number_of_replicas(n)
+
+    def number_of_replicas_match(self, n):
         url = '{0}/{1}/_settings'.format(self.es_url,
                                          self.es_index)
+        self.verbose_print('GET {0}\n'.format(url))
+        r = requests.get(url)
+        if r.status_code != requests.codes.OK:
+            raise Exception("ERROR {0}: {1}".format(r.status_code, r.text))
+        self.verbose_print("response: {0}".format(r))
+        settings_dict = r.json()
+        current_n = int(settings_dict[self.es_index]['settings']
+                        ['index']['number_of_replicas'])
+        self.verbose_print("Current replica number: {0}".format(current_n))
+        return current_n == int(n)
+
+    def askput_number_of_replicas(self, n):
+        if self.args.test_only:
+            print "Number of replicas don't match"
+            self.exit_code = os.EX_DATAERR
+            return
+        prompt_message = ('Number of replicas needs to be '
+                          'updated to {0}. '
+                          'Proceed ? (y/n)'
+                          .format(n))
+        if not self.proceed(prompt_message, self.args.yes):
+            return
+
+        url = '{0}/{1}/_settings'.format(self.es_url, self.es_index)
         body_dict = {"number_of_replicas": int(self.args.replicas)}
         self.verbose_print('PUT {0}\n{1}'.format(url, body_dict))
         r = requests.put(url, data=json.dumps(body_dict))
@@ -59,9 +94,9 @@ class ElastichsearchEngine(object):
         if r.status_code == requests.codes.OK:
             print "Replica number set to {0}".format(self.args.replicas)
         else:
-            raise MergeMappingException('Error setting the replica number,'
-                                        ' {0}: {1}'
-                                        .format(r.status_code, r.text))
+            raise NumberOfReplicasException('Error setting the replica '
+                                            'number, {0}: {1}'
+                                            .format(r.status_code, r.text))
 
     def put_mappings(self, mappings):
         self.check_index_exists()
@@ -70,7 +105,6 @@ class ElastichsearchEngine(object):
                 print '{0}/{1} MATCHES'.format(self.es_index, es_type)
             else:
                 self.askput_mapping(es_type, mapping)
-        self.set_number_of_replicas()
         return self.exit_code
 
     def check_index_exists(self):
@@ -193,7 +227,8 @@ def get_args(mapping_choices):
         dest='index')
     arg_parser.add_argument(
         '-y',  '--yes', action='store_true',
-        help="Automatic confirmation to mapping update",
+        help="Automatic confirmation to update mappings and "
+             "number-of-replicas",
         dest='yes', default=False)
     arg_parser.add_argument(
         '-e',  '--erase', action='store_true',
@@ -260,10 +295,10 @@ def parse_config_file(fname):
     except:
         pass
     try:
-        number_of_replicas = config.get('storage', 'number_of_replicas')
+        number_of_replicas = int(config.get('storage', 'number_of_replicas'))
     except:
         pass
-    return host, int(port), index, int(number_of_replicas)
+    return host, port, index, number_of_replicas
 
 
 def get_db_params(args):
@@ -321,7 +356,9 @@ def main():
     elasticsearch_url, elasticsearch_index, elasticsearch_replicas = \
         get_db_params(args)
 
-    args.replicas = args.replicas or elasticsearch_replicas or DEFAULT_REPLICAS
+    number_of_replicas = int(args.replicas or
+                             elasticsearch_replicas or
+                             DEFAULT_REPLICAS)
 
     es_manager = ElastichsearchEngine(es_url=elasticsearch_url,
                                       es_index=elasticsearch_index,
@@ -334,12 +371,13 @@ def main():
         mappings = {args.select_mapping: mappings[args.select_mapping]}
 
     try:
-        exit_code = es_manager.put_mappings(mappings)
+        es_manager.put_mappings(mappings)
+        es_manager.set_number_of_replicas(number_of_replicas)
     except Exception as e:
         print "ERROR {0}".format(e)
         return os.EX_DATAERR
 
-    return exit_code
+    return es_manager.exit_code
 
 if __name__ == '__main__':
     sys.exit(main())

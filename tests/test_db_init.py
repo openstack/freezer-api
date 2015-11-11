@@ -28,7 +28,8 @@ from freezer_api.cmd.db_init import (ElastichsearchEngine,
                                      get_db_params,
                                      main,
                                      DEFAULT_CONF_PATH,
-                                     MergeMappingException)
+                                     MergeMappingException,
+                                     NumberOfReplicasException)
 
 from freezer_api.common import db_mappings
 
@@ -222,6 +223,96 @@ class TestElasticsearchEngine(unittest.TestCase):
         mock_requests.codes.BAD_REQUEST = 400
         self.assertRaises(Exception, self.es_manager.check_index_exists)
 
+    def test_set_number_of_replicas_returns_none_on_match(self):
+        self.es_manager.number_of_replicas_match = Mock()
+        self.es_manager.number_of_replicas_match.return_value = True
+        res = self.es_manager.set_number_of_replicas(5)
+        self.assertEquals(res, None)
+
+    def test_set_number_of_replicas_calls_askput_when_match_not(self):
+        self.es_manager.number_of_replicas_match = Mock()
+        self.es_manager.askput_number_of_replicas = Mock()
+        self.es_manager.number_of_replicas_match.return_value = False
+        res = self.es_manager.set_number_of_replicas(5)
+        self.es_manager.askput_number_of_replicas.assert_called_once_with(5)
+        self.assertEquals(res, None)
+
+    @patch('freezer_api.cmd.db_init.requests')
+    def test_number_of_replicas_match_returns_true_when_match(self, mock_requests):
+        self.mock_resp.status_code = 200
+        self.mock_resp.json.return_value = {"freezerindex": {
+            "settings": {
+                "index": {
+                    "creation_date": "1447167673951",
+                    "number_of_replicas": "3",
+                    "number_of_shards": "5",
+                    "uuid": "C63kkECBS4KXNPs-KKysPQ",
+                    "version": {
+                        "created": "1040299"
+                    }
+                }
+            }}}
+        mock_requests.get.return_value = self.mock_resp
+        mock_requests.codes.OK = 200
+        res = self.es_manager.number_of_replicas_match(3)
+        self.assertTrue(res)
+
+    @patch('freezer_api.cmd.db_init.requests')
+    def test_number_of_replicas_match_returns_false_when_match_not(self, mock_requests):
+        self.mock_resp.status_code = 200
+        self.mock_resp.json.return_value = {"freezerindex": {
+            "settings": {
+                "index": {
+                    "creation_date": "1447167673951",
+                    "number_of_replicas": "3",
+                    "number_of_shards": "5",
+                    "uuid": "C63kkECBS4KXNPs-KKysPQ",
+                    "version": {
+                        "created": "1040299"
+                    }
+                }
+            }}}
+        mock_requests.get.return_value = self.mock_resp
+        mock_requests.codes.OK = 200
+        res = self.es_manager.number_of_replicas_match(4)
+        self.assertFalse(res)
+
+    def test_askput_number_of_replicas_sets_error_when_test_only(self):
+        self.mock_args.test_only = True
+        res = self.es_manager.askput_number_of_replicas(4)
+        self.assertIsNone(res)
+        self.assertEquals(self.es_manager.exit_code, os.EX_DATAERR)
+
+    def test_askput_number_of_replicas_returns_none_when_no_proceed(self):
+        self.mock_args.test_only = False
+        self.es_manager.proceed = Mock()
+        self.es_manager.proceed.return_value = False
+        res = self.es_manager.askput_number_of_replicas(4)
+        self.assertIsNone(res)
+        self.assertEquals(self.es_manager.exit_code, os.EX_OK)
+
+    @patch('freezer_api.cmd.db_init.requests')
+    def test_askput_number_of_replicas_returns_none_on_success(self, mock_requests):
+        self.mock_args.test_only = False
+        self.es_manager.proceed = Mock()
+        self.es_manager.proceed.return_value = True
+        self.mock_resp.status_code = 200
+        mock_requests.codes.OK = 200
+        mock_requests.put.return_value = self.mock_resp
+        res = self.es_manager.askput_number_of_replicas(4)
+        self.assertIsNone(res)
+        self.assertEquals(self.es_manager.exit_code, os.EX_OK)
+
+    @patch('freezer_api.cmd.db_init.requests')
+    def test_askput_number_of_replicas_raises_NumberOfReplicasException_on_request_error(self, mock_requests):
+        self.mock_args.test_only = False
+        self.es_manager.proceed = Mock()
+        self.es_manager.proceed.return_value = True
+        self.mock_resp.status_code = 500
+        mock_requests.codes.OK = 200
+        mock_requests.put.return_value = self.mock_resp
+        self.assertRaises(NumberOfReplicasException, self.es_manager.askput_number_of_replicas, 4)
+
 
 class TestDbInit(unittest.TestCase):
 
@@ -232,6 +323,7 @@ class TestDbInit(unittest.TestCase):
         self.mock_args.verbose = 1
         self.mock_args.select_mapping = ''
         self.mock_args.erase = False
+        self.mock_args.replicas = 9
 
     @patch('freezer_api.cmd.db_init.argparse.ArgumentParser')
     def test_get_args_calls_add_argument(self, mock_ArgumentParser):
@@ -290,7 +382,7 @@ class TestDbInit(unittest.TestCase):
         mock_get_args.return_value = self.mock_args
         mock_get_db_params.return_value = 'url', 'index', 0
         mock_es_manager = Mock()
-        mock_es_manager.put_mappings.return_value = os.EX_OK
+        mock_es_manager.exit_code = os.EX_OK
 
         mock_ElastichsearchEngine.return_value = mock_es_manager
 
