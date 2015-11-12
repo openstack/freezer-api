@@ -147,9 +147,10 @@ class ActionDoc:
 
     @staticmethod
     def create(doc, user_id):
+        action_id = doc.get('action_id', uuid.uuid4().hex)
         doc.update({
             'user_id': user_id,
-            'action_id': uuid.uuid4().hex,
+            'action_id': action_id,
         })
         ActionDoc.validate(doc)
         return doc

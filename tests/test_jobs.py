@@ -28,6 +28,106 @@ from freezer_api.common.exceptions import *
 from freezer_api.api.v1 import jobs as v1_jobs
 
 
+class TestJobsBaseResource(unittest.TestCase):
+
+    def setUp(self):
+        self.mock_db = Mock()
+        self.resource = v1_jobs.JobsBaseResource(self.mock_db)
+
+    def test_get_action_returns_found_action(self):
+        self.mock_db.get_action.return_value = 'awesome_result'
+        result = self.resource.get_action('user-id', 'action-id')
+        self.assertEquals(result, 'awesome_result')
+
+    def test_get_action_returns_none_when_action_not_found(self):
+        self.mock_db.get_action.side_effect = DocumentNotFound('regular test failure')
+        result = self.resource.get_action('user-id', 'action-id')
+        self.assertIsNone(result)
+
+    def test_update_actions_in_job_no_action_id(self):
+        self.resource.get_action = Mock()
+        self.resource.get_action.return_value = None
+        action_doc = {
+                #"action_id": "ottonero",
+                "freezer_action": {
+                                "mode" : "mysql",
+                                "container": "freezer_backup_test"
+                },
+                "max_retries": 3
+            }
+        job_doc = {"job_actions": [action_doc.copy()],
+                   "description": "three actions backup"
+                   }
+        self.resource.update_actions_in_job('duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_called_with(user_id='duder',
+                                                   doc=action_doc)
+
+    def test_update_actions_in_job_action_id_not_found(self):
+        self.resource.get_action = Mock()
+        self.resource.get_action.return_value = None
+        action_doc = {
+                "action_id": "ottonero",
+                "freezer_action": {
+                                "mode" : "mysql",
+                                "container": "freezer_backup_test"
+                },
+                "max_retries": 3
+            }
+        job_doc = {"job_actions": [action_doc.copy()],
+                   "description": "three actions backup"
+                   }
+        self.resource.update_actions_in_job('duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_called_with(user_id='duder',
+                                                   doc=action_doc)
+
+    def test_update_actions_in_job_action_id_found_and_same_action(self):
+        self.resource.get_action = Mock()
+        action_doc = {
+                "action_id": "ottonero",
+                "freezer_action": {
+                                "mode" : "mysql",
+                                "container": "freezer_backup_test"
+                },
+                "max_retries": 3
+            }
+        job_doc = {"job_actions": [action_doc.copy()],
+                   "description": "three actions backup"
+                   }
+        self.resource.get_action.return_value = action_doc.copy()
+        self.resource.update_actions_in_job('duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_not_called()
+
+    def test_update_actions_in_job_action_id_found_and_different_action(self):
+        self.resource.get_action = Mock()
+        action_doc = {
+                "action_id": "ottonero",
+                "freezer_action": {
+                                "mode" : "mysql",
+                                "container": "freezer_backup_test"
+                },
+                "max_retries": 3
+            }
+        job_doc = {"job_actions": [action_doc.copy()],
+                   "description": "three actions backup"
+                   }
+
+        found_action = {
+                "action_id": "ottonero",
+                "freezer_action": {
+                                "mode" : "mysql",
+                                "container": "different_drum"
+                },
+                "max_retries": 4
+            }
+
+        new_doc = action_doc.copy()
+        new_doc['action_id'] = ''
+        self.resource.get_action.return_value = found_action
+        self.resource.update_actions_in_job('duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_called_with(user_id='duder',
+                                                   doc=new_doc)
+
+
 class TestJobsCollectionResource(unittest.TestCase):
 
     def setUp(self):
@@ -108,6 +208,7 @@ class TestJobsResource(unittest.TestCase):
         self.mock_req.stream.read.return_value = json.dumps(patch_doc)
         expected_result = {'job_id': fake_job_0_job_id,
                            'version': new_version}
+        self.resource.update_actions_in_job = Mock()
         self.resource.on_patch(self.mock_req, self.mock_req, fake_job_0_job_id)
         self.mock_db.update_job.assert_called_with(
             user_id=fake_job_0_user_id,
