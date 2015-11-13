@@ -42,6 +42,7 @@ class BackupMetadataDoc:
 
     def serialize(self):
         return {'backup_id': self.backup_id,
+                'backup_uuid': self.backup_uuid,
                 'user_id': self.user_id,
                 'user_name': self.user_name,
                 'backup_metadata': self.data}
@@ -61,6 +62,10 @@ class BackupMetadataDoc:
             self.data['time_stamp'],
             self.data['curr_backup_level']
         )
+
+    @property
+    def backup_uuid(self):
+        return uuid.uuid4().hex
 
 
 class JobDoc:
