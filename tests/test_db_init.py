@@ -363,6 +363,13 @@ class TestDbInit(unittest.TestCase):
         self.assertEquals(index, 'ohyes')
         self.assertEquals(replicas, 10)
 
+    def test_parse_config_file_return_False_values_when_no_config_fname(self):
+        host, port, index, replicas = parse_config_file(None)
+        self.assertEquals(host, None)
+        self.assertEquals(port, 0)
+        self.assertEquals(index, None)
+        self.assertEquals(replicas, 0)
+
     @patch('freezer_api.cmd.db_init.parse_config_file')
     def test_get_db_params_returns_args_parameters(self, mock_parse_config_file):
         mock_parse_config_file.return_value = (None, None, None, None   )
