@@ -215,6 +215,9 @@ job_schema = {
         "_version": {
             "id": "_version",
             "type": "integer"
+        },
+        "action_defaults": {
+            "$ref": "#/definitions/freezer_action"
         }
     },
     "additionalProperties": False,
@@ -304,6 +307,9 @@ job_patch_schema = {
         "_version": {
             "id": "_version",
             "type": "integer"
+        },
+        "action_defaults": {
+            "$ref": "#/definitions/freezer_action"
         }
     },
     "additionalProperties": False
