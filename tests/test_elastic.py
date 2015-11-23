@@ -119,15 +119,32 @@ class TypeManager(unittest.TestCase):
         self.assertRaises(DocumentExists, self.type_manager.insert, doc=test_doc)
         self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None, version=5)
 
-    def test_delete(self):
-        doc_id='mydocid345'
-        res = self.type_manager.delete(user_id='my_user_id', doc_id=doc_id)
-        self.assertEqual(res, doc_id)
-
-    def test_delete_fails(self):
-        self.mock_es.delete_by_query.side_effect = Exception('regular test failure')
-        doc_id='mydocid345'
+    @patch('freezer_api.storage.elastic.es_helpers')
+    def test_delete_raises_StorageEngineError_on_scan_exception(self, mock_helpers):
+        doc_id = 'mydocid345'
+        mock_helpers.scan.side_effect = Exception('regular test failure')
         self.assertRaises(StorageEngineError, self.type_manager.delete, user_id='my_user_id', doc_id=doc_id)
+
+    @patch('freezer_api.storage.elastic.es_helpers')
+    def test_delete_raises_StorageEngineError_on_delete_exception(self, mock_helpers):
+        doc_id = 'mydocid345'
+        mock_helpers.scan.return_value = [{'_id': 'cicciopassamilolio'}]
+        self.mock_es.delete.side_effect = Exception('regular test failure')
+        self.assertRaises(StorageEngineError, self.type_manager.delete, user_id='my_user_id', doc_id=doc_id)
+
+    @patch('freezer_api.storage.elastic.es_helpers')
+    def test_delete_return_none_when_nothing_is_deleted(self, mock_helpers):
+        doc_id = 'mydocid345'
+        mock_helpers.scan.return_value = []
+        res = self.type_manager.delete(user_id='my_user_id', doc_id=doc_id)
+        self.assertIsNone(res)
+
+    @patch('freezer_api.storage.elastic.es_helpers')
+    def test_delete_return_correct_id_on_success(self, mock_helpers):
+        doc_id = 'mydocid345'
+        mock_helpers.scan.return_value = [{'_id': 'cicciopassamilolio'}]
+        res = self.type_manager.delete(user_id='my_user_id', doc_id=doc_id)
+        self.assertEqual(res, 'cicciopassamilolio')
 
 
 class TestBackupManager(unittest.TestCase):
