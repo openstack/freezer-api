@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 import elasticsearch
+from elasticsearch import helpers as es_helpers
 
 import logging
 import uuid
@@ -110,13 +111,20 @@ class TypeManager:
     def delete(self, user_id, doc_id):
         query_dsl = self.get_search_query(user_id, doc_id)
         try:
-            self.es.delete_by_query(index=self.index,
-                                    doc_type=self.doc_type,
-                                    body=query_dsl)
+            results = es_helpers.scan(self.es, index=self.index,
+                                      doc_type=self.doc_type, query=query_dsl)
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
-                message=_('Delete operation failed: %s') % e)
-        return doc_id
+                message=_('Scan operation failed: %s') % e)
+        id = None
+        for res in results:
+            id = res.get('_id')
+            try:
+                self.es.delete(index=self.index, doc_type=self.doc_type, id=id)
+            except Exception as e:
+                raise freezer_api_exc.StorageEngineError(
+                    message=_('Delete operation failed: %s') % e)
+        return id
 
 
 class BackupTypeManager(TypeManager):
