@@ -87,7 +87,7 @@ class ElastichsearchEngine(object):
             return
 
         url = '{0}/{1}/_settings'.format(self.es_url, self.es_index)
-        body_dict = {"number_of_replicas": int(self.args.replicas)}
+        body_dict = {"number_of_replicas": int(n)}
         self.verbose_print('PUT {0}\n{1}'.format(url, body_dict))
         r = requests.put(url, data=json.dumps(body_dict))
         self.verbose_print("response: {0}".format(r))
