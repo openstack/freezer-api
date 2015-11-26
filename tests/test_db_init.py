@@ -17,6 +17,7 @@ limitations under the License.
 
 import os
 import unittest
+import json
 from mock import Mock, patch
 
 import requests
@@ -292,7 +293,7 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.assertEquals(self.es_manager.exit_code, os.EX_OK)
 
     @patch('freezer_api.cmd.db_init.requests')
-    def test_askput_number_of_replicas_returns_none_on_success(self, mock_requests):
+    def test_askput_number_of_replicas_uses_correct_number(self, mock_requests):
         self.mock_args.test_only = False
         self.es_manager.proceed = Mock()
         self.es_manager.proceed.return_value = True
@@ -301,6 +302,8 @@ class TestElasticsearchEngine(unittest.TestCase):
         mock_requests.put.return_value = self.mock_resp
         res = self.es_manager.askput_number_of_replicas(4)
         self.assertIsNone(res)
+        mock_requests.put.assert_called_once_with('http://test:9333/freezerindex/_settings',
+                                                  data=json.dumps({"number_of_replicas": 4}))
         self.assertEquals(self.es_manager.exit_code, os.EX_OK)
 
     @patch('freezer_api.cmd.db_init.requests')
