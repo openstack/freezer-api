@@ -204,7 +204,8 @@ class TestJobsResource(unittest.TestCase):
         new_version = random.randint(0, 99)
         self.mock_db.update_job.return_value = new_version
         patch_doc = {'some_field': 'some_value',
-                     'because': 'size_matters'}
+                     'because': 'size_matters',
+                     'job_schedule': {}}
         self.mock_req.stream.read.return_value = json.dumps(patch_doc)
         expected_result = {'job_id': fake_job_0_job_id,
                            'version': new_version}
@@ -472,3 +473,22 @@ class TestJobs(unittest.TestCase):
     def test_execute_raises_BadDataFormat_when_event_not_implemented(self):
         job = v1_jobs.Job({})
         self.assertRaises(BadDataFormat, job.execute_event, 'smile', 'my_params')
+
+    def test_expand_action_defaults(self):
+        job_doc = {
+            'action_defaults': {'that_field': 'that_value'},
+            'job_actions': [
+                {'freezer_action': {'not_that_field': 'some_value'}},
+                {'freezer_action': {'that_field': 'another_value'}}
+            ]
+        }
+        expected_job_doc = {
+            'job_actions': [
+                {'freezer_action': {'not_that_field': 'some_value',
+                                    'that_field': 'that_value'}},
+                {'freezer_action': {'that_field': 'another_value'}}
+            ],
+            'job_schedule': {}
+        }
+        job = v1_jobs.Job(job_doc)
+        self.assertEqual(job.doc, expected_job_doc)

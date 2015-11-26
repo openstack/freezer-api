@@ -79,14 +79,14 @@ class JobsCollectionResource(JobsBaseResource):
     def on_post(self, req, resp):
         # POST /v1/jobs    Creates job entry
         try:
-            doc = self.json_body(req)
+            job = Job(self.json_body(req))
         except KeyError:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
 
         user_id = req.get_header('X-User-ID')
-        self.update_actions_in_job(user_id, doc)
-        job_id = self.db.add_job(user_id=user_id, doc=doc)
+        self.update_actions_in_job(user_id, job.doc)
+        job_id = self.db.add_job(user_id=user_id, doc=job.doc)
         resp.status = falcon.HTTP_201
         resp.body = {'job_id': job_id}
 
@@ -116,21 +116,21 @@ class JobsResource(JobsBaseResource):
     def on_patch(self, req, resp, job_id):
         # PATCH /v1/jobs/{job_id}     updates the specified job
         user_id = req.get_header('X-User-ID') or ''
-        doc = self.json_body(req)
-        self.update_actions_in_job(user_id, doc)
+        job = Job(self.json_body(req))
+        self.update_actions_in_job(user_id, job.doc)
         new_version = self.db.update_job(user_id=user_id,
                                          job_id=job_id,
-                                         patch_doc=doc)
+                                         patch_doc=job.doc)
         resp.body = {'job_id': job_id, 'version': new_version}
 
     def on_post(self, req, resp, job_id):
         # PUT /v1/jobs/{job_id}     creates/replaces the specified job
         user_id = req.get_header('X-User-ID') or ''
-        doc = self.json_body(req)
-        self.update_actions_in_job(user_id, doc)
+        job = Job(self.json_body(req))
+        self.update_actions_in_job(user_id, job.doc)
         new_version = self.db.replace_job(user_id=user_id,
                                           job_id=job_id,
-                                          doc=doc)
+                                          doc=job.doc)
         resp.status = falcon.HTTP_201
         resp.body = {'job_id': job_id, 'version': new_version}
 
@@ -215,6 +215,8 @@ class Job(object):
     """
     def __init__(self, doc):
         self.doc = doc
+        if self.doc.get("action_defaults") is not None:
+            self.expand_default_properties()
         self.event_result = ''
         self.need_update = False
         if 'job_schedule' not in doc:
@@ -282,3 +284,14 @@ class Job(object):
         """
         for action_doc in self.doc.get('job_actions', []):
             yield Action(action_doc)
+
+    def expand_default_properties(self):
+        action_defaults = self.doc.pop("action_defaults")
+        if isinstance(action_defaults, dict):
+            for key, val in action_defaults.items():
+                for action in self.doc.get("job_actions"):
+                    if action["freezer_action"].get(key) is None:
+                        action["freezer_action"][key] = val
+        else:
+            raise freezer_api_exc.BadDataForma(message="action_defaults should"
+                                                       "be a dictionary")

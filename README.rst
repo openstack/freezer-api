@@ -566,6 +566,71 @@ Finished job with result::
     }
 
 
+8.2 Actions default value
+-------------------------
+
+It is possible to define properties that span accross multiple actions
+This allow not to rewrite values that might be the same in multiple actions.
+If properties are specificaly set in one action, then the specified value is the one used.
+
+Example::
+    "job": {
+        "action_defaults": {
+            "log_file": "/tmp/freezer_tmp_log",
+            "container": "my_backup_container"
+        },
+        "job_actions":
+            [
+                {"freezer_action":{
+                    "action" : "backup",
+                    "mode" : "fs",
+                    "src_file" : "/home/user1/file",
+                    "backup_name" : "user1_backup"}},
+                {"freezer_action":{
+                    "action" : "backup",
+                    "mode" : "fs",
+                    "src_file" : "/home/user2/file",
+                    "backup_name" : "user2_backup"}},
+                {"freezer_action":{
+                    "action" : "backup",
+                    "mode" : "fs",
+                    "src_file" : "/home/user3/file",
+                    "backup_name" : "user2_backup",
+                    "log_file" : "/home/user3/specific_log_file" }}
+            ]
+        "description": "scheduled one shot"
+    }
+
+
+Is Equivalent to::
+    "job": {
+        "job_actions":
+            [
+                {"freezer_action":{
+                    "action" : "backup",
+                    "mode" : "fs",
+                    "src_file" : "/home/user1/file",
+                    "backup_name" : "user1_backup",
+                    "log_file": "/tmp/freezer_tmp_log",
+                    "container": "my_backup_container"}},
+                {"freezer_action":{
+                    "action" : "backup",
+                    "mode" : "fs",
+                    "src_file" : "/home/user2/file",
+                    "backup_name" : "user2_backup",
+                    "log_file": "/tmp/freezer_tmp_log",
+                    "container": "my_backup_container"}},
+                {"freezer_action":{
+                    "action" : "backup",
+                    "mode" : "fs",
+                    "src_file" : "/home/user3/file",
+                    "backup_name" : "user2_backup",
+                    "log_file" : "/home/user3/specific_log_file",
+                    "container": "my_backup_container"}},
+            ]
+        "description": "scheduled one shot"
+    }
+
 
 9 Actions
 =========
