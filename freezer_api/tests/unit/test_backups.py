@@ -23,7 +23,7 @@ import falcon
 from freezer_api.api.v1 import backups
 from freezer_api.common.exceptions import *
 
-from common import *
+from .common import *
 
 
 class TestBackupsCollectionResource(unittest.TestCase):

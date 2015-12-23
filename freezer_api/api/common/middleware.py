@@ -27,7 +27,7 @@ def json_translator(req, app):
         if isinstance(resp.body, dict):
             try:
                 resp.body = json.dumps(resp.body)
-            except:
+            except Exception:
                 raise freezer_api_exc.FreezerAPIException(
                     'Internal server error: malformed json reply')
     return resp

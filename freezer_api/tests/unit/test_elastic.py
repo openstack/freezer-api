@@ -22,7 +22,7 @@ from mock import Mock, patch
 from elasticsearch import TransportError
 
 from freezer_api.storage import elastic
-from common import *
+from .common import *
 from freezer_api.common.exceptions import *
 
 

@@ -21,7 +21,7 @@ from mock import Mock, patch
 import random
 import falcon
 
-from common import *
+from .common import *
 from freezer_api.common.exceptions import *
 
 from freezer_api.api.v1 import sessions as v1_sessions

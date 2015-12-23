@@ -16,8 +16,10 @@ limitations under the License.
 """
 
 import falcon
-from freezer_api.common import exceptions as freezer_api_exc
+from six import iteritems
+
 from freezer_api.api.common import resource
+from freezer_api.common import exceptions as freezer_api_exc
 import time
 
 
@@ -114,8 +116,8 @@ class SessionsAction(resource.BaseResource):
         doc = self.json_body(req)
 
         try:
-            action, params = next(doc.iteritems())
-        except:
+            action, params = next(iteritems(doc))
+        except Exception:
             raise freezer_api_exc.BadDataFormat("Bad action request format")
 
         session_doc = self.db.get_session(user_id=user_id,
@@ -231,7 +233,7 @@ class Session(resource.BaseResource):
         """
         check the status of all the jobs and return the overall session result
         """
-        for job in self.doc['jobs'].itervalues():
+        for job in self.doc['jobs'].values():
             if job['status'] != 'completed':
                 return 'running'
             if job['result'] != 'success':
@@ -241,7 +243,7 @@ class Session(resource.BaseResource):
     def set_job_end(self, job_id, result, timestamp):
         try:
             job = self.doc['jobs'][job_id]
-        except:
+        except Exception:
             raise freezer_api_exc.BadDataFormat('job_id not found in session')
         job['status'] = 'completed'
         job['result'] = result
@@ -250,7 +252,7 @@ class Session(resource.BaseResource):
     def set_job_start(self, job_id, timestamp):
         try:
             job = self.doc['jobs'][job_id]
-        except:
+        except Exception:
             raise freezer_api_exc.BadDataFormat('job_id not found in session')
         job['status'] = 'running'
         job['result'] = ''

@@ -17,7 +17,7 @@ from mock import Mock, patch
 
 import falcon
 
-from common import *
+from .common import *
 from freezer_api.common import exceptions
 
 

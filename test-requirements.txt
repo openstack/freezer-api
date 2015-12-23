@@ -1,11 +1,12 @@
 astroid<1.4.0 # breaks pylint 1.4.4
-coverage>=3.6 # Apache-2.0
-flake8>=2.2.4,<=2.4.1
-mock>=1.2
+flake8>2.4.1,<2.6.0 # MIT
 pylint==1.4.5 # GNU GPL v2
-
-# Not in global-requirements
-pytest
-pytest-cov
-pytest-xdist
-
+hacking>=0.10.2,<0.11 # Apache-2.0
+coverage>=3.6 # Apache-2.0
+discover # BSD
+mock>=1.2 # BSD
+oslosphinx>=2.5.0,!=3.4.0 # Apache-2.0
+python-subunit>=0.0.18 # Apache-2.0/BSD
+sphinx>=1.1.2,!=1.2.0,!=1.3b1,<1.3 # BSD
+testrepository>=0.0.18 # Apache-2.0/BSD
+testtools>=1.4.0 # MIT

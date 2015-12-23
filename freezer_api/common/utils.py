@@ -18,8 +18,8 @@ import jsonschema
 import time
 import uuid
 
-from freezer_api.common import json_schemas
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.common import json_schemas
 
 
 class BackupMetadataDoc:
@@ -36,7 +36,7 @@ class BackupMetadataDoc:
         try:
             assert (self.backup_id is not '')
             assert (self.user_id is not '')
-        except:
+        except Exception:
             return False
         return True
 

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
+import copy 
+
 
 freezer_action_properties = {
     "action": {
@@ -330,11 +332,17 @@ additional_action_properties = {
 }
 
 
+tmp_prop = freezer_action_properties.items()
+tmp_add_prop = additional_action_properties.items()
+joined_properties = {}
+joined_properties.update(tmp_prop)
+joined_properties.update(tmp_add_prop)
+
+
 action_schema = {
     "id": "/",
     "type": "object",
-    "properties": dict(freezer_action_properties.items() +
-                       additional_action_properties.items()),
+    "properties": joined_properties,
     "additionalProperties": True,
     "required": [
         "action_id",
@@ -342,12 +350,10 @@ action_schema = {
     ]
 }
 
-
 action_patch_schema = {
     "id": "/",
     "type": "object",
-    "properties": dict(freezer_action_properties.items() +
-                       additional_action_properties.items()),
+    "properties": joined_properties,
     "additionalProperties": True
 }
 

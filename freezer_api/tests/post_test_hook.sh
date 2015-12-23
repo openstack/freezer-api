@@ -18,7 +18,7 @@
 # Install packages from test-requirements.txt
 sudo pip install -r /opt/stack/new/freezer-api/test-requirements.txt
 
-cd /opt/stack/new/freezer-api/tests
+cd /opt/stack/new/freezer-api/freezer_api/tests
 echo 'Running freezer-api integration tests'
 # Here it goes the command to execute integration tests
 #sudo ./run_tests.sh
