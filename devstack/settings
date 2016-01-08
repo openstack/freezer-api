@@ -23,7 +23,7 @@ FREEZER_API_CONF=$FREEZER_API_CONF_DIR/freezer-api.conf
 FREEZER_API_LOG_DIR=$DEST/logs
 
 # Freezer API repository
-FREEZER_API_REPO=${FREEZER_API_REPO:-${GIT_BASE}/stackforge/freezer-api.git}
+FREEZER_API_REPO=${FREEZER_API_REPO:-${GIT_BASE}/openstack/freezer-api.git}
 FREEZER_API_BRANCH=${FREEZER_API_BRANCH:-master}
 
 # supported servers: "apache2", "uwsgi"
