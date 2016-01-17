@@ -15,7 +15,7 @@
 
 set -ex
 
-# Install barbican devstack integration
+# Install freezer devstack integration
 export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api"
 
 $BASE/new/devstack-gate/devstack-vm-gate.sh

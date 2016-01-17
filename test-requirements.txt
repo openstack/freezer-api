@@ -1,3 +1,4 @@
+astroid<1.4.0 # breaks pylint 1.4.4
 coverage
 flake8>=2.2.4,<=2.4.1
 mock>=1.2
