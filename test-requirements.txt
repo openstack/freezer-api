@@ -1,8 +1,10 @@
 astroid<1.4.0 # breaks pylint 1.4.4
-coverage
+coverage>=3.6 # Apache-2.0
 flake8>=2.2.4,<=2.4.1
 mock>=1.2
-pylint==1.4.4 # GNU GPL v2
+pylint==1.4.5 # GNU GPL v2
+
+# Not in global-requirements
 pytest
 pytest-cov
 pytest-xdist
