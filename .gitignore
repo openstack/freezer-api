@@ -15,8 +15,11 @@ coverage.xml
 *.py[co]
 .DS_Store
 *.log
+.cache
 .testrepository
 subunit.log
+AUTHORS
+ChangeLog
 
 # Django files that get created during the test runs
 .secret_key_store
@@ -24,4 +27,3 @@ subunit.log
 
 # Coverage data
 .coverage.*
-
