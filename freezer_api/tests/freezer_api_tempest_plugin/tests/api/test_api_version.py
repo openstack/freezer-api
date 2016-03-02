@@ -1,5 +1,4 @@
-#!/bin/bash
-#(c) Copyright 2014,2015 Hewlett-Packard Development Company, L.P.
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This script is executed inside post_test_hook function in devstack gate.
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+from tempest import test
 
-# Install packages from test-requirements.txt
-sudo pip install -r /opt/stack/new/freezer-api/test-requirements.txt
+class TestFreezerApiVersion(base.BaseFreezerApiTest):
 
-cd /opt/stack/new/freezer-api/tests
-echo 'Running freezer-api integration tests'
-# Here it goes the command to execute integration tests
-#sudo ./run_tests.sh
+    @test.attr(type="gate")
+    def test_api_version(self):
+        # See if tempest plugin tests run.
+        self.assertEqual(1, 1, 'First test case')

@@ -16,11 +16,13 @@ limitations under the License.
 
 """
 
+from __future__ import print_function
 import argparse
-import ConfigParser
 import json
 import os
 import re
+from six.moves import builtins
+from six.moves import configparser
 import sys
 
 import requests
@@ -76,7 +78,7 @@ class ElastichsearchEngine(object):
 
     def askput_number_of_replicas(self, n):
         if self.args.test_only:
-            print "Number of replicas don't match"
+            print("Number of replicas don't match")
             self.exit_code = os.EX_DATAERR
             return
         prompt_message = ('Number of replicas needs to be '
@@ -92,7 +94,7 @@ class ElastichsearchEngine(object):
         r = requests.put(url, data=json.dumps(body_dict))
         self.verbose_print("response: {0}".format(r))
         if r.status_code == requests.codes.OK:
-            print "Replica number set to {0}".format(self.args.replicas)
+            print("Replica number set to {0}".format(self.args.replicas))
         else:
             raise NumberOfReplicasException('Error setting the replica '
                                             'number, {0}: {1}'
@@ -100,9 +102,9 @@ class ElastichsearchEngine(object):
 
     def put_mappings(self, mappings):
         self.check_index_exists()
-        for es_type, mapping in mappings.iteritems():
+        for es_type, mapping in mappings.items():
             if self.mapping_match(es_type, mapping):
-                print '{0}/{1} MATCHES'.format(self.es_index, es_type)
+                print('{0}/{1} MATCHES'.format(self.es_index, es_type))
             else:
                 self.askput_mapping(es_type, mapping)
         return self.exit_code
@@ -131,7 +133,7 @@ class ElastichsearchEngine(object):
 
     def askput_mapping(self, es_type, mapping):
         if self.args.test_only:
-            print '{0}/{1} DOES NOT MATCH'.format(self.es_index, es_type)
+            print('{0}/{1} DOES NOT MATCH'.format(self.es_index, es_type))
             self.exit_code = os.EX_DATAERR
             return
         prompt_message = ('{0}/{1}/{2} needs to be updated. '
@@ -149,7 +151,7 @@ class ElastichsearchEngine(object):
             self.verbose_print('Unable to merge mappings.')
             self.verbose_print(e, 2)
         else:
-            print "Mappings updated"
+            print("Mappings updated")
             return
 
         if self.args.yes and not self.args.erase:
@@ -189,7 +191,7 @@ class ElastichsearchEngine(object):
         r = requests.put(url, data=json.dumps(mapping))
         self.verbose_print("response: {0}".format(r))
         if r.status_code == requests.codes.OK:
-            print "Type {0} mapping created".format(url)
+            print("Type {0} mapping created".format(url))
         else:
             raise MergeMappingException('Type mapping creation error {0}: '
                                         '{1}'.format(r.status_code, r.text))
@@ -198,7 +200,7 @@ class ElastichsearchEngine(object):
         if assume_yes:
             return True
         while True:
-            selection = raw_input(message)
+            selection = builtins.input(message)
             if selection.upper() == 'Y':
                 return True
             elif selection.upper() == 'N':
@@ -275,7 +277,7 @@ def parse_config_file(fname):
 
     host, port, index, number_of_replicas = None, 0, None, 0
 
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.read(fname)
     try:
         if config.has_option('storage', 'endpoint'):
@@ -288,15 +290,15 @@ def parse_config_file(fname):
         if match:
             host = match.group(1)
             port = int(match.group(2))
-    except:
+    except Exception:
         pass
     try:
         index = config.get('storage', 'index')
-    except:
+    except Exception:
         pass
     try:
         number_of_replicas = int(config.get('storage', 'number_of_replicas'))
-    except:
+    except Exception:
         pass
     return host, port, index, number_of_replicas
 
@@ -313,7 +315,7 @@ def get_db_params(args):
     conf_fname = args.config_file or find_config_file()
 
     if args.verbose:
-        print "using config file: {0}".format(conf_fname)
+        print("using config file: {0}".format(conf_fname))
 
     conf_host, conf_port, conf_db_index, number_of_replicas = \
         parse_config_file(conf_fname)
@@ -364,8 +366,8 @@ def main():
                                       es_index=elasticsearch_index,
                                       args=args)
     if args.verbose:
-        print "  db url: {0}".format(elasticsearch_url)
-        print "db index: {0}".format(elasticsearch_index)
+        print("  db url: {0}".format(elasticsearch_url))
+        print("db index: {0}".format(elasticsearch_index))
 
     if args.select_mapping:
         mappings = {args.select_mapping: mappings[args.select_mapping]}
@@ -374,7 +376,7 @@ def main():
         es_manager.put_mappings(mappings)
         es_manager.set_number_of_replicas(number_of_replicas)
     except Exception as e:
-        print "ERROR {0}".format(e)
+        print("ERROR {0}".format(e))
         return os.EX_DATAERR
 
     return es_manager.exit_code

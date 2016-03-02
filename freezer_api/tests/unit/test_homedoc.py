@@ -31,6 +31,7 @@ class TestHomedocResource(unittest.TestCase):
 
     def test_on_get_return_resources_information(self):
         self.resource.on_get(self.req, self.req)
-        result = json.loads(self.req.data)
+        result = json.loads(self.req.data.decode('utf-8'))
+        print("TEST HIME DOC RESULT: {}".format(result))
         expected_result = v1.homedoc.HOME_DOC
         self.assertEquals(result, expected_result)

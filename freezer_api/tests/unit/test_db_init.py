@@ -16,12 +16,12 @@ limitations under the License.
 """
 
 import os
+from six.moves import builtins
 import unittest
 import json
 from mock import Mock, patch
 
 import requests
-
 from freezer_api.cmd.db_init import (ElastichsearchEngine,
                                      get_args,
                                      find_config_file,
@@ -182,13 +182,13 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.assertRaises(Exception, self.es_manager.put_mapping, 'jobs', self.test_mappings['jobs'])
 
     def test_proceed_returns_true_on_user_y(self):
-        with patch('__builtin__.raw_input', return_value='y') as _raw_input:
+        with patch('six.moves.builtins.input', return_value='y') as _raw_input:
             res = self.es_manager.proceed('fancy a drink ?')
             self.assertTrue(res)
             _raw_input.assert_called_once_with('fancy a drink ?')
 
     def test_proceed_returns_false_on_user_n(self):
-        with patch('__builtin__.raw_input', return_value='n') as _raw_input:
+        with patch('six.moves.builtins.input', return_value='n') as _raw_input:
             res = self.es_manager.proceed('are you drunk ?')
             self.assertFalse(res)
             _raw_input.assert_called_once_with('are you drunk ?')
@@ -353,7 +353,7 @@ class TestDbInit(unittest.TestCase):
         res = find_config_file()
         self.assertEquals(DEFAULT_CONF_PATH, res)
 
-    @patch('freezer_api.cmd.db_init.ConfigParser.ConfigParser')
+    @patch('freezer_api.cmd.db_init.configparser.ConfigParser')
     def test_parse_config_file_return_config_file_params(self, mock_ConfigParser):
         mock_config = Mock()
         mock_ConfigParser.return_value = mock_config

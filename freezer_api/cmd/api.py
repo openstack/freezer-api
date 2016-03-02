@@ -15,11 +15,12 @@ limitations under the License.
 
 """
 
+from __future__ import print_function
+import falcon
 import logging
 import os
 import sys
 
-import falcon
 from keystonemiddleware import auth_token
 from oslo_config import cfg
 from wsgiref import simple_server
@@ -28,7 +29,7 @@ from freezer_api.api.common import middleware
 from freezer_api.api import v1
 from freezer_api.api import versions
 
-from freezer_api.common._i18n import _, _LI, _LW
+from freezer_api.common import _i18n
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import log
@@ -55,7 +56,7 @@ def get_application(db):
     if 'keystone_authtoken' in config.CONF:
         app = auth_token.AuthProtocol(app, {})
     else:
-        logging.warning(_LW("keystone authentication disabled"))
+        logging.warning(_i18n._LW("keystone authentication disabled"))
 
     app = middleware.HealthApp(app=app, path='/v1/health')
 
@@ -65,15 +66,15 @@ config_file = '/etc/freezer-api.conf'
 config_files_list = [config_file] if os.path.isfile(config_file) else []
 config.parse_args(args=[], default_config_files=config_files_list)
 log.setup()
-logging.info(_LI("Freezer API starting"))
-logging.info(_LI("Freezer config file(s) used: %s")
+logging.info(_i18n._LI("Freezer API starting"))
+logging.info(_i18n._LI("Freezer config file(s) used: %s")
              % ', '.join(cfg.CONF.config_file))
 try:
     db = driver.get_db()
     application = get_application(db)
 except Exception as err:
-    message = _('Unable to start server: %s ') % err
-    print message
+    message = _i18n._('Unable to start server: %s ') % err
+    print(message)
     logging.fatal(message)
     sys.exit(1)
 
@@ -86,14 +87,14 @@ def main():
         if ':' in ip:
             ip, port = ip.split(':')
     httpd = simple_server.make_server(ip, int(port), application)
-    message = _('Server listening on %(ip)s:%(port)s'
+    message = _i18n._('Server listening on %(ip)s:%(port)s'
                 % {'ip': ip, 'port': port})
-    print message
+    print(message)
     logging.info(message)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print _("\nThanks, Bye")
+        print(_i18n._("\nThanks, Bye"))
         sys.exit(0)
 
 

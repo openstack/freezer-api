@@ -22,7 +22,7 @@ from mock import Mock, patch
 from freezer_api.common import utils
 
 from freezer_api.common.exceptions import *
-from common import *
+from .common import *
 
 DATA_backup_metadata = {
     "container": "freezer_container",
@@ -114,8 +114,7 @@ class TestJobDoc(unittest.TestCase):
 
     def test_validate_ok_when_data_ok(self):
         job_doc = get_fake_job_0()
-        res = utils.JobDoc.validate(job_doc)
-        self.assertIsNone(res)
+        self.assertIsNone(utils.JobDoc.validate(job_doc))
 
     def test_validate_raises_BadDataFormat_when_doc_has_no_jobid(self):
         job_doc = get_fake_job_0()
@@ -184,8 +183,7 @@ class TestActionDoc(unittest.TestCase):
 
     def test_validate_ok_when_data_ok(self):
         action_doc = get_fake_action_0()
-        res = utils.ActionDoc.validate(action_doc)
-        self.assertIsNone(res)
+        self.assertIsNone(utils.ActionDoc.validate(action_doc))
 
     def test_validate_raises_BadDataFormat_when_doc_has_no_actionid(self):
         action_doc = get_fake_action_0()
@@ -241,8 +239,7 @@ class TestSessionDoc(unittest.TestCase):
 
     def test_validate_ok_when_data_ok(self):
         session_doc = get_fake_session_0()
-        res = utils.SessionDoc.validate(session_doc)
-        self.assertIsNone(res)
+        self.assertIsNone(utils.SessionDoc.validate(session_doc))
 
     def test_validate_raises_BadDataFormat_when_doc_has_no_sessionid(self):
         session_doc = get_fake_session_0()

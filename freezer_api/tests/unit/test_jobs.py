@@ -22,7 +22,7 @@ from mock import Mock, patch
 import random
 import json
 
-from common import *
+from .common import *
 from freezer_api.common.exceptions import *
 
 from freezer_api.api.v1 import jobs as v1_jobs
@@ -459,13 +459,13 @@ class TestJobs(unittest.TestCase):
         mock_start.assert_called_once_with('my_params')
 
     @patch.object(v1_jobs.Job, 'stop')
-    def test_execute_start_event(self, mock_stop):
+    def test_execute_stop_event(self, mock_stop):
         job = v1_jobs.Job({})
         res = job.execute_event('stop', 'my_params')
         mock_stop.assert_called_once_with('my_params')
 
     @patch.object(v1_jobs.Job, 'abort')
-    def test_execute_start_event(self, mock_abort):
+    def test_execute_abort_event(self, mock_abort):
         job = v1_jobs.Job({})
         res = job.execute_event('abort', 'my_params')
         mock_abort.assert_called_once_with('my_params')

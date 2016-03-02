@@ -33,3 +33,6 @@ FREEZER_API_SERVICE_PROTOCOL=http
 FREEZER_API_PORT=9090
 
 enable_service freezer-api
+
+# Tell Tempest this project is present
+TEMPEST_SERVICES+=,freezer-api

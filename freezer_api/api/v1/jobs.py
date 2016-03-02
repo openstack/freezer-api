@@ -16,10 +16,11 @@ limitations under the License.
 """
 
 import falcon
+from six import iteritems
 import uuid
 
-from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.api.common import resource
+from freezer_api.common import exceptions as freezer_api_exc
 
 
 class JobsBaseResource(resource.BaseResource):
@@ -155,8 +156,8 @@ class JobsEvent(resource.BaseResource):
         doc = self.json_body(req)
 
         try:
-            event, params = next(doc.iteritems())
-        except:
+            event, params = next(iteritems(doc))
+        except Exception:
             raise freezer_api_exc.BadDataFormat("Bad event request format")
 
         job_doc = self.db.get_job(user_id=user_id,
@@ -288,7 +289,7 @@ class Job(object):
     def expand_default_properties(self):
         action_defaults = self.doc.pop("action_defaults")
         if isinstance(action_defaults, dict):
-            for key, val in action_defaults.items():
+            for key, val in iteritems(action_defaults):
                 for action in self.doc.get("job_actions"):
                     if action["freezer_action"].get(key) is None:
                         action["freezer_action"][key] = val

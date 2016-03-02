@@ -16,8 +16,8 @@ limitations under the License.
 """
 
 
-from oslo_config import cfg
 import logging
+from oslo_config import cfg
 
 
 logging_cli_opts = [
@@ -54,7 +54,7 @@ CONF.register_cli_opts(logging_cli_opts)
 def setup():
     try:
         log_file = CONF['log_file']         # cli provided
-    except:
+    except Exception:
         log_file = CONF['logging_file']     # .conf file
     logging.basicConfig(
         filename=log_file,

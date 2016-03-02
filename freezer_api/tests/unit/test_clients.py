@@ -18,7 +18,7 @@ from mock import Mock, patch
 import falcon
 
 
-from common import *
+from .common import *
 from freezer_api.common.exceptions import *
 
 from freezer_api.api.v1 import clients as v1_clients

@@ -20,7 +20,7 @@ import os
 
 from oslo_config import cfg
 
-from freezer_api.common._i18n import _, _LI
+from freezer_api.common import _i18n
 from freezer_api.storage import elastic
 
 
@@ -84,8 +84,8 @@ def get_db():
     opts = get_options()
     db_engine = opts.pop('db')
     if db_engine == 'elasticsearch':
-        logging.debug(_LI('Elastichsearch config options: %s') % str(opts))
+        logging.debug(_i18n._LI('Elastichsearch config options: %s') % str(opts))
         db = elastic.ElasticSearchEngine(**opts)
     else:
-        raise Exception(_('Database Engine %s not supported') % db_engine)
+        raise Exception(_i18n._('Database Engine %s not supported') % db_engine)
     return db
