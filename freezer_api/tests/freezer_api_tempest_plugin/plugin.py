@@ -33,6 +33,9 @@ class FreezerApiTempestPlugin(plugins.TempestPlugin):
         config.register_opt_group(
             conf, freezer_api_config.service_available_group,
             freezer_api_config.ServiceAvailableGroup)
+        config.register_opt_group(conf, freezer_api_config.freezer_api_group,
+                                  freezer_api_config.FreezerApiGroup)
 
     def get_opt_lists(self):
-        pass
+        return [(freezer_api_config.frezer_api_group.name,
+                 freezer_api_config.FreezerApiGroup)]

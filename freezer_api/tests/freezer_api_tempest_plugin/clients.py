@@ -1,5 +1,4 @@
-#!/bin/bash
-# (c) Copyright 2014,2015 Hewlett-Packard Development Company, L.P.
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,10 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-set -ex
+from tempest import clients
 
-# Install freezer devstack integration
-export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api"
+from freezer_api.tests.freezer_api_tempest_plugin.services import \
+    freezer_api_client
 
-# Invoke default behavior.
-$BASE/new/devstack-gate/devstack-vm-gate.sh
+
+class Manager(clients.Manager):
+    def __init__(self, credentials=None, service=None):
+        super(Manager, self).__init__(credentials, service)
+        self.freezer_api_client = freezer_api_client.FreezerApiClient(
+            self.auth_provider)

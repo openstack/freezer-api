@@ -13,12 +13,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# Called by gate-freezer-api-devstack-dsvm job.
+
 # This script is executed inside post_test_hook function in devstack gate.
+
+echo 'Running freezer-api post_test_hook'
 
 # Install packages from test-requirements.txt
 sudo pip install -r /opt/stack/new/freezer-api/test-requirements.txt
 
 cd /opt/stack/new/freezer-api/freezer_api/tests
-echo 'Running freezer-api integration tests'
 # Here it goes the command to execute integration tests
 #sudo ./run_tests.sh

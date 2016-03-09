@@ -1,5 +1,6 @@
-#!/bin/bash
-# (c) Copyright 2014,2015 Hewlett-Packard Development Company, L.P.
+#!/bin/bash -xe
+
+# (C) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,10 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-set -ex
+# Called by gate-freezer-api-devstack-dsvm job.
 
-# Install freezer devstack integration
-export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api"
+echo 'Running freezer-api pre_test_hook'
 
-# Invoke default behavior.
-$BASE/new/devstack-gate/devstack-vm-gate.sh
+# Nothing to do. Can be used when needed.
