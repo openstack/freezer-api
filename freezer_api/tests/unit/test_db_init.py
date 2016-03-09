@@ -16,7 +16,6 @@ limitations under the License.
 """
 
 import os
-from six.moves import builtins
 import unittest
 import json
 from mock import Mock, patch
@@ -182,13 +181,17 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.assertRaises(Exception, self.es_manager.put_mapping, 'jobs', self.test_mappings['jobs'])
 
     def test_proceed_returns_true_on_user_y(self):
-        with patch('six.moves.builtins.input', return_value='y') as _raw_input:
+        # This really mocks 'six.moves.input'. Because of the way mock and six
+        # replace function, we need to mock it at the source.
+        with patch('freezer_api.cmd.db_init.input', return_value='y') as _raw_input:
             res = self.es_manager.proceed('fancy a drink ?')
             self.assertTrue(res)
             _raw_input.assert_called_once_with('fancy a drink ?')
 
     def test_proceed_returns_false_on_user_n(self):
-        with patch('six.moves.builtins.input', return_value='n') as _raw_input:
+        # This really mocks 'six.moves.input'. Because of the way mock and six
+        # replace function, we need to mock it at the source.
+        with patch('freezer_api.cmd.db_init.input', return_value='n') as _raw_input:
             res = self.es_manager.proceed('are you drunk ?')
             self.assertFalse(res)
             _raw_input.assert_called_once_with('are you drunk ?')

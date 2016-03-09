@@ -21,8 +21,8 @@ import argparse
 import json
 import os
 import re
-from six.moves import builtins
 from six.moves import configparser
+from six.moves import input
 import sys
 
 import requests
@@ -200,7 +200,7 @@ class ElastichsearchEngine(object):
         if assume_yes:
             return True
         while True:
-            selection = builtins.input(message)
+            selection = input(message)
             if selection.upper() == 'Y':
                 return True
             elif selection.upper() == 'N':
