@@ -193,12 +193,11 @@ job_schema = {
         },
         "session_id": {
             "id": "session_id",
-            "pattern": "^[\w-]+$",
+            "pattern": "^[\w-]*$",
             "type": "string"
         },
         "session_tag": {
             "id": "session_tag",
-            "pattern": "^[\w-]+$",
             "type": "integer"
         },
         "session_name": {
@@ -285,12 +284,11 @@ job_patch_schema = {
         },
         "session_id": {
             "id": "session_id",
-            "pattern": "^[\w-]+$",
+            "pattern": "^[\w-]*$",
             "type": "string"
         },
         "session_tag": {
             "id": "session_tag",
-            "pattern": "^[\w-]+$",
             "type": "integer"
         },
         "session_name": {
@@ -376,11 +374,11 @@ session_schema = {
             "type": "integer"
         },
         "time_started": {
-            "id": "session_tag",
+            "id": "time_started",
             "type": "integer"
         },
         "time_ended": {
-            "id": "session_tag",
+            "id": "time_ended",
             "type": "integer"
         },
     },
@@ -411,11 +409,11 @@ session_patch_schema = {
             "type": "integer"
         },
         "time_started": {
-            "id": "session_tag",
+            "id": "time_started",
             "type": "integer"
         },
         "time_ended": {
-            "id": "session_tag",
+            "id": "time_ended",
             "type": "integer"
         },
     },

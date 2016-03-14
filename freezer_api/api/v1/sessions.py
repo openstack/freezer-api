@@ -335,8 +335,10 @@ class SessionsJob(resource.BaseResource):
                                 doc=session_doc)
         job_update_doc = {
             'session_id': '',
-            'session_tag': '',
-            'job_event': 'stop'
+            'session_tag': 0,
+            'job_schedule': {
+                'event': 'stop'
+            }
         }
         self.db.update_job(user_id=user_id,
                            job_id=job_id,
