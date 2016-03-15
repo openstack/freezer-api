@@ -99,25 +99,25 @@ class TypeManager(unittest.TestCase):
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         res = self.type_manager.insert(doc=test_doc)
         self.assertEqual(res, (True, 15))
-        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None, version=5)
+        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None)
 
     def test_insert_raise_StorageEngineError_on_ES_Exception(self):
         self.mock_es.index.side_effect = Exception('regular test failure')
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         self.assertRaises(StorageEngineError, self.type_manager.insert, doc=test_doc)
-        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None, version=5)
+        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None)
 
     def test_insert_raise_StorageEngineError_on_ES_TransportError_exception(self):
         self.mock_es.index.side_effect = TransportError(500, 'regular test failure')
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         self.assertRaises(StorageEngineError, self.type_manager.insert, doc=test_doc)
-        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None, version=5)
+        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None)
 
     def test_insert_raise_DocumentExists_on_ES_TransportError409_exception(self):
         self.mock_es.index.side_effect = TransportError(409, 'regular test failure')
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         self.assertRaises(DocumentExists, self.type_manager.insert, doc=test_doc)
-        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None, version=5)
+        self.mock_es.index.assert_called_with(index='freezer', doc_type='base_doc_type', body=test_doc, id=None)
 
     @patch('freezer_api.storage.elastic.es_helpers')
     def test_delete_raises_StorageEngineError_on_scan_exception(self, mock_helpers):
