@@ -1,5 +1,6 @@
 """
 Copyright 2015 Hewlett-Packard
+(c) Copyright 2016 Hewlett Packard Enterprise Development Company LP
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -90,6 +91,30 @@ backups_mapping = {
                 "client_version": {
                     "type": "string",
                 },
+                "compression": {
+                    "type": "string",
+                },
+                "log_file": {
+                    "type": "string",
+                },
+                "proxy": {
+                    "type": "string",
+                },
+                "ssh_key": {
+                    "type": "string",
+                },
+                "ssh_username": {
+                    "type": "string",
+                },
+                "ssh_host": {
+                    "type": "string",
+                },
+                "ssh_port": {
+                    "type": "long",
+                },
+                "storage": {
+                    "type": "string",
+                },
                 "compression_alg": {
                     "type": "string",
                 },
@@ -164,7 +189,13 @@ backups_mapping = {
                 "vol_snap_path": {
                     "type": "string",
                 },
+                "os_auth_version": {
+                    "type": "string",
+                },
             },
+        },
+        "backup_uuid": {
+            "type": "string",
         },
         "user_id": {
             "index": "not_analyzed",
@@ -172,6 +203,14 @@ backups_mapping = {
         },
         "user_name": {
             "type": "string",
+        },
+        "client_id": {
+            "index": "not_analyzed",
+            "type": "string"
+        },
+        "job_id": {
+            "index": "not_analyzed",
+            "type": "string"
         },
     },
 }
@@ -187,6 +226,9 @@ jobs_mapping = {
         },
         "job_actions": {
             "properties": {
+                "action_id": {
+                    "type": "string"
+                },
                 "freezer_action": {
                     "properties": {
                         "action": {
@@ -196,6 +238,15 @@ jobs_mapping = {
                             "type": "string"
                         },
                         "container": {
+                            "type": "string"
+                        },
+                        "hostname": {
+                            "type": "string"
+                        },
+                        "snapshot": {
+                            "type": "boolean"
+                        },
+                        "storage": {
                             "type": "string"
                         },
                         "dry_run": {
@@ -245,7 +296,23 @@ jobs_mapping = {
                         },
                         "restore_from_host": {
                             "type": "string"
-                        }
+                        },
+                        "ssh_host": {
+                            "type": "string"
+                        },
+                        "ssh_port": {
+                            "type": "long"
+                        },
+                        "ssh_key": {
+                            "index": "not_analyzed",
+                            "type": "string"
+                        },
+                        "ssh_username": {
+                            "type": "string"
+                        },
+                        "proxy": {
+                            "type": "string"
+                        },
                     }
                 },
                 "mandatory": {
@@ -256,6 +323,9 @@ jobs_mapping = {
                 },
                 "max_retries_interval": {
                     "type": "long"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         },
