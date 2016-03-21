@@ -4,7 +4,7 @@ Listen %SERVICE_HOST%:%FREEZER_API_PORT%
     WSGIDaemonProcess freezer-api processes=2 threads=2 user=%USER%
     WSGIProcessGroup freezer-api
     WSGIApplicationGroup freezer-api
-    WSGIScriptAlias / %FREEZER_API_DIR%/freezer_api/cmd/api.py
+    WSGIScriptAlias / %FREEZER_API_DIR%/freezer_api/cmd/wsgi.py
 
     ErrorLog /var/log/%APACHE_NAME%/freezer-api.log
     CustomLog /var/log/%APACHE_NAME%/freezer-api_access.log combined
