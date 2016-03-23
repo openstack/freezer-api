@@ -1,6 +1,6 @@
 ===============================================
-Tempest Integration of Sample
+Tempest Integration of Freezer API
 ===============================================
 
-This directory contains Tempest tests to cover the Sample project.
+This directory contains Tempest tests to cover the freezer-api project.
 

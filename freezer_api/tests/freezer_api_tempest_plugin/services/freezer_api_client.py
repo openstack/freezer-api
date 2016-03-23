@@ -12,21 +12,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
-from tempest import test
+from oslo_serialization import jsonutils as json
 
-class TestFreezerApiVersion(base.BaseFreezerApiTest):
+from tempest import config
+from tempest_lib.common import rest_client
 
-    @classmethod
-    def resource_setup(cls):
-        super(TestFreezerApiVersion, cls).resource_setup()
+CONF = config.CONF
 
-    @classmethod
-    def resource_cleanup(cls):
-        super(TestFreezerApiVersion, cls).resource_cleanup()
+class FreezerApiClient(rest_client.RestClient):
 
-    @test.attr(type="gate")
-    def test_api_version(self):
+    def __init__(self, auth_provider):
+        super(FreezerApiClient, self).__init__(
+            auth_provider,
+            CONF.backup.catalog_type,
+            CONF.backup.region or CONF.identity.region,
+            endpoint_type=CONF.backup.endpoint_type
+        )
 
-        resp, response_body = self.freezer_api_client.get_version()
-        self.assertEqual(300, resp.status)
+    def get_version(self):
+        resp, response_body = self.get('/')
+        return resp, response_body
