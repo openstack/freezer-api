@@ -15,7 +15,7 @@
 [[local|localrc]]
 disable_all_services
 
-enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git master
+enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api master
 
 enable_service rabbit mysql key
 
