@@ -15,7 +15,7 @@
 from oslo_serialization import jsonutils as json
 
 from tempest import config
-from tempest_lib.common import rest_client
+from tempest.lib.common import rest_client
 
 CONF = config.CONF
 
@@ -30,5 +30,136 @@ class FreezerApiClient(rest_client.RestClient):
         )
 
     def get_version(self):
+
         resp, response_body = self.get('/')
+        return resp, response_body
+
+    def get_version_v1(self):
+
+        resp, response_body = self.get('/v1')
+        return resp, response_body
+
+    def get_backups(self, backup_id = None):
+
+        if backup_id is None:
+            uri = '/v1/backups'
+        else:
+            uri = '/v1/backups/' + backup_id
+
+        resp, response_body = self.get(uri)
+        return resp, response_body
+
+    def post_backups(self, backup):
+
+        request_body = json.dumps(backup)
+        resp, response_body = self.post('/v1/backups', request_body)
+
+        return resp, json.loads(response_body)
+
+    def delete_backups(self, backup_id):
+
+        uri = '/v1/backups/' + backup_id
+        resp, response_body = self.delete(uri)
+        return resp, response_body
+
+    def get_clients(self, client_id = None):
+
+        if client_id is None:
+            uri = '/v1/clients'
+        else:
+            uri = 'v1/clients/' + client_id
+
+        resp, response_body = self.get(uri)
+        return resp, response_body
+
+    def post_clients(self, client):
+
+        request_body = json.dumps(client)
+        resp, response_body = self.post('/v1/clients', request_body)
+        return resp, json.loads(response_body)
+
+    def delete_clients(self, client_id):
+
+        uri = '/v1/clients/' + client_id
+        resp, response_body = self.delete(uri)
+        return resp, response_body
+
+    def get_jobs(self, job_id = None):
+
+        if job_id is None:
+            uri = '/v1/jobs'
+        else:
+            uri = '/v1/jobs/' + job_id
+
+        resp, response_body = self.get('/v1/jobs')
+        return resp, response_body
+
+    def post_jobs(self, job):
+
+        request_body = json.dumps(job)
+        resp, response_body = self.post('/v1/jobs', request_body)
+        return resp, json.loads(response_body)
+
+    def delete_jobs(self, job_id):
+
+        uri = '/v1/jobs/' + job_id
+        resp, response_body = self.delete(uri)
+        return resp, response_body
+
+    def get_actions(self, action_id = None):
+
+        if action_id is None:
+            uri = '/v1/actions'
+        else:
+            uri = '/v1/actions/' + action_id
+
+        resp, response_body = self.get(uri)
+        return resp, response_body
+
+    def post_actions(self, action, action_id = None):
+
+        request_body = json.dumps(action)
+
+        if action_id is None:
+            uri = '/v1/actions'
+        else:
+            uri = '/v1/actions/' + action_id
+
+        resp, response_body = self.post(uri, request_body)
+        return resp, json.loads(response_body)
+
+    def patch_actions(self, action, action_id):
+
+        request_body = json.dumps(action)
+
+        uri = '/v1/actions/' + action_id
+        resp, response_body = self.patch(uri, request_body)
+        return resp, json.loads(response_body)
+
+    def delete_actions(self, id):
+
+        uri = '/v1/actions/' + id
+        resp, response_body = self.delete(uri)
+        return resp, response_body
+
+    def get_sessions(self, session_id = None):
+
+        if session_id is None:
+            uri = '/v1/sessions'
+        else:
+            uri = 'v1/sessions/' + session_id
+
+        resp, response_body = self.get(uri)
+        return resp, response_body
+
+    def post_sessions(self, session):
+
+        request_body = json.dumps(session)
+        resp, response_body = self.post('/v1/sessions', request_body)
+        return resp, json.loads(response_body)
+
+    def delete_sessions(self, session_id):
+
+        uri = '/v1/sessions/' + session_id
+        resp, response_body = self.delete(uri)
         return resp, response_body

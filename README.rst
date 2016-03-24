@@ -272,7 +272,7 @@ NOTE: sizes are in MB
       "container": string,
       "host_name": string,      # fqdn, client has to provide consistent information here !
       "backup_name": string,
-      "timestamp": int,
+      "time_stamp": int,
       "level": int,
       "max_level": int,
       "mode" : string,            (fs mongo mysql)
@@ -601,7 +601,7 @@ Finished job with result::
 8.2 Actions default value
 -------------------------
 
-It is possible to define properties that span accross multiple actions
+It is possible to define properties that span across multiple actions
 This allow not to rewrite values that might be the same in multiple actions.
 If properties are specificaly set in one action, then the specified value is the one used.
 

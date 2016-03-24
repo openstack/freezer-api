@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 from tempest import test
 
@@ -30,3 +32,51 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
 
         resp, response_body = self.freezer_api_client.get_version()
         self.assertEqual(300, resp.status)
+
+        resp_body_json = json.loads(response_body)
+        self.assertIn('versions', resp_body_json)
+        current_version = resp_body_json['versions'][0]
+        self.assertEqual(len(current_version), 4)
+        self.assertIn('id', current_version)
+        self.assertEqual(current_version['id'], '1')
+        self.assertIn('links', current_version)
+        links = current_version['links'][0]
+        self.assertIn('href', links)
+        href = links['href']
+        self.assertEqual('/v1/', href)
+        self.assertIn('rel', links)
+        rel = links['rel']
+        self.assertEqual('self', rel)
+        self.assertIn('status', current_version)
+        status = current_version['status']
+        self.assertEqual('CURRENT', status)
+        self.assertIn('updated', current_version)
+
+
+    @test.attr(type="gate")
+    def test_api_version_v1(self):
+
+        resp, response_body = self.freezer_api_client.get_version_v1()
+        self.assertEqual(200, resp.status)
+
+        response_body_jason = json.loads(response_body)
+        self.assertIn('resources', response_body_jason)
+        resource = response_body_jason['resources']
+        self.assertIn('rel/backups', resource)
+        rel_backups = resource['rel/backups']
+        self.assertIn('href-template', rel_backups)
+        href_template = rel_backups['href-template']
+        self.assertEqual('/v1/backups/{backup_id}', href_template)
+        self.assertIn('href-vars', rel_backups)
+        href_vars = rel_backups['href-vars']
+        self.assertIn('backup_id', href_vars)
+        backup_id = href_vars['backup_id']
+        self.assertEqual('param/backup_id', backup_id)
+        self.assertIn('hints', rel_backups)
+        hints = rel_backups['hints']
+        self.assertIn('allow', hints)
+        allow = hints['allow']
+        self.assertEqual('GET', allow[0])
+        self.assertIn('formats', hints)
+        formats = hints['formats']
+        self.assertIn('application/json', formats)
