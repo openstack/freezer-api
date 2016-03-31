@@ -192,6 +192,9 @@ backups_mapping = {
                 "os_auth_version": {
                     "type": "string",
                 },
+                "consistency_checksum": {
+                    "type": "string"
+                },
             },
         },
         "backup_uuid": {
