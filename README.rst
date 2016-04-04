@@ -71,6 +71,13 @@ To get information about optional additional parameters:
 
   freezer-db-init -h
 
+Freezer index number of replicas:
+
+The number of replicas of the freezer index can be configured by changing
+the parameter number_of_replicas in the configuration file. This should be done
+before running freezer-db-init script. More information about elasticsearch
+replicas can be found here https://www.elastic.co/guide/en/elasticsearch/guide/current/replica-shards.html
+
 1.5 run simple instance
 -----------------------
 ::
@@ -89,6 +96,7 @@ To get information about optional additional parameters:
 1.7 example running freezer-api with apache2
 --------------------------------
 ::
+
 # sudo vi /etc/apache2/sites-enabled/freezer-api.conf
     <VirtualHost ...>
         WSGIDaemonProcess freezer-api processes=2 threads=2 user=freezer
@@ -109,7 +117,6 @@ To get information about optional additional parameters:
           LimitRequestBody 102400
         </Directory>
     </VirtualHost>
-
 
 2. Devstack Plugin
 ==================

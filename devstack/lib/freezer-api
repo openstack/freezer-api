@@ -87,10 +87,11 @@ function configure_freezer_api {
     [ ! -d $FREEZER_API_LOG_DIR ] &&  sudo mkdir -m 755 -p $FREEZER_API_LOG_DIR
     sudo chown $USER $FREEZER_API_LOG_DIR
 
-    sudo cp $FREEZER_API_DIR/etc/freezer-api.conf $FREEZER_API_CONF_DIR
+    sudo cp $FREEZER_API_DIR/etc/freezer-api.conf.sample $FREEZER_API_CONF_DIR/freezer-api.conf
 
     iniset $FREEZER_API_CONF 'storage' db elasticsearch
     iniset $FREEZER_API_CONF 'storage' index freezer
+    iniset $FREEZER_API_CONF 'storage' number_of_replicas 0
     iniset $FREEZER_API_CONF 'storage' hosts http://$SERVICE_HOST:9200
 
     iniset $FREEZER_API_CONF 'keystone_authtoken' auth_protocol $KEYSTONE_AUTH_PROTOCOL

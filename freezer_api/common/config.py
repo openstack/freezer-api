@@ -1,5 +1,5 @@
 """
-(c) Copyright 2014,2015 Hewlett-Packard Development Company, L.P.
+(c) Copyright 2015-2016 Hewlett-Packard Enterprise Company L.P.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ from oslo_config import cfg
 from oslo_log import log
 
 from freezer_api import __version__ as FREEZER_API_VERSION
+from freezer_api.storage import driver
+from keystonemiddleware import opts
 
 CONF = cfg.CONF
 
@@ -69,7 +71,9 @@ def setup_logging():
 
 def list_opts():
     _OPTS = {
-        None: api_common_opts()
+        None: api_common_opts(),
+        'storage': driver.storage_opts,
+        opts.auth_token_opts[0][0]: opts.auth_token_opts[0][1]
     }
     return _OPTS.items()
 

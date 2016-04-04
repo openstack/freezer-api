@@ -56,6 +56,10 @@ storage_opts = [
     cfg.StrOpt('ca_certs',
                default=None,
                help='path to CA certs on disk'),
+    cfg.IntOpt('number_of_replicas',
+               default=2,
+               help='Number of replicas for elk cluster. Default is 2. '
+                    'Use 0 for no replicas')
 ]
 
 CONF = cfg.CONF
