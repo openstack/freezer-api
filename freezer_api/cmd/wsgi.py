@@ -1,6 +1,5 @@
-"""Freezer swift.py related tests
-
-(c) Copyright 2014,2015 Hewlett-Packard Development Company, L.P.
+"""
+(c) Copyright 2015-2016 Hewlett-Packard Enterprise Development Company, L.P.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,16 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
+from freezer_api.cmd.api import get_application
+from freezer_api.storage import driver
+from oslo_config import cfg
+from oslo_log import log
 
-import unittest
-from mock import Mock, patch
 
-from freezer_api.cmd import api
-from freezer_api.api import common
 
-class TestAPI(unittest.TestCase):
+CONF = cfg.CONF
+_LOG = log.getLogger(__name__)
 
-    @patch('freezer_api.storage.elastic.logging')
-    def test_auth_install(self, mock_logging):
-        app = api.get_application(None)
-        assert isinstance(app, common.middleware.HealthApp)
+try:
+    db = driver.get_db()
+except Exception as err:
+    message = 'Unable to start server: {0} '.format(err)
+    _LOG.error(message)
+
+application = get_application(db)

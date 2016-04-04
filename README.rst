@@ -81,9 +81,34 @@ To get information about optional additional parameters:
 --------------------------------
 ::
 
-  # uwsgi --http :9090 --need-app --master --module freezer_api.cmd.api:application
+  # uwsgi --http :9090 --need-app --master --module freezer_api.cmd.wsgi:application
 
-  # uwsgi --https :9090,foobar.crt,foobar.key --need-app --master --module freezer_api.cmd.api:application
+  # uwsgi --https :9090,foobar.crt,foobar.key --need-app --master --module freezer_api.cmd.wsgi:application
+
+
+1.7 example running freezer-api with apache2
+--------------------------------
+::
+# sudo vi /etc/apache2/sites-enabled/freezer-api.conf
+    <VirtualHost ...>
+        WSGIDaemonProcess freezer-api processes=2 threads=2 user=freezer
+        WSGIProcessGroup freezer-api
+        WSGIApplicationGroup freezer-api
+        WSGIScriptAlias / /opt/stack/freezer_api/cmd/wsgi.py
+
+        ErrorLog /var/log/freezer-api/freezer-api.log
+        CustomLog /var/log/freezer-api/freezer-api_access.log combined
+        LogLevel info
+
+        <Directory /opt/stack/freezer_api>
+          Options Indexes FollowSymLinks MultiViews
+          Require all granted
+          AllowOverride None
+          Order allow,deny
+          allow from all
+          LimitRequestBody 102400
+        </Directory>
+    </VirtualHost>
 
 
 2. Devstack Plugin

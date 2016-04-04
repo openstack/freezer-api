@@ -14,25 +14,62 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import sys
+
 from oslo_config import cfg
+from oslo_log import log
 
-
-common_cli_opts = [
-    cfg.BoolOpt('verbose',
-                short='v',
-                default=False,
-                help='Print more verbose output.'),
-    cfg.BoolOpt('debug',
-                short='d',
-                default=False,
-                help='Print debugging output.'),
-]
+from freezer_api import __version__ as FREEZER_API_VERSION
 
 CONF = cfg.CONF
-CONF.register_cli_opts(common_cli_opts)
 
 
-def parse_args(args=[], usage=None, default_config_files=[]):
-    CONF(args=args,
+def api_common_opts():
+
+    _COMMON = [
+        cfg.IPOpt('bind-host',
+                  default='0.0.0.0',
+                  dest='bind_host',
+                  help='IP address to listen on. Default is 0.0.0.0'),
+        cfg.PortOpt('bind-port',
+                    default=9090,
+                    dest='bind_port',
+                    help='Port number to listen on. Default is 9090'
+                    )
+    ]
+
+    return _COMMON
+
+
+def parse_args():
+    CONF.register_cli_opts(api_common_opts())
+    log.register_options(CONF)
+    default_config_files = cfg.find_config_files('freezer', 'freezer-api')
+    CONF(args=sys.argv[1:],
          project='freezer-api',
-         default_config_files=default_config_files)
+         default_config_files=default_config_files,
+         version=FREEZER_API_VERSION
+         )
+
+
+def setup_logging():
+    _DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
+                           'qpid=WARN', 'stevedore=WARN','oslo_log=INFO',
+                           'iso8601=WARN',
+                           'requests.packages.urllib3.connectionpool=WARN',
+                           'urllib3.connectionpool=WARN', 'websocket=WARN',
+                           'keystonemiddleware=WARN', 'routes.middleware=WARN']
+    _DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
+                                       '%(levelname)s %(name)s [%(request_id)s '
+                                       '%(user_identity)s] %(instance)s '
+                                       '%(message)s')
+    log.set_defaults(_DEFAULT_LOGGING_CONTEXT_FORMAT, _DEFAULT_LOG_LEVELS)
+    log.setup(CONF, 'freezer-api', version=FREEZER_API_VERSION)
+
+
+def list_opts():
+    _OPTS = {
+        None: api_common_opts()
+    }
+    return _OPTS.items()
+
