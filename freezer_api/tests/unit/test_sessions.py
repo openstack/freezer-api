@@ -422,8 +422,10 @@ class TestSessionsJobs(unittest.TestCase):
 
         job_update_doc = {
             'session_id': '',
-            'session_tag': '',
-            'job_event': 'stop'
+            'session_tag': 0,
+            'job_schedule': {
+                'event': 'stop'
+            }
         }
 
         self.resource.on_delete(self.mock_req, self.mock_req,
