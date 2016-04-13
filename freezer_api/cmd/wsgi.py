@@ -19,10 +19,10 @@ from freezer_api.storage import driver
 from oslo_config import cfg
 from oslo_log import log
 
-
-
 CONF = cfg.CONF
 _LOG = log.getLogger(__name__)
+
+db = None
 
 try:
     db = driver.get_db()
