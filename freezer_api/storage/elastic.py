@@ -98,6 +98,7 @@ class TypeManager:
                                 body=doc, id=doc_id, version=version)
             created = res['created']
             version = res['_version']
+            self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
             if e.status_code == 409:
                 raise freezer_api_exc.DocumentExists(message=e.error)
@@ -121,6 +122,7 @@ class TypeManager:
             id = res.get('_id')
             try:
                 self.es.delete(index=self.index, doc_type=self.doc_type, id=id)
+                self.es.indices.refresh(index=self.index)
             except Exception as e:
                 raise freezer_api_exc.StorageEngineError(
                     message=_i18n._('Delete operation failed: %s') % e)
@@ -185,6 +187,7 @@ class JobTypeManager(TypeManager):
             res = self.es.update(index=self.index, doc_type=self.doc_type,
                                  id=job_id, body=update_doc, version=version)
             version = res['_version']
+            self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
             if e.status_code == 409:
                 raise freezer_api_exc.DocumentExists(message=e.error)
@@ -218,6 +221,7 @@ class ActionTypeManager(TypeManager):
                                  id=action_id, body=update_doc,
                                  version=version)
             version = res['_version']
+            self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
             if e.status_code == 409:
                 raise freezer_api_exc.DocumentExists(message=e.error)
@@ -251,6 +255,7 @@ class SessionTypeManager(TypeManager):
                                  id=session_id, body=update_doc,
                                  version=version)
             version = res['_version']
+            self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
             if e.status_code == 409:
                 raise freezer_api_exc.DocumentExists(message=e.error)
