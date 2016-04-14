@@ -45,6 +45,7 @@ def api_common_opts():
 
 def parse_args():
     CONF.register_cli_opts(api_common_opts())
+    driver.register_elk_opts()
     log.register_options(CONF)
     default_config_files = cfg.find_config_files('freezer', 'freezer-api')
     CONF(args=sys.argv[1:],
@@ -72,7 +73,7 @@ def setup_logging():
 def list_opts():
     _OPTS = {
         None: api_common_opts(),
-        'storage': driver.storage_opts,
+        'storage': driver.get_elk_opts(),
         opts.auth_token_opts[0][0]: opts.auth_token_opts[0][1]
     }
     return _OPTS.items()

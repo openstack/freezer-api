@@ -21,6 +21,7 @@ import unittest
 from mock import Mock, patch
 
 from freezer_api.storage import driver
+from freezer_api.cmd.api import get_application
 
 
 class TestStorageDriver(unittest.TestCase):
@@ -35,6 +36,7 @@ class TestStorageDriver(unittest.TestCase):
     @patch('freezer_api.storage.driver.elastic')
     @patch('freezer_api.storage.driver.logging')
     def test_get_db_elastic(self, mock_logging, mock_elastic):
+        driver.register_elk_opts()
         db = driver.get_db()
         self.assertTrue(mock_elastic.ElasticSearchEngine)
 

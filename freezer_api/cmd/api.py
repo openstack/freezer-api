@@ -37,9 +37,11 @@ CONF = cfg.CONF
 _LOG = log.getLogger(__name__)
 
 
-def get_application(db):
+def get_application(db=None):
     config.parse_args()
     config.setup_logging()
+    if not db:
+        db = driver.get_db()
     app = falcon.API()
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
@@ -68,8 +70,7 @@ def get_application(db):
 
 def main():
     try:
-        db = driver.get_db()
-        application = get_application(db)
+        application = get_application()
     except Exception as err:
         message = _i18n._('Unable to start server: %s ') % err
         print(message)
