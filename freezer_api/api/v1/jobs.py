@@ -248,34 +248,25 @@ class Job(object):
         self.job_schedule['status'] = value
 
     def start(self, params=None):
-        if self.job_status in ["scheduled", "running"]:
-            return 'already active'
-        if self.job_status in ["completed", "stop", ""]:
-            # completed jobs are not acquired by the scheduler
-            self.job_status = 'stop'
+        if self.job_schedule.get('event') != 'start':
             self.job_schedule['event'] = 'start'
-            self.job_schedule['result'] = ''
             self.need_update = True
             return 'success'
-        else:
-            raise freezer_api_exc.BadDataFormat("unable to start a {0} job"
-                                                .format(self.job_status))
+        return 'start already requested'
 
     def stop(self, params=None):
-        if self.job_status in ["scheduled", "running", ""]:
+        if self.job_schedule.get('event') != 'stop':
             self.job_schedule['event'] = 'stop'
             self.need_update = True
             return 'success'
-        else:
-            return 'already stopped'
+        return 'stop already requested'
 
     def abort(self, params=None):
-        if self.job_status in ["scheduled", "running", ""]:
+        if self.job_schedule.get('event') != 'abort':
             self.job_schedule['event'] = 'abort'
             self.need_update = True
             return 'success'
-        else:
-            return 'already stopped'
+        return 'abort already requested'
 
     def actions(self):
         """
