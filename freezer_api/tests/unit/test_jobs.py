@@ -281,176 +281,237 @@ class TestJobsEvent(unittest.TestCase):
 
 class TestJobs(unittest.TestCase):
 
-    def test_start_raises_BadDataFormat_when_jobstatus_unexpected(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'complicated',
-                'event': 'boost'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        self.assertRaises(BadDataFormat, job.start)
-
-    def test_start_scheduled_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'scheduled'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
+    def _test_job_start(self, status, event, response, need_update):
+        job_schedule = {}
+        if status is not None:
+            job_schedule['status'] = status
+        if event is not None:
+            job_schedule['event'] = event
+        job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.start()
-        self.assertEquals(res, 'already active')
-        self.assertFalse(job.need_update)
+        self.assertEquals(res, response)
+        self.assertEqual(job.need_update, need_update)
 
-    def test_start_running_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'running'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.start()
-        self.assertEquals(res, 'already active')
-        self.assertFalse(job.need_update)
-
-    def test_start_stopped_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'stop'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.start()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'stop')
-        self.assertEqual(job.doc['job_schedule']['event'], 'start')
-        self.assertTrue(job.need_update)
-
-    def test_start_completed_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'completed'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.start()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'stop')
-        self.assertEqual(job.doc['job_schedule']['event'], 'start')
-        self.assertTrue(job.need_update)
-
-    def test_start_job_with_no_status(self):
-        job_doc = {'job_schedule':
-            {
-                'status': ''
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.start()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'stop')
-        self.assertEqual(job.doc['job_schedule']['event'], 'start')
-        self.assertTrue(job.need_update)
-
-    def test_stop_scheduled_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'scheduled'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
+    def _test_job_stop(self, status, event, response, need_update):
+        job_schedule = {}
+        if status is not None:
+            job_schedule['status'] = status
+        if event is not None:
+            job_schedule['event'] = event
+        job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.stop()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'scheduled')
-        self.assertEqual(job.doc['job_schedule']['event'], 'stop')
-        self.assertTrue(job.need_update)
+        self.assertEquals(res, response)
+        self.assertEqual(job.need_update, need_update)
 
-    def test_stop_running_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'running'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.stop()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'running')
-        self.assertEqual(job.doc['job_schedule']['event'], 'stop')
-        self.assertTrue(job.need_update)
-
-    def test_stop_job_with_no_status(self):
-        job_doc = {'job_schedule':
-            {
-                'status': ''
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.stop()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], '')
-        self.assertEqual(job.doc['job_schedule']['event'], 'stop')
-        self.assertTrue(job.need_update)
-
-    def test_stop_not_active_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'whatever'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.stop()
-        self.assertEquals(res, 'already stopped')
-        self.assertFalse(job.need_update)
-
-    def test_abort_scheduled_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'scheduled'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
+    def _test_job_abort(self, status, event, response, need_update):
+        job_schedule = {}
+        if status is not None:
+            job_schedule['status'] = status
+        if event is not None:
+            job_schedule['event'] = event
+        job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.abort()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'scheduled')
-        self.assertEqual(job.doc['job_schedule']['event'], 'abort')
-        self.assertTrue(job.need_update)
+        self.assertEquals(res, response)
+        self.assertEqual(job.need_update, need_update)
 
-    def test_abort_running_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'running'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.abort()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], 'running')
-        self.assertEqual(job.doc['job_schedule']['event'], 'abort')
-        self.assertTrue(job.need_update)
 
-    def test_abort_job_with_no_status(self):
-        job_doc = {'job_schedule':
-            {
-                'status': ''
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.abort()
-        self.assertEquals(res, 'success')
-        self.assertEqual(job.doc['job_schedule']['status'], '')
-        self.assertEqual(job.doc['job_schedule']['event'], 'abort')
-        self.assertTrue(job.need_update)
+    def test_start_scheduled_unstarted_job(self):
+        self._test_job_start(status='scheduled',
+                            event=None,
+                            response='success',
+                            need_update=True)
 
-    def test_abort_not_active_job(self):
-        job_doc = {'job_schedule':
-            {
-                'status': 'whatever'
-            }
-        }
-        job = v1_jobs.Job(job_doc)
-        res = job.abort()
-        self.assertEquals(res, 'already stopped')
-        self.assertFalse(job.need_update)
+    def test_start_scheduled_started_job(self):
+        self._test_job_start(status='scheduled',
+                             event='start',
+                             response='start already requested',
+                             need_update=False)
+
+    def test_start_running_unstarted_job(self):
+        self._test_job_start(status='running',
+                             event=None,
+                             response='success',
+                             need_update=True)
+
+    def test_start_running_started_job(self):
+        self._test_job_start(status='running',
+                             event='start',
+                             response='start already requested',
+                             need_update=False)
+
+    def test_start_stopped_unstarted_job(self):
+        self._test_job_start(status='stop',
+                             event=None,
+                             response='success',
+                             need_update=True)
+
+    def test_start_stopped_started_job(self):
+        self._test_job_start(status='stop',
+                             event='start',
+                             response='start already requested',
+                             need_update=False)
+
+    def test_start_completed_unstarted_job(self):
+        self._test_job_start(status='completed',
+                             event=None,
+                             response='success',
+                             need_update=True)
+
+    def test_start_completed_started_job(self):
+        self._test_job_start(status='completed',
+                             event='start',
+                             response='start already requested',
+                             need_update=False)
+
+    def test_start_emptystatus_unstarted_job(self):
+        self._test_job_start(status='',
+                             event=None,
+                             response='success',
+                             need_update=True)
+
+    def test_start_emptystatus_started_job(self):
+        self._test_job_start(status=None,
+                             event='start',
+                             response='start already requested',
+                             need_update=False)
+
+    def test_start_nostatus_unstarted_job(self):
+        self._test_job_start(status=None,
+                             event=None,
+                             response='success',
+                             need_update=True)
+
+    def test_stop_scheduled_unstopped_job(self):
+        self._test_job_stop(status='scheduled',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_stop_scheduled_stopped_job(self):
+        self._test_job_stop(status='scheduled',
+                            event='stop',
+                            response='stop already requested',
+                            need_update=False)
+
+    def test_stop_running_unstopped_job(self):
+        self._test_job_stop(status='running',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_stop_running_stopped_job(self):
+        self._test_job_stop(status='running',
+                            event='stop',
+                            response='stop already requested',
+                            need_update=False)
+
+    def test_stop_stopped_unstopped_job(self):
+        self._test_job_stop(status='stop',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_stop_stopped_stopped_job(self):
+        self._test_job_stop(status='stop',
+                            event='stop',
+                            response='stop already requested',
+                            need_update=False)
+
+    def test_stop_completed_unstopped_job(self):
+        self._test_job_stop(status='completed',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_stop_completed_stopped_job(self):
+        self._test_job_stop(status='completed',
+                            event='stop',
+                            response='stop already requested',
+                            need_update=False)
+
+    def test_stop_emptystatus_unstopped_job(self):
+        self._test_job_stop(status='',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_stop_emptystatus_stopped_job(self):
+        self._test_job_stop(status=None,
+                            event='stop',
+                            response='stop already requested',
+                            need_update=False)
+
+    def test_stop_nostatus_unstopped_job(self):
+        self._test_job_stop(status=None,
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_abort_scheduled_unaborted_job(self):
+        self._test_job_abort(status='scheduled',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_abort_scheduled_abortped_job(self):
+        self._test_job_abort(status='scheduled',
+                            event='abort',
+                            response='abort already requested',
+                            need_update=False)
+
+    def test_abort_running_unaborted_job(self):
+        self._test_job_abort(status='running',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_abort_running_abortped_job(self):
+        self._test_job_abort(status='running',
+                            event='abort',
+                            response='abort already requested',
+                            need_update=False)
+
+    def test_abort_abortped_unaborted_job(self):
+        self._test_job_abort(status='abort',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_abort_abortped_abortped_job(self):
+        self._test_job_abort(status='abort',
+                            event='abort',
+                            response='abort already requested',
+                            need_update=False)
+
+    def test_abort_completed_unaborted_job(self):
+        self._test_job_abort(status='completed',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_abort_completed_abortped_job(self):
+        self._test_job_abort(status='completed',
+                            event='abort',
+                            response='abort already requested',
+                            need_update=False)
+
+    def test_abort_emptystatus_unaborted_job(self):
+        self._test_job_abort(status='',
+                            event=None,
+                            response='success',
+                            need_update=True)
+
+    def test_abort_emptystatus_abortped_job(self):
+        self._test_job_abort(status=None,
+                            event='abort',
+                            response='abort already requested',
+                            need_update=False)
+
+    def test_abort_nostatus_unaborted_job(self):
+        self._test_job_abort(status=None,
+                            event=None,
+                            response='success',
+                            need_update=True)
 
     @patch.object(v1_jobs.Job, 'start')
     def test_execute_start_event(self, mock_start):
