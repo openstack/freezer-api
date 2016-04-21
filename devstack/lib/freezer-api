@@ -59,7 +59,7 @@ function is_freezer_api_enabled {
 
 # executed during: clean
 function cleanup_freezer_api {
-    sudo rm -f $(apache_site_config_for keystone)
+    sudo rm -f $(apache_site_config_for freezer-api)
     ${TOP_DIR}/pkg/elasticsearch.sh uninstall
 }
 
