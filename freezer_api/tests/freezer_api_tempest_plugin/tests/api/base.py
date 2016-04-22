@@ -22,24 +22,12 @@ CONF = config.CONF
 class BaseFreezerApiTest(tempest.test.BaseTestCase):
     """Base test case class for all Freezer API tests."""
 
-    @classmethod
-    def skip_checks(cls):
-        super(BaseFreezerApiTest, cls).skip_checks()
+    credentials = ['primary']
+
+    client_manager = clients.Manager
 
     @classmethod
-    def resource_setup(cls):
-        super(BaseFreezerApiTest, cls).resource_setup()
-        auth_version = CONF.identity.auth_version
-        cls.cred_provider = credentials_factory.get_credentials_provider(
-            cls.__name__,
-            force_tenant_isolation=True,
-            identity_version=auth_version)
-        credentials = cls.cred_provider.get_creds_by_roles(
-            ['admin', 'service'])
-        cls.os = clients.Manager(credentials=credentials)
+    def setup_clients(cls):
+        super(BaseFreezerApiTest, cls).setup_clients()
         cls.freezer_api_client = cls.os.freezer_api_client
-
-    @classmethod
-    def resource_cleanup(cls):
-        super(BaseFreezerApiTest, cls).resource_cleanup()
 
