@@ -1,5 +1,6 @@
 """
 (c) Copyright 2014,2015 Hewlett-Packard Development Company, L.P.
+(c) Copyright 2016 Hewlett-Packard Enterprise Development Company, L.P.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,6 +26,7 @@ from oslo_log import log
 from wsgiref import simple_server
 
 from freezer_api.api.common import middleware
+from freezer_api.api.common import utils
 from freezer_api.api import v1
 from freezer_api.api import versions
 
@@ -40,9 +42,12 @@ _LOG = log.getLogger(__name__)
 def get_application(db=None):
     config.parse_args()
     config.setup_logging()
+
     if not db:
         db = driver.get_db()
-    app = falcon.API()
+
+    # injecting FreezerContext
+    app = falcon.API(before=utils.before_hook())
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
@@ -59,7 +64,10 @@ def get_application(db=None):
     app = middleware.json_translator(app)
 
     if 'keystone_authtoken' in config.CONF:
-        app = auth_token.AuthProtocol(app, {})
+        app = auth_token.AuthProtocol(app,
+                                      conf={"oslo-config-config": CONF,
+                                            "oslo-config-project":
+                                                "freezer-api"})
     else:
         _LOG.warning(_i18n._LW("keystone authentication disabled"))
 
