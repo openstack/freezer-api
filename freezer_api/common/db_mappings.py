@@ -162,6 +162,12 @@ backups_mapping = {
                 "mode": {
                     "type": "string",
                 },
+                "no_incremental": {
+                    "type": "boolean",
+                },
+                "overwrite": {
+                    "type": "boolean",
+                },
                 "path_to_backup": {
                     "type": "string",
                 },
@@ -312,6 +318,12 @@ jobs_mapping = {
                         },
                         "proxy": {
                             "type": "string"
+                        },
+                        "no_incremental": {
+                            "type": "boolean",
+                        },
+                        "overwrite": {
+                            "type": "boolean",
                         },
                     }
                 },
