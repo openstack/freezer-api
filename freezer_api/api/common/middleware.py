@@ -15,22 +15,8 @@ limitations under the License.
 
 """
 
-from freezer_api.common import exceptions as freezer_api_exc
+import falcon
 import json
-from webob.dec import wsgify
-
-
-@wsgify.middleware
-def json_translator(req, app):
-    resp = req.get_response(app)
-    if resp.body:
-        if isinstance(resp.body, dict):
-            try:
-                resp.body = json.dumps(resp.body)
-            except Exception:
-                raise freezer_api_exc.FreezerAPIException(
-                    'Internal server error: malformed json reply')
-    return resp
 
 
 class HealthApp(object):
@@ -48,3 +34,51 @@ class HealthApp(object):
             start_response('200 OK', [])
             return []
         return self.app(environ, start_response)
+
+
+class SignedHeadersAuth(object):
+
+    def __init__(self, app, auth_app):
+        self._app = app
+        self._auth_app = auth_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get('PATH_INFO')
+        # NOTE(flwang): The root path of Zaqar service shouldn't require any
+        # auth.
+        if path == '/':
+            return self._app(environ, start_response)
+
+        signature = environ.get('HTTP_URL_SIGNATURE')
+
+        if signature is None or path.startswith('/v1'):
+            return self._auth_app(environ, start_response)
+
+        return self._app(environ, start_response)
+
+
+class RequireJSON(object):
+
+    def process_request(self, req, resp):
+        if not req.client_accepts_json:
+            raise falcon.HTTPNotAcceptable(
+                'Freezer-api only supports responses encoded as JSON.',
+                href='http://docs.examples.com/api/json')
+
+        if req.method in ('POST', 'PUT'):
+            if 'application/json' not in req.content_type:
+                raise falcon.HTTPUnsupportedMediaType(
+                    'Freezer-api only supports requests encoded as JSON.',
+                    href='http://docs.examples.com/api/json')
+
+
+class JSONTranslator(object):
+
+    def process_response(self, req, resp, resource):
+        if not hasattr(resp, 'body'):
+            return
+        if isinstance(resp.data, dict):
+            resp.data = json.dumps(resp.data)
+
+        if isinstance(resp.body, dict):
+            resp.body = json.dumps(resp.body)

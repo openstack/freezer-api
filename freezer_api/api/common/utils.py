@@ -41,5 +41,16 @@ def inject_context(req, resp, params):
     LOG.info('Request context set')
 
 
-def before_hook():
+def before_hooks():
     return [inject_context]
+
+
+class FuncMiddleware(object):
+    """
+    Injecting some function as middleware for freezer-api
+    """
+    def __init__(self, func):
+        self.func = func
+
+    def process_resource(self, req, resp, resource, params=None):
+        return self.func(req, resp, params)

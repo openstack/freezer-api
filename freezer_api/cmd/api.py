@@ -46,8 +46,12 @@ def get_application(db=None):
     if not db:
         db = driver.get_db()
 
-    # injecting FreezerContext
-    app = falcon.API(before=utils.before_hook())
+    # injecting FreezerContext & hooks
+    middlware_list = [utils.FuncMiddleware(hook) for hook in
+                      utils.before_hooks()]
+    middlware_list.append(middleware.JSONTranslator())
+    middlware_list.append(middleware.RequireJSON())
+    app = falcon.API(middleware=middlware_list)
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
@@ -60,17 +64,15 @@ def get_application(db=None):
         for route, resource in endpoints:
             app.add_route(version_path + route, resource)
 
-    # pylint: disable=no-value-for-parameter
-    app = middleware.json_translator(app)
-
     if 'keystone_authtoken' in config.CONF:
-        app = auth_token.AuthProtocol(app,
+        auth_app = auth_token.AuthProtocol(app,
                                       conf={"oslo-config-config": CONF,
                                             "oslo-config-project":
                                                 "freezer-api"})
     else:
         _LOG.warning(_i18n._LW("keystone authentication disabled"))
 
+    app = middleware.SignedHeadersAuth(app, auth_app)
     app = middleware.HealthApp(app=app, path='/v1/health')
 
     return app
