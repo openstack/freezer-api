@@ -92,10 +92,9 @@ class TypeManager:
         return [x['_source'] for x in hit_list]
 
     def insert(self, doc, doc_id=None):
-        version = doc.pop('_version', 0)
         try:
             res = self.es.index(index=self.index, doc_type=self.doc_type,
-                                body=doc, id=doc_id, version=version)
+                                body=doc, id=doc_id)
             created = res['created']
             version = res['_version']
             self.es.indices.refresh(index=self.index)
