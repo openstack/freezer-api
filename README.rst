@@ -203,8 +203,8 @@ Backup metadata
 ---------------
 ::
 
-    GET    /v1/backups(?limit,marker)     Lists backups
-    POST   /v1/backups                    Creates backup entry
+    GET    /v1/backups(?limit,offset)  Lists backups
+    POST   /v1/backups                 Creates backup entry
 
     GET    /v1/backups/{backup_id}     Get backup details
     UPDATE /v1/backups/{backup_id}     Updates the specified backup
