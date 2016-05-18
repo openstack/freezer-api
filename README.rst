@@ -207,7 +207,6 @@ Backup metadata
     POST   /v1/backups                 Creates backup entry
 
     GET    /v1/backups/{backup_id}     Get backup details
-    UPDATE /v1/backups/{backup_id}     Updates the specified backup
     DELETE /v1/backups/{backup_id}     Deletes the specified backup
 
 Freezer clients management
