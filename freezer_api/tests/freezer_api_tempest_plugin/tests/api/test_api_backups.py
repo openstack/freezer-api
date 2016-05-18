@@ -12,36 +12,180 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import operator
 import json
+import tempest
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 from tempest import test
 
 class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
-    @classmethod
-    def resource_setup(cls):
-        super(TestFreezerApiBackups, cls).resource_setup()
-
-    @classmethod
-    def resource_cleanup(cls):
-        super(TestFreezerApiBackups, cls).resource_cleanup()
+    credentials = ['primary', 'alt']
 
     @test.attr(type="gate")
-    def test_api_backups(self):
+    def test_api_backups_list(self):
+        for i in range(1, 4):
+            self._create_temporary_backup(self._build_metadata("test_freezer_backups_" + str(i)))
 
         resp, response_body = self.freezer_api_client.get_backups()
         self.assertEqual(200, resp.status)
 
-        resp_body_json = json.loads(response_body)
-        self.assertIn('backups', resp_body_json)
-        backups = resp_body_json['backups']
-        self.assertEqual(backups, [])
+        self.assertIn('backups', response_body)
+        backups = response_body['backups']
+
+        self.assertEqual(3, len(backups))
+
+        backup_names = [b['backup_metadata']['backup_name'] for b in backups]
+        for i in range(1, 4):
+            self.assertIn("test_freezer_backups_" + str(i), backup_names)
+
+    @test.attr(type="gate")
+    def test_api_backups_list_other_users_backups(self):
+        """ Test if it is not possible to list backups from a different user """
+        self._create_temporary_backup(self._build_metadata("test_freezer_backups"))
+
+        # Switching to alt_user here
+        resp, response_body = self.os_alt.freezer_api_client.get_backups()
+
+        self.assertEqual(200, resp.status)
+        self.assertEqual([], response_body['backups'])
+
+    @test.attr(type="gate")
+    def test_api_backups_list_empty(self):
+        resp, response_body = self.freezer_api_client.get_backups()
+        self.assertEqual(200, resp.status)
+
+        self.assertEqual([], response_body['backups'])
+
+    @test.attr(type="gate")
+    def test_api_backups_list_limit(self):
+        for i in range(1, 9):
+            self._create_temporary_backup(self._build_metadata("test_freezer_backups_" + str(i)))
+
+        resp, response_body = self.freezer_api_client.get_backups(limit=5)
+        self.assertEqual(200, resp.status)
+
+        self.assertIn('backups', response_body)
+        backups = response_body['backups']
+        self.assertEqual(5, len(backups))
+
+
+    @test.attr(type="gate")
+    def test_api_backups_list_limit_offset(self):
+        """ Test pagination by grabbing the backups in two steps and comparing to the list of
+        all backups.
+        """
+        for i in range(1, 9):
+            self._create_temporary_backup(self._build_metadata("test_freezer_backups_" + str(i)))
+
+        resp, response_body = self.freezer_api_client.get_backups(limit=5)
+        self.assertEqual(200, resp.status)
+
+        self.assertIn('backups', response_body)
+        first_5_backups = response_body['backups']
+        self.assertEqual(5, len(first_5_backups))
+
+        resp, response_body = self.freezer_api_client.get_backups(limit=3, offset=5)
+        second_3_backups = response_body['backups']
+        self.assertEqual(3, len(second_3_backups))
+
+        resp, response_body = self.freezer_api_client.get_backups()
+        all_backups = response_body['backups']
+
+        self.assertEqual(len(all_backups), len(first_5_backups + second_3_backups))
+        self.assertEqual(all_backups, first_5_backups + second_3_backups)
 
     @test.attr(type="gate")
     def test_api_backups_post(self):
+        metadata = self._build_metadata("test_freezer_backups")
+        backup_id = self._create_temporary_backup(metadata)
 
-        backup_metadata = {
+        resp, response_body = self._workaround_get_backup(backup_id)
+
+        expected = self._build_expected_data(backup_id, metadata)
+
+        # TODO(JonasPf): Currently there is no way to know the uuid as the api client
+        # until this is fixed we'll ignore it.
+        del(expected['backup_uuid'])
+        del(response_body['backup_uuid'])
+
+        self.assertEqual(200, resp.status)
+        self.assertEqual(expected, response_body)
+
+    @test.attr(type="gate")
+    def test_api_backups_post_incomplete(self):
+        metadata = self._build_metadata("test_freezer_backups")
+        del(metadata['container'])
+
+        self.assertRaises(tempest.lib.exceptions.BadRequest, self.freezer_api_client.post_backups, metadata)
+
+    @test.attr(type="gate")
+    def test_api_backups_post_minimal(self):
+        metadata = {
+            "curr_backup_level": 0,
+            "container": "test_freezer_api_backups_container",
+            "hostname": "localhost",
+            "backup_name": "test_freezer_backups",
+            "time_stamp": 1459349846,
+        }
+
+        backup_id = self._create_temporary_backup(metadata)
+        resp, response_body = self._workaround_get_backup(backup_id)
+
+        expected = self._build_expected_data(backup_id, metadata)
+
+        # TODO(JonasPf): Currently there is no way to know the uuid as the api client
+        # until this is fixed we'll ignore it.
+        del(expected['backup_uuid'])
+        del(response_body['backup_uuid'])
+
+        self.assertEqual(200, resp.status)
+        self.assertEqual(expected, response_body)
+
+    @test.attr(type="gate")
+    def test_api_backups_post_twice(self):
+        """ Create the same backup twice expecting an error message """
+        metadata = self._build_metadata("test_freezer_backups")
+        self._create_temporary_backup(metadata)
+
+        self.assertRaises(tempest.lib.exceptions.Conflict, self._create_temporary_backup, metadata)
+
+    @test.attr(type="gate")
+    def test_api_backups_delete(self):
+        metadata = self._build_metadata("test_freezer_backups")
+        backup_id = self._create_temporary_backup(metadata)
+
+        self.freezer_api_client.delete_backups(backup_id)
+
+        resp, response_body = self.freezer_api_client.get_backups()
+        self.assertEqual(0, len(response_body['backups']))
+
+    @test.attr(type="gate")
+    def test_api_backups_delete_other_users_backups(self):
+        metadata = self._build_metadata("test_freezer_backups")
+        backup_id = self._create_temporary_backup(metadata)
+
+        # Switching user
+        resp, response_body = self.os_alt.freezer_api_client.delete_backups(backup_id)
+        self.assertEqual('204', resp['status'])
+        self.assertEmpty(response_body)
+
+        # Switching back to original user
+        resp, response_body = self.freezer_api_client.get_backups()
+        self.assertEqual(1, len(response_body['backups']))
+
+    def _build_expected_data(self, backup_id, metadata):
+        return {
+            'user_name': self.os.credentials.credentials.username,
+            'backup_uuid': None,
+            'user_id': self.os.credentials.credentials.user_id,
+            'backup_id': backup_id,
+            'backup_metadata': metadata
+        }
+
+    def _build_metadata(self, backup_name):
+        return {
             "action": "backup",
             "always_level": "",
             "backup_media": "fs",
@@ -62,7 +206,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
             "storage": "swift",
             "container": "test_freezer_api_backups_container",
             "hostname": "localhost",
-            "backup_name": "test_freezer_api_backups_name",
+            "backup_name": backup_name,
             "time_stamp": 1459349846,
             "level": 1,
             "max_level": 14,
@@ -83,18 +227,23 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
             "version": "1.0"
         }
 
-        resp, response_body = self.freezer_api_client.post_backups(
-            backup_metadata)
-        self.assertEqual(201, resp.status)
+    def _create_temporary_backup(self, metadata):
+        resp, response_body = self.freezer_api_client.post_backups(metadata)
+
+        self.assertEqual('201', resp['status'])
 
         self.assertIn('backup_id', response_body)
         backup_id = response_body['backup_id']
 
-        # Check that the action has the correct values
-        # There is a bug that is preventing this from working.
-        # resp, response_body = self.freezer_api_client.get_backups(backup_id)
-        # self.assertEqual(200, resp.status)
+        self.addCleanup(self.freezer_api_client.delete_backups, backup_id)
 
-        resp, response_body = self.freezer_api_client.delete_backups(
-            backup_id)
-        self.assertEqual(204, resp.status)
+        return backup_id
+
+    def _workaround_get_backup(self, backup_id):
+        # TODO(JonasPf): Use the following line, once this bug is fixed:
+        # https://bugs.launchpad.net/freezer/+bug/1564649
+        # resp, response_body = self.freezer_api_client.get_backups(backup_id)
+        resp, response_body = self.freezer_api_client.get_backups()
+
+        result = next((b for b in response_body['backups'] if b['backup_id'] == backup_id))
+        return resp, result

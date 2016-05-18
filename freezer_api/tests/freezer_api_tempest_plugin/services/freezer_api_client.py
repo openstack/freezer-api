@@ -12,7 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import urllib
+
 from oslo_serialization import jsonutils as json
+
 
 from tempest import config
 from tempest.lib.common import rest_client
@@ -39,20 +42,25 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.get('/v1')
         return resp, response_body
 
-    def get_backups(self, backup_id = None):
+    def get_backups(self, backup_id=None, **params):
 
         if backup_id is None:
             uri = '/v1/backups'
+            if params:
+                uri += '?%s' % urllib.urlencode(params)
         else:
             uri = '/v1/backups/' + backup_id
 
         resp, response_body = self.get(uri)
-        return resp, response_body
+        return resp, json.loads(response_body)
 
-    def post_backups(self, backup):
+    def post_backups(self, metadata, backup_id=None):
+        uri = '/v1/backups'
+        if backup_id is not None:
+            uri += '/' + backup_id
 
-        request_body = json.dumps(backup)
-        resp, response_body = self.post('/v1/backups', request_body)
+        request_body = json.dumps(metadata)
+        resp, response_body = self.post(uri, request_body)
 
         return resp, json.loads(response_body)
 
