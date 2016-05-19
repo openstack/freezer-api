@@ -4,18 +4,17 @@ Freezer API
 
 TOC
 ===
-::
 
-     1. Installation
-     2. Devstack Plugin
-     3. Concepts and definitions
-     4. API registration
-     5. API routes
-     6. Backup metadata structure
-     7. Freezer Client document structure
-     8. Jobs
-     9. Actions
-    10. Sessions
+1. Installation
+2. Devstack Plugin
+3. Concepts and definitions
+4. API registration
+5. API routes
+6. Backup metadata structure
+7. Freezer Client document structure
+8. Jobs
+9. Actions
+10. Sessions
 
 1. Installation
 ===============
@@ -94,10 +93,11 @@ replicas can be found here https://www.elastic.co/guide/en/elasticsearch/guide/c
 
 
 1.7 example running freezer-api with apache2
---------------------------------
+--------------------------------------------
 ::
 
-# sudo vi /etc/apache2/sites-enabled/freezer-api.conf
+    # sudo vi /etc/apache2/sites-enabled/freezer-api.conf
+
     <VirtualHost ...>
         WSGIDaemonProcess freezer-api processes=2 threads=2 user=freezer
         WSGIProcessGroup freezer-api
@@ -605,60 +605,70 @@ This allow not to rewrite values that might be the same in multiple actions.
 If properties are specificaly set in one action, then the specified value is the one used.
 
 Example::
+
     "job": {
         "action_defaults": {
             "log_file": "/tmp/freezer_tmp_log",
             "container": "my_backup_container"
         },
-        "job_actions":
-            [
-                {"freezer_action":{
-                    "action" : "backup",
-                    "mode" : "fs",
-                    "src_file" : "/home/user1/file",
-                    "backup_name" : "user1_backup"}},
-                {"freezer_action":{
-                    "action" : "backup",
-                    "mode" : "fs",
-                    "src_file" : "/home/user2/file",
-                    "backup_name" : "user2_backup"}},
-                {"freezer_action":{
-                    "action" : "backup",
-                    "mode" : "fs",
-                    "src_file" : "/home/user3/file",
-                    "backup_name" : "user2_backup",
-                    "log_file" : "/home/user3/specific_log_file" }}
-            ]
+        "job_actions": [{
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/user1/file",
+                "backup_name": "user1_backup"
+            }
+        }, {
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/user2/file",
+                "backup_name": "user2_backup"
+            }
+        }, {
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/user3/file",
+                "backup_name": "user2_backup",
+                "log_file": "/home/user3/specific_log_file"
+            }
+        }],
         "description": "scheduled one shot"
     }
 
 
 Is Equivalent to::
+
     "job": {
-        "job_actions":
-            [
-                {"freezer_action":{
-                    "action" : "backup",
-                    "mode" : "fs",
-                    "src_file" : "/home/user1/file",
-                    "backup_name" : "user1_backup",
-                    "log_file": "/tmp/freezer_tmp_log",
-                    "container": "my_backup_container"}},
-                {"freezer_action":{
-                    "action" : "backup",
-                    "mode" : "fs",
-                    "src_file" : "/home/user2/file",
-                    "backup_name" : "user2_backup",
-                    "log_file": "/tmp/freezer_tmp_log",
-                    "container": "my_backup_container"}},
-                {"freezer_action":{
-                    "action" : "backup",
-                    "mode" : "fs",
-                    "src_file" : "/home/user3/file",
-                    "backup_name" : "user2_backup",
-                    "log_file" : "/home/user3/specific_log_file",
-                    "container": "my_backup_container"}},
-            ]
+        "job_actions": [{
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/user1/file",
+                "backup_name": "user1_backup",
+                "log_file": "/tmp/freezer_tmp_log",
+                "container": "my_backup_container"
+            }
+        }, {
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/user2/file",
+                "backup_name": "user2_backup",
+                "log_file": "/tmp/freezer_tmp_log",
+                "container": "my_backup_container"
+            }
+        }, {
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/user3/file",
+                "backup_name": "user2_backup",
+                "log_file": "/home/user3/specific_log_file",
+                "container": "my_backup_container"
+            }
+        }],
         "description": "scheduled one shot"
     }
 
@@ -698,7 +708,7 @@ job data structure, so that any job belonging to the same session will start at 
 
 
 10.1 Session Data Structure
---------------------------
+---------------------------
 ::
 
   session =
@@ -733,7 +743,7 @@ job data structure, so that any job belonging to the same session will start at 
   }
 
 10.2 Session actions
--------------------
+--------------------
 When the freezer scheduler running on a node wants to start a session,
 it sends a POST request to the following endpoint: ::
 
@@ -741,8 +751,8 @@ it sends a POST request to the following endpoint: ::
 
 The body of the request bears the action and parameters
 
-109.2.1 Session START action
---------------------------
+10.2.1 Session START action
+----------------------------
 ::
 
     {
@@ -752,7 +762,7 @@ The body of the request bears the action and parameters
         }
     }
 
-Example of a succesfull response: ::
+Example of a successful response: ::
 
     {
         'result': 'success',
@@ -760,7 +770,7 @@ Example of a succesfull response: ::
     }
 
 10.2.2 Session STOP action
--------------------------
+--------------------------
 ::
 
     {
@@ -772,7 +782,7 @@ Example of a succesfull response: ::
     }
 
 10.3 Session-Job association
----------------------------
+----------------------------
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
