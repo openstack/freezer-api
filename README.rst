@@ -752,7 +752,7 @@ it sends a POST request to the following endpoint: ::
 The body of the request bears the action and parameters
 
 10.2.1 Session START action
-----------------------------
+---------------------------
 ::
 
     {
