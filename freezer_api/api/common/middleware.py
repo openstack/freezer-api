@@ -65,12 +65,6 @@ class RequireJSON(object):
                 'Freezer-api only supports responses encoded as JSON.',
                 href='http://docs.examples.com/api/json')
 
-        if req.method in ('POST', 'PUT'):
-            if 'application/json' not in req.content_type:
-                raise falcon.HTTPUnsupportedMediaType(
-                    'Freezer-api only supports requests encoded as JSON.',
-                    href='http://docs.examples.com/api/json')
-
 
 class JSONTranslator(object):
 
