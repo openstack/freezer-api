@@ -30,7 +30,7 @@ import requests
 from freezer_api.common import db_mappings
 
 
-DEFAULT_CONF_PATH = '/etc/freezer-api.conf'
+DEFAULT_CONF_PATH = '/etc/freezer/freezer-api.conf'
 DEFAULT_ES_SERVER_PORT = 9200
 DEFAULT_INDEX = 'freezer'
 DEFAULT_REPLICAS = 1
@@ -307,7 +307,7 @@ def get_db_params(args):
     """
     Extracts the db configuration parameters either from the provided
     command line arguments or searching in the default freezer-api config
-    file /etc/freezer-api.conf
+    file /etc/freezer/freezer-api.conf
 
     :param args: argparsed command line arguments
     :return: (elasticsearch_url, elastichsearch_index, number_of_replicas)

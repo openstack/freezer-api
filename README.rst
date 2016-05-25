@@ -36,8 +36,10 @@ TOC
 --------------------
 ::
 
-  # sudo cp etc/freezer-api.conf /etc/freezer-api.conf
-  # sudo vi /etc/freezer-api.conf
+  # sudo cp etc/freezer/freezer-api.conf /etc/freezer/freezer-api.conf
+  # sudo cp etc/freezer/freezer-paste.ini /etc/freezer/freezer-paste.ini
+  # sudo vi /etc/freezer/freezer-api.conf
+  # sudo vi /etc/freezer/freezer-paste.ini
 
 
 1.4 setup/configure the db
@@ -63,7 +65,7 @@ To do that, use the freezer-db-init command:
   # freezer-db-init [db-host]
 
 The url of the db-host is optional and can be automatically guessed from
-/etc/freezer-api.conf
+/etc/freezer/freezer-api.conf
 
 To get information about optional additional parameters:
 ::

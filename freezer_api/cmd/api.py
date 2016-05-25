@@ -20,10 +20,11 @@ from __future__ import print_function
 import falcon
 import sys
 
-from keystonemiddleware import auth_token
 from oslo_config import cfg
 from oslo_log import log
-from wsgiref import simple_server
+from paste import deploy
+from paste import httpserver
+
 
 from freezer_api.api.common import middleware
 from freezer_api.api.common import utils
@@ -39,19 +40,21 @@ CONF = cfg.CONF
 _LOG = log.getLogger(__name__)
 
 
-def get_application(db=None):
-    config.parse_args()
-    config.setup_logging()
-
+def build_app(db=None):
+    """
+    Building routes and forming the root freezer-api app
+    :param db: instance of elastic search db class if not freezer will try to
+    initialize this instance itself
+    :return: wsgi app
+    """
     if not db:
         db = driver.get_db()
-
     # injecting FreezerContext & hooks
-    middlware_list = [utils.FuncMiddleware(hook) for hook in
-                      utils.before_hooks()]
-    middlware_list.append(middleware.JSONTranslator())
-    middlware_list.append(middleware.RequireJSON())
-    app = falcon.API(middleware=middlware_list)
+    middleware_list = [utils.FuncMiddleware(hook) for hook in
+                       utils.before_hooks()]
+    middleware_list.append(middleware.JSONTranslator())
+    middleware_list.append(middleware.RequireJSON())
+    app = falcon.API(middleware=middleware_list)
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
@@ -64,42 +67,30 @@ def get_application(db=None):
         for route, resource in endpoints:
             app.add_route(version_path + route, resource)
 
-    if 'keystone_authtoken' in config.CONF:
-        auth_app = auth_token.AuthProtocol(app,
-                                      conf={"oslo-config-config": CONF,
-                                            "oslo-config-project":
-                                                "freezer-api"})
-    else:
-        _LOG.warning(_i18n._LW("keystone authentication disabled"))
-
-    app = middleware.SignedHeadersAuth(app, auth_app)
-    app = middleware.HealthApp(app=app, path='/v1/health')
-
     return app
 
 
 def main():
-    try:
-        application = get_application()
-    except Exception as err:
-        message = _i18n._('Unable to start server: %s ') % err
-        print(message)
-        _LOG.error(message)
-        sys.exit(1)
+    # setup opts
+    config.parse_args()
+    config.setup_logging()
+    paste_conf = config.find_paste_config()
+
     # quick simple server for testing purposes or simple scenarios
     ip = CONF.get('bind_host', '0.0.0.0')
     port = CONF.get('bind_port', 9090)
-    httpd = simple_server.make_server(ip, int(port), application)
-    message = _i18n._('Server listening on %(ip)s:%(port)s'
-                % {'ip': ip, 'port': port})
-    print(message)
-    _LOG.info(message)
     try:
-        httpd.serve_forever()
+        httpserver.serve(
+            application=deploy.loadapp('config:%s' % paste_conf, name='main'),
+            host=ip,
+            port=port)
+        message = _i18n._('Server listening on %(ip)s:%(port)s' %
+                          {'ip': ip, 'port': port})
+        _LOG.info(message)
+        print(message)
     except KeyboardInterrupt:
-        print(_i18n._("\nThanks, Bye"))
+        print(_i18n._("Thank You ! \nBye."))
         sys.exit(0)
-
 
 if __name__ == '__main__':
     main()

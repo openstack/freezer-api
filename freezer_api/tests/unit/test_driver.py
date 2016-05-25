@@ -21,7 +21,7 @@ import unittest
 from mock import Mock, patch
 
 from freezer_api.storage import driver
-from freezer_api.cmd.api import get_application
+from freezer_api.cmd.api import build_app
 
 
 class TestStorageDriver(unittest.TestCase):

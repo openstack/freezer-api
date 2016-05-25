@@ -18,10 +18,11 @@
 
 # If set to true, the logging level will be set to DEBUG instead of the default
 # INFO level. (boolean value)
+# Note: This option can be changed without restarting.
 #debug = false
 
-# If set to false, the logging level will be set to WARNING instead of the
-# default INFO level. (boolean value)
+# DEPRECATED: If set to false, the logging level will be set to WARNING instead
+# of the default INFO level. (boolean value)
 # This option is deprecated for removal.
 # Its value may be silently ignored in the future.
 #verbose = true
@@ -166,8 +167,8 @@
 
 # Determines the frequency at which the list of revoked tokens is retrieved
 # from the Identity service (in seconds). A high number of revocation events
-# combined with a low cache duration may significantly reduce performance.
-# (integer value)
+# combined with a low cache duration may significantly reduce performance. Only
+# valid for PKI tokens. (integer value)
 #revocation_cache_time = 10
 
 # (Optional) If defined, indicate whether token data should be authenticated or
@@ -277,6 +278,17 @@
 
 # Config Section from which to load plugin specific options (unknown value)
 #auth_section = <None>
+
+
+[paste_deploy]
+
+#
+# From freezer-api
+#
+
+# Name of the paste configuration file that defines the available pipelines.
+# (string value)
+#config_file = freezer-paste.ini
 
 
 [storage]

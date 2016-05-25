@@ -18,43 +18,64 @@ limitations under the License.
 import falcon
 import json
 
+from oslo_log import log
 
-class HealthApp(object):
+LOG = log.getLogger(__name__)
+
+
+class Middleware(object):
+    """
+    WSGI wrapper for all freezer middlewares. Use this will allow to manage
+    middlewares through paste
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    def process_request(self, req):
+        """
+        implement this function in your middleware to change the request
+        if the function return None the request will be handled in the next
+        level functions
+        """
+        return None
+
+    def process_response(self, resp):
+        """
+        Implement this to modify your response
+        """
+        return None
+
+    @classmethod
+    def factory(cls, global_conf, **local_conf):
+        def filter(app):
+            return cls(app)
+        return filter
+
+    def __call__(self, req, resp):
+        response = self.process_request(req)
+        if response:
+            return response
+        response = req.get_response(self.app)
+        response.req = req
+        try:
+            self.process_response(response)
+        except falcon.HTTPError as e:
+            LOG.error(e)
+
+
+# @todo this should be removed and oslo.middleware should be used instead
+class HealthApp(Middleware):
     """
     Simple WSGI app to support HAProxy polling.
     If the requested url matches the configured path it replies
     with a 200 otherwise passes the request to the inner app
     """
-    def __init__(self, app, path):
-        self.app = app
-        self.path = path
-
     def __call__(self, environ, start_response):
-        if environ.get('PATH_INFO') == self.path:
+        if environ.get('PATH_INFO') == '/v1/health':
             start_response('200 OK', [])
             return []
         return self.app(environ, start_response)
-
-
-class SignedHeadersAuth(object):
-
-    def __init__(self, app, auth_app):
-        self._app = app
-        self._auth_app = auth_app
-
-    def __call__(self, environ, start_response):
-        path = environ.get('PATH_INFO')
-        # NOTE(flwang): The root path of Zaqar service shouldn't require any
-        # auth.
-        if path == '/':
-            return self._app(environ, start_response)
-
-        signature = environ.get('HTTP_URL_SIGNATURE')
-
-        if signature is None or path.startswith('/v1'):
-            return self._auth_app(environ, start_response)
-
-        return self._app(environ, start_response)
 
 
 class RequireJSON(object):

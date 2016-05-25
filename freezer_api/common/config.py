@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import sys
 
 from oslo_config import cfg
@@ -24,6 +25,12 @@ from freezer_api.storage import driver
 from keystonemiddleware import opts
 
 CONF = cfg.CONF
+
+paste_deploy = [
+        cfg.StrOpt('config_file', default='freezer-paste.ini',
+                   help='Name of the paste configuration file that defines '
+                        'the available pipelines.'),
+    ]
 
 
 def api_common_opts():
@@ -46,6 +53,11 @@ def api_common_opts():
 def parse_args():
     CONF.register_cli_opts(api_common_opts())
     driver.register_elk_opts()
+    # register paste configuration
+    paste_grp = cfg.OptGroup('paste_deploy',
+                             'Paste Configuration')
+    CONF.register_group(paste_grp)
+    CONF.register_opts(paste_deploy, group=paste_grp)
     log.register_options(CONF)
     default_config_files = cfg.find_config_files('freezer', 'freezer-api')
     CONF(args=sys.argv[1:],
@@ -70,10 +82,42 @@ def setup_logging():
     log.setup(CONF, 'freezer-api', version=FREEZER_API_VERSION)
 
 
+def find_paste_config():
+    """Find freezer's paste.deploy configuration file.
+    freezer's paste.deploy configuration file is specified in the
+    ``[paste_deploy]`` section of the main freezer-api configuration file,
+    ``freezer-api.conf``.
+    For example::
+        [paste_deploy]
+        config_file = freezer-paste.ini
+    :returns: The selected configuration filename
+    :raises: exception.ConfigFileNotFound
+    """
+    if CONF.paste_deploy.config_file:
+        paste_config = CONF.paste_deploy.config_file
+        paste_config_value = paste_config
+        if not os.path.isabs(paste_config):
+            paste_config = CONF.find_file(paste_config)
+    elif CONF.config_file:
+        paste_config = CONF.config_file[0]
+        paste_config_value = paste_config
+    else:
+        # this provides backwards compatibility for keystone.conf files that
+        # still have the entire paste configuration included, rather than just
+        # a [paste_deploy] configuration section referring to an external file
+        paste_config = CONF.find_file('freezer-api.conf')
+        paste_config_value = 'freezer-api.conf'
+    if not paste_config or not os.path.exists(paste_config):
+        raise Exception('paste configuration file {0} not found !'.
+                        format(paste_config))
+    return paste_config
+
+
 def list_opts():
     _OPTS = {
         None: api_common_opts(),
         'storage': driver.get_elk_opts(),
+        'paste_deploy': paste_deploy,
         opts.auth_token_opts[0][0]: opts.auth_token_opts[0][1]
     }
     return _OPTS.items()
