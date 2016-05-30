@@ -180,11 +180,10 @@ class JobTypeManager(TypeManager):
         return {'query': {'filtered': query_filter}}
 
     def update(self, job_id, job_update_doc):
-        version = job_update_doc.pop('_version', 0)
         update_doc = {"doc": job_update_doc}
         try:
             res = self.es.update(index=self.index, doc_type=self.doc_type,
-                                 id=job_id, body=update_doc, version=version)
+                                 id=job_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
@@ -213,12 +212,10 @@ class ActionTypeManager(TypeManager):
         return {'query': {'filtered': query_filter}}
 
     def update(self, action_id, action_update_doc):
-        version = action_update_doc.pop('_version', 0)
         update_doc = {"doc": action_update_doc}
         try:
             res = self.es.update(index=self.index, doc_type=self.doc_type,
-                                 id=action_id, body=update_doc,
-                                 version=version)
+                                 id=action_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
@@ -247,12 +244,10 @@ class SessionTypeManager(TypeManager):
         return {'query': {'filtered': query_filter}}
 
     def update(self, session_id, session_update_doc):
-        version = session_update_doc.pop('_version', 0)
         update_doc = {"doc": session_update_doc}
         try:
             res = self.es.update(index=self.index, doc_type=self.doc_type,
-                                 id=session_id, body=update_doc,
-                                 version=version)
+                                 id=session_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
         except elasticsearch.TransportError as e:
