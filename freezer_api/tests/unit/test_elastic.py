@@ -236,13 +236,12 @@ class JobTypeManager(unittest.TestCase):
             u'_version': 3
         }
         res = self.job_manager.update(job_id=fake_job_0_job_id,
-                                      job_update_doc={'status': 'sleepy', '_version': 12})
+                                      job_update_doc={'status': 'sleepy'})
         self.assertEqual(res, 3)
         self.mock_es.update.assert_called_with(index=self.job_manager.index,
                                                doc_type=self.job_manager.doc_type,
                                                id=fake_job_0_job_id,
-                                               body={"doc": {'status': 'sleepy'}},
-                                               version=12)
+                                               body={"doc": {'status': 'sleepy'}})
 
     def test_update_raise_DocumentNotFound_when_not_found(self):
         self.mock_es.update.side_effect = TransportError('regular test failure', 1)
@@ -296,13 +295,12 @@ class ActionTypeManager(unittest.TestCase):
             u'_version': 3
         }
         res = self.action_manager.update(action_id='poiuuiop7890',
-                                         action_update_doc={'status': 'sleepy', '_version': 12})
+                                         action_update_doc={'status': 'sleepy'})
         self.assertEqual(res, 3)
         self.mock_es.update.assert_called_with(index=self.action_manager.index,
                                                doc_type=self.action_manager.doc_type,
                                                id='poiuuiop7890',
-                                               body={"doc": {'status': 'sleepy'}},
-                                               version=12)
+                                               body={"doc": {'status': 'sleepy'}})
 
     def test_update_raise_DocumentNotFound_when_not_found(self):
         self.mock_es.update.side_effect = TransportError('regular test failure', 1)
@@ -356,13 +354,12 @@ class SessionTypeManager(unittest.TestCase):
             u'_version': 3
         }
         res = self.session_manager.update(session_id='poiuuiop7890',
-                                          session_update_doc={'status': 'sleepy', '_version': 12})
+                                          session_update_doc={'status': 'sleepy'})
         self.assertEqual(res, 3)
         self.mock_es.update.assert_called_with(index=self.session_manager.index,
                                                doc_type=self.session_manager.doc_type,
                                                id='poiuuiop7890',
-                                               body={"doc": {'status': 'sleepy'}},
-                                               version=12)
+                                               body={"doc": {'status': 'sleepy'}})
 
     def test_update_raise_DocumentNotFound_when_not_found(self):
         self.mock_es.update.side_effect = TransportError('regular test failure', 1)
