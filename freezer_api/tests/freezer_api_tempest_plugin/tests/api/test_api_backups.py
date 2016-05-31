@@ -114,6 +114,23 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertEqual(expected, response_body)
 
     @test.attr(type="gate")
+    def test_api_backups_post_without_content_type(self):
+        """ Test the backup endpoint without content-type=application/json.
+
+        It's expected to work regardless of whether content-type is set or not.
+        """
+        metadata = self._build_metadata("test_freezer_backups")
+
+        uri = '/v1/backups'
+        request_body = json.dumps(metadata)
+
+        # Passing in an empty dict for headers to avoid automatically
+        # generating headers
+        resp, response_body = self.freezer_api_client.post(uri, request_body, headers={})
+
+        self.assertEqual(resp.status, 201)
+
+    @test.attr(type="gate")
     def test_api_backups_post_incomplete(self):
         metadata = self._build_metadata("test_freezer_backups")
         del(metadata['container'])
