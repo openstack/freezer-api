@@ -294,5 +294,5 @@ class Job(object):
                     if action["freezer_action"].get(key) is None:
                         action["freezer_action"][key] = val
         else:
-            raise freezer_api_exc.BadDataForma(message="action_defaults should"
-                                                       "be a dictionary")
+            raise freezer_api_exc.BadDataFormat(message="action_defaults should"
+                                                        "be a dictionary")
