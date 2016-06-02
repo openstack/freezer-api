@@ -125,7 +125,8 @@ function init_freezer_api {
     ${TOP_DIR}/pkg/elasticsearch.sh start
 
     # put elasticsearch mappings
-    freezer-db-init -y -e
+    freezer-manage db update
+    freezer-manage db show
 }
 
 
