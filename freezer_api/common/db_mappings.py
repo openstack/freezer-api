@@ -340,6 +340,7 @@ jobs_mapping = {
                     "type": "long"
                 },
                 "user_id": {
+                    "index": "not_analyzed",
                     "type": "string"
                 }
             }
