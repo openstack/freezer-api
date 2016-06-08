@@ -180,6 +180,8 @@ class JobTypeManager(TypeManager):
         return {'query': {'filtered': query_filter}}
 
     def update(self, job_id, job_update_doc):
+        # remove _version from the document
+        job_update_doc.pop('_version', 0)
         update_doc = {"doc": job_update_doc}
         try:
             res = self.es.update(index=self.index, doc_type=self.doc_type,
@@ -212,6 +214,8 @@ class ActionTypeManager(TypeManager):
         return {'query': {'filtered': query_filter}}
 
     def update(self, action_id, action_update_doc):
+        # remove _version from the document
+        action_update_doc.pop('_version', 0)
         update_doc = {"doc": action_update_doc}
         try:
             res = self.es.update(index=self.index, doc_type=self.doc_type,
@@ -244,6 +248,8 @@ class SessionTypeManager(TypeManager):
         return {'query': {'filtered': query_filter}}
 
     def update(self, session_id, session_update_doc):
+        # remove _version from the document
+        session_update_doc.pop('_version', 0)
         update_doc = {"doc": session_update_doc}
         try:
             res = self.es.update(index=self.index, doc_type=self.doc_type,
