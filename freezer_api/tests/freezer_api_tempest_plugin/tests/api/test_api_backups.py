@@ -194,9 +194,9 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
     def _build_expected_data(self, backup_id, metadata):
         return {
-            'user_name': self.os.credentials.credentials.username,
+            'user_name': self.os.credentials.username,
             'backup_uuid': None,
-            'user_id': self.os.credentials.credentials.user_id,
+            'user_id': self.os.credentials.user_id,
             'backup_id': backup_id,
             'backup_metadata': metadata
         }
