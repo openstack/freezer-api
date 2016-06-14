@@ -177,18 +177,14 @@ backups which share the same container,hostname and backupname
 ===================
 ::
 
-    # keystone user-create --name freezer --pass FREEZER_PWD
-    # keystone user-role-add --user freezer --tenant service --role admin
+    # openstack user create --domain default --password-prompt freezer
+    # openstack role add --project service --user freezer admin
 
-    # keystone service-create --name freezer --type backup \
-      --description "Freezer Backup Service"
+    # openstack service create --name freezer --description "Freezer Backup Service" backup
 
-    # keystone endpoint-create \
-      --service-id $(keystone service-list | awk '/ backup / {print $2}') \
-      --publicurl http://freezer_api_publicurl:port \
-      --internalurl http://freezer_api_internalurl:port \
-      --adminurl http://freezer_api_adminurl:port \
-      --region regionOne
+    # openstack endpoint create --region RegionOne backup public http://freezer_api_publicurl:port
+    # openstack endpoint create --region RegionOne backup internal http://freezer_api_internalurl:port
+    # openstack endpoint create --region RegionOne backup admin http://freezer_api_adminurl:port
 
 
 5. API routes
