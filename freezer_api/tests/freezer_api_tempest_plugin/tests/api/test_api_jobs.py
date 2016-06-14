@@ -54,7 +54,6 @@ fake_job = {
     "description": "scheduled one shot"
 }
 
-
 class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
     @classmethod
@@ -75,6 +74,32 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         self.assertIn('jobs', response_body_json)
         jobs = response_body_json['jobs']
         self.assertEqual([], jobs)
+
+    @test.attr(type="gate")
+    def test_api_jobs_get_limit(self):
+        # limits > 0 should return successfully
+        for valid_limit in [2, 1]:
+            resp, body = self.freezer_api_client.get_jobs(limit=valid_limit)
+            self.assertEqual(200, resp.status)
+
+        # limits <= 0 should raise a bad request error
+        for bad_limit in [0, -1, -2]:
+            self.assertRaises(BadRequest,
+                              self.freezer_api_client.get_jobs,
+                              limit=bad_limit)
+
+    @test.attr(type="gate")
+    def test_api_jobs_get_offset(self):
+        # offsets >= 0 should return 200
+        for valid_offset in [1, 0]:
+            resp, body = self.freezer_api_client.get_jobs(offset=valid_offset)
+            self.assertEqual(200, resp.status)
+
+        # offsets < 0 should return 400
+        for bad_offset in [-1, -2]:
+            self.assertRaises(BadRequest,
+                              self.freezer_api_client.get_jobs,
+                              offset=bad_offset)
 
     @test.attr(type="gate")
     def test_api_jobs_post(self):

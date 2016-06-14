@@ -159,8 +159,16 @@ Normal response codes:200
 
 3.2.1 Request
 -------------
+=============== ============= ======== =============================================
+Parameter Name  Type          Default  Description
+=============== ============= ======== =============================================
+limit           ``int > 0``   ``10``   Fetch at most ``limit`` results
+--------------- ------------- -------- ---------------------------------------------
+offset          ``int >= 0``  ``0``    Start fetching results from index ``offset``
+=============== ============= ======== =============================================
 
-This operation does not accept a bode
+This operation does not accept a body. If no results satisfy the query, an empty
+list will be returned.
 
 3.2.2 Response
 --------------
@@ -312,7 +320,16 @@ GET      /v1/clients(?limit,offset)   Lists registered clients
 
 4.1.1 Request
 -------------
-This operation does not accept a body
+=============== ============= ======== =============================================
+Parameter Name  Type          Default  Description
+=============== ============= ======== =============================================
+limit           ``int > 0``   ``10``   Fetch at most ``limit`` results
+--------------- ------------- -------- ---------------------------------------------
+offset          ``int >= 0``  ``0``    Start fetching results from index ``offset``
+=============== ============= ======== =============================================
+
+This operation does not accept a body. If no results satisfy the query, an empty
+list will be returned.
 
 4.1.2 Response
 --------------
@@ -446,9 +463,15 @@ GET      /v1/jobs(?limit,offset)     Lists registered jobs
 
 5.1.1 Request
 -------------
-Example
+=============== ============= ======== =============================================
+Parameter Name  Type          Default  Description
+=============== ============= ======== =============================================
+limit           ``int > 0``   ``10``   Fetch at most ``limit`` results
+--------------- ------------- -------- ---------------------------------------------
+offset          ``int >= 0``  ``0``    Start fetching results from index ``offset``
+=============== ============= ======== =============================================
 
-::
+Body Example::
 
   {
     "match": [
@@ -675,5 +698,3 @@ PATCH    /v1/jobs/{jobs_id}          Updates part of the document
         "job_id": "923b9d436bca41d79007fe14bd103ed1",
         "version": 3
     }
-
-

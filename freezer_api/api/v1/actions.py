@@ -30,8 +30,8 @@ class ActionsCollectionResource(resource.BaseResource):
     def on_get(self, req, resp):
         # GET /v1/actions(?limit,offset)     Lists actions
         user_id = req.get_header('X-User-ID')
-        offset = req.get_param_as_int('offset') or 0
-        limit = req.get_param_as_int('limit') or 10
+        offset = req.get_param_as_int('offset', min=0) or 0
+        limit = req.get_param_as_int('limit', min=1) or 10
         search = self.json_body(req)
         obj_list = self.db.search_action(user_id=user_id, offset=offset,
                                          limit=limit, search=search)

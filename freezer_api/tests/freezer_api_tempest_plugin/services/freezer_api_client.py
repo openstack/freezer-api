@@ -70,10 +70,12 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_clients(self, client_id = None):
+    def get_clients(self, client_id = None, **params):
 
         if client_id is None:
             uri = '/v1/clients'
+            if params:
+                uri += '?%s' % urllib.urlencode(params)
         else:
             uri = 'v1/clients/' + client_id
 
@@ -92,14 +94,16 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_jobs(self, job_id = None):
+    def get_jobs(self, job_id = None, **params):
 
         if job_id is None:
             uri = '/v1/jobs'
+            if params:
+                uri += '?%s' % urllib.urlencode(params)
         else:
             uri = '/v1/jobs/' + job_id
 
-        resp, response_body = self.get('/v1/jobs')
+        resp, response_body = self.get(uri)
         return resp, response_body
 
     def post_jobs(self, job):
@@ -114,10 +118,12 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_actions(self, action_id = None):
+    def get_actions(self, action_id = None, **params):
 
         if action_id is None:
             uri = '/v1/actions'
+            if params:
+                uri += '?%s' % urllib.urlencode(params)
         else:
             uri = '/v1/actions/' + action_id
 
@@ -150,10 +156,12 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_sessions(self, session_id = None):
+    def get_sessions(self, session_id = None, **params):
 
         if session_id is None:
             uri = '/v1/sessions'
+            if params:
+                uri += '?%s' % urllib.urlencode(params)
         else:
             uri = 'v1/sessions/' + session_id
 
