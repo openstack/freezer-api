@@ -59,25 +59,53 @@ This information is contained in the "mapping", or schema definition.
 Elasticsearch will use dynamic mapping to try to guess the field type from
 the basic datatypes available in JSON, but some field's properties have to be
 explicitly declared to tune the indexing engine.
-To do that, use the freezer-db-init command:
+To do that, use the freezer-manage command:
 ::
 
-  # freezer-db-init [db-host]
+  # freezer-manage db sync
 
-The url of the db-host is optional and can be automatically guessed from
-/etc/freezer/freezer-api.conf
+You should have updated your configuration files before doing this step.
+freezer-manage has the following options:
+- To create the db mappings use the following command::
 
-To get information about optional additional parameters:
-::
+  # freezer-manage db sync
 
-  freezer-db-init -h
+- To update the db mappings using the following command. Update means that you
+ might have some mappings and you want to update it with a more recent ones ::
 
-Freezer index number of replicas:
+  # freezer-manage db update
 
-The number of replicas of the freezer index can be configured by changing
-the parameter number_of_replicas in the configuration file. This should be done
-before running freezer-db-init script. More information about elasticsearch
-replicas can be found here https://www.elastic.co/guide/en/elasticsearch/guide/current/replica-shards.html
+- To remove the db mappings using the following command ::
+
+  # freezer-manage db remove
+
+- To print the db mappings using the following command ::
+
+  # freezer-manage db show
+
+- To update your settings (number of replicas) all what you need to do is to
+ change its value in the configuration file and then run the following command ::
+
+  # freezer-manage db update-settings
+
+If you provided an invalid number of replicas that will cause problems later on,
+so it's highly recommended to make sure that you are using the correct number
+of replicas. For more info click here .. _Replicas https://www.elastic.co/guide/en/elasticsearch/guide/current/replica-shards.html
+
+- To get information about optional additional parameters::
+
+  # freezer-manage -h
+
+- If you want to add any additional parameter like --yes or --erase, they should
+ be before the db option. Check the following examples:
+
+Wrong Example::
+
+   # freezer-manage db sync -y -e
+
+Correct Example::
+
+   # freezer-manage -y -e db sync
 
 1.5 run simple instance
 -----------------------
