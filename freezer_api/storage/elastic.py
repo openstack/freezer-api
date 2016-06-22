@@ -93,6 +93,8 @@ class TypeManager:
 
     def insert(self, doc, doc_id=None):
         try:
+            # remove _version from the document
+            doc.pop('_version', None)
             res = self.es.index(index=self.index, doc_type=self.doc_type,
                                 body=doc, id=doc_id)
             created = res['created']
