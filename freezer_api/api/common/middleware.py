@@ -15,22 +15,51 @@ limitations under the License.
 
 """
 
-from freezer_api.common import exceptions as freezer_api_exc
+import falcon
 import json
-from webob.dec import wsgify
+import logging
+
+import freezer_api.common.exceptions as freezer_api_exc
 
 
-@wsgify.middleware
-def json_translator(req, app):
-    resp = req.get_response(app)
-    if resp.body:
-        if isinstance(resp.body, dict):
-            try:
-                resp.body = json.dumps(resp.body)
-            except Exception:
-                raise freezer_api_exc.FreezerAPIException(
-                    'Internal server error: malformed json reply')
-    return resp
+class Middleware(object):
+    """
+    WSGI wrapper for all freezer middlewares.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    def process_request(self, req):
+        """
+        implement this function in your middleware to change the request
+        if the function return None the request will be handled in the next
+        level functions
+        """
+        return None
+
+    def process_response(self, resp):
+        """
+        Implement this to modify your response
+        """
+        return None
+
+    @classmethod
+    def factory(cls, global_conf, **local_conf):
+        def filter(app):
+            return cls(app)
+        return filter
+
+    def __call__(self, req, resp):
+        response = self.process_request(req)
+        if response:
+            return response
+        response = req.get_response(self.app)
+        response.req = req
+        try:
+            self.process_response(response)
+        except falcon.HTTPError as e:
+            logging.error(e)
 
 
 class HealthApp(object):
@@ -48,3 +77,78 @@ class HealthApp(object):
             start_response('200 OK', [])
             return []
         return self.app(environ, start_response)
+
+
+class HookableMiddlewareMixin(object):
+    """Provides methods to extract before and after hooks from WSGI Middleware
+
+    Prior to falcon 0.2.0b1, it's necessary to provide falcon with middleware
+    as "hook" functions that are either invoked before (to process requests)
+    or after (to process responses) the API endpoint code runs.
+
+    This mixin allows the process_request and process_response methods from a
+    typical WSGI middleware object to be extracted for use as these hooks, with
+    the appropriate method signatures.
+    """
+
+    def as_before_hook(self):
+        """Extract process_request method as "before" hook
+
+        :return: before hook function
+        """
+
+        # Need to wrap this up in a closure because the parameter counts
+        # differ
+        def before_hook(req, resp, params=None):
+            return self.process_request(req, resp)
+
+        try:
+            return before_hook
+        except AttributeError as ex:
+            # No such method, we presume.
+            message_template = "Failed to get before hook from middleware {0} - {1}"
+            message = message_template.format(self.__name__, ex.message)
+            logging.error(message)
+            logging.exception(ex)
+            raise freezer_api_exc.FreezerAPIException(message)
+
+    def as_after_hook(self):
+        """Extract process_response method as "after" hook
+
+        :return: after hook function
+        """
+        # Need to wrap this up in a closure because the parameter counts
+        # differ
+        def after_hook(req, resp, resource=None):
+            return self.process_response(req, resp, resource)
+
+        try:
+            return after_hook
+        except AttributeError as ex:
+            # No such method, we presume.
+            message_template = "Failed to get after hook from middleware {0} - {1}"
+            message = message_template.format(self.__name__, ex.message)
+            logging.error(message)
+            logging.exception(ex)
+            raise freezer_api_exc.FreezerAPIException(message)
+
+
+class RequireJSON(HookableMiddlewareMixin, object):
+
+    def process_request(self, req, resp):
+        if not req.client_accepts_json:
+            raise falcon.HTTPNotAcceptable(
+                'Freezer-api only supports responses encoded as JSON.',
+                href='http://docs.examples.com/api/json')
+
+
+class JSONTranslator(HookableMiddlewareMixin, object):
+
+    def process_response(self, req, resp, resource):
+        if not hasattr(resp, 'body'):
+            return
+        if isinstance(resp.data, dict):
+            resp.data = json.dumps(resp.data)
+
+        if isinstance(resp.body, dict):
+            resp.body = json.dumps(resp.body)

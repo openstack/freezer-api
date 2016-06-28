@@ -23,6 +23,7 @@ import sys
 
 from keystonemiddleware import auth_token
 from oslo_config import cfg
+from pkg_resources import parse_version
 from wsgiref import simple_server
 
 from freezer_api.api.common import middleware
@@ -35,9 +36,21 @@ from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import log
 from freezer_api.storage import driver
 
+# Define the minimum version of falcon at which we can use the "new" invocation
+# style for middleware (aka v1), i.e. the "middleware" named argument for
+# falcon.API.
+FALCON_MINVERSION_MIDDLEWARE = parse_version('0.2.0b1')
 
-def get_application(db):
-    app = falcon.API()
+
+def configure_app(app, db=None):
+    """Build routes and exception handlers
+
+    :param app: falcon WSGI app
+    :param db: Database engine (ElasticSearch)
+    :return:
+    """
+    if not db:
+        db = driver.get_db()
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
@@ -50,9 +63,6 @@ def get_application(db):
         for route, resource in endpoints:
             app.add_route(version_path + route, resource)
 
-    # pylint: disable=no-value-for-parameter
-    app = middleware.json_translator(app)
-
     if 'keystone_authtoken' in config.CONF:
         app = auth_token.AuthProtocol(app, {})
     else:
@@ -61,6 +71,67 @@ def get_application(db):
     app = middleware.HealthApp(app=app, path='/v1/health')
 
     return app
+
+
+def build_app_v0():
+    """Instantiate the root freezer-api app
+
+    Old versions of falcon (< 0.2.0) don't have a named 'middleware' argument.
+    This was introduced in version 0.2.0b1, so before that we need to instead
+    provide "before" hooks (request processing) and "after" hooks (response
+    processing).
+
+    :return: falcon WSGI app
+    """
+
+    # injecting FreezerContext & hooks
+    before_hooks = [middleware.RequireJSON().as_before_hook()]
+    after_hooks = [middleware.JSONTranslator().as_after_hook()]
+
+    # The signature of falcon.API() differs between versions, suppress pylint:
+    # pylint: disable=unexpected-keyword-arg
+    app = falcon.API(before=before_hooks, after=after_hooks)
+
+    app = configure_app(app)
+    return app
+
+
+def build_app_v1():
+    """Building routes and forming the root freezer-api app
+
+    This uses the 'middleware' named argument to specify middleware for falcon
+    instead of the 'before' and 'after' hooks that were removed after 0.3.0
+    (both approaches were available for versions 0.2.0 - 0.3.0)
+
+    :return: falcon WSGI app
+    """
+    middleware_list = [middleware.RequireJSON(), middleware.JSONTranslator()]
+
+    # The signature of falcon.API() differs between versions, suppress pylint:
+    # pylint: disable=unexpected-keyword-arg
+    app = falcon.API(middleware=middleware_list)
+
+    app = configure_app(app)
+    return app
+
+
+def get_application(db):
+    """Launch the falcon API with the correct middleware arguments
+
+    :param db: ElasticSearch instance
+    :return: Falcon API instance
+    """
+    # Special case handling for python 0.1.6 (from 0.1.7, falcon exposes
+    # __version__ like a python module *should*)...
+    current_version = parse_version(
+        falcon.__version__ if hasattr(falcon, '__version__') else falcon.version)
+
+    # Check the currently installed version of falcon in order to invoke it
+    # correctly.
+    if current_version < FALCON_MINVERSION_MIDDLEWARE:
+        return build_app_v0()
+    else:
+        return build_app_v1()
 
 config_file = '/etc/freezer-api.conf'
 config_files_list = [config_file] if os.path.isfile(config_file) else []
