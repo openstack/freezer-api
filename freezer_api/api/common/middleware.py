@@ -20,6 +20,8 @@ import json
 
 from oslo_log import log
 
+import freezer_api.common.exceptions as freezer_api_exc
+
 LOG = log.getLogger(__name__)
 
 
@@ -78,7 +80,61 @@ class HealthApp(Middleware):
         return self.app(environ, start_response)
 
 
-class RequireJSON(object):
+class HookableMiddlewareMixin(object):
+    """Provides methods to extract before and after hooks from WSGI Middleware
+
+    Prior to falcon 0.2.0b1, it's necessary to provide falcon with middleware
+    as "hook" functions that are either invoked before (to process requests)
+    or after (to process responses) the API endpoint code runs.
+
+    This mixin allows the process_request and process_response methods from a
+    typical WSGI middleware object to be extracted for use as these hooks, with
+    the appropriate method signatures.
+    """
+
+    def as_before_hook(self):
+        """Extract process_request method as "before" hook
+
+        :return: before hook function
+        """
+
+        # Need to wrap this up in a closure because the parameter counts
+        # differ
+        def before_hook(req, resp, params=None):
+            return self.process_request(req, resp)
+
+        try:
+            return before_hook
+        except AttributeError as ex:
+            # No such method, we presume.
+            message_template = "Failed to get before hook from middleware {0} - {1}"
+            message = message_template.format(self.__name__, ex.message)
+            LOG.error(message)
+            LOG.exception(ex)
+            raise freezer_api_exc.FreezerAPIException(message)
+
+    def as_after_hook(self):
+        """Extract process_response method as "after" hook
+
+        :return: after hook function
+        """
+        # Need to wrap this up in a closure because the parameter counts
+        # differ
+        def after_hook(req, resp, resource=None):
+            return self.process_response(req, resp, resource)
+
+        try:
+            return after_hook
+        except AttributeError as ex:
+            # No such method, we presume.
+            message_template = "Failed to get after hook from middleware {0} - {1}"
+            message = message_template.format(self.__name__, ex.message)
+            LOG.error(message)
+            LOG.exception(ex)
+            raise freezer_api_exc.FreezerAPIException(message)
+
+
+class RequireJSON(HookableMiddlewareMixin, object):
 
     def process_request(self, req, resp):
         if not req.client_accepts_json:
@@ -87,7 +143,7 @@ class RequireJSON(object):
                 href='http://docs.examples.com/api/json')
 
 
-class JSONTranslator(object):
+class JSONTranslator(HookableMiddlewareMixin, object):
 
     def process_response(self, req, resp, resource):
         if not hasattr(resp, 'body'):

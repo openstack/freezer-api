@@ -23,14 +23,14 @@ LOG = log.getLogger(__name__)
 
 
 def inject_context(req, resp, params):
-    user_id = req.headers.get('X-USER-ID')
-    request_id = req.headers.get('X-Openstack-Request-ID'),
-    auth_token = req.headers.get('X-AUTH-TOKEN')
+    user_id = req.get_header('X-USER-ID')
+    request_id = req.get_header('X-Openstack-Request-ID')
+    auth_token = req.get_header('X-AUTH-TOKEN')
+    tenant = req.get_header('X-TENANT-ID')
 
-    tenant = req.headers.get('X-TENANT-ID')
-
-    roles = req.headers.get('X-ROLES')
+    roles = req.get_header('X-ROLES')
     roles = roles and roles.split(',') or []
+
     ctxt = FreezerContext(auth_token=auth_token,
                           user=user_id,
                           tenant=tenant,

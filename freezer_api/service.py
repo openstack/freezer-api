@@ -14,13 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-from freezer_api.cmd.api import build_app
-from freezer_api.common import config
+import falcon
 from paste import deploy
+from pkg_resources import parse_version
+
+from freezer_api.cmd.api import build_app_v0
+from freezer_api.cmd.api import build_app_v1
+from freezer_api.common import config
+
+
+# Define the minimum version of falcon at which we can use the "new" invocation
+# style for middleware (aka v1), i.e. the "middleware" named argument for
+# falcon.API.
+FALCON_MINVERSION_MIDDLEWARE = parse_version('0.2.0b1')
 
 
 def freezer_app_factory(global_conf, **local_conf):
-    return build_app()
+    current_version = parse_version(falcon.__version__)
+
+    # Check the currently installed version of falcon in order to invoke it
+    # correctly.
+    if current_version < FALCON_MINVERSION_MIDDLEWARE:
+        return build_app_v0()
+    else:
+        return build_app_v1()
 
 
 def initialize_app(conf=None, name='main'):

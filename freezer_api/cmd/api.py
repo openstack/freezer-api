@@ -25,7 +25,6 @@ from oslo_log import log
 from paste import deploy
 from paste import httpserver
 
-
 from freezer_api.api.common import middleware
 from freezer_api.api.common import utils
 from freezer_api.api import v1
@@ -40,21 +39,15 @@ CONF = cfg.CONF
 _LOG = log.getLogger(__name__)
 
 
-def build_app(db=None):
-    """
-    Building routes and forming the root freezer-api app
-    :param db: instance of elastic search db class if not freezer will try to
-    initialize this instance itself
-    :return: wsgi app
+def configure_app(app, db=None):
+    """Build routes and exception handlers
+
+    :param app: falcon WSGI app
+    :param db: Database engine (ElasticSearch)
+    :return:
     """
     if not db:
         db = driver.get_db()
-    # injecting FreezerContext & hooks
-    middleware_list = [utils.FuncMiddleware(hook) for hook in
-                       utils.before_hooks()]
-    middleware_list.append(middleware.JSONTranslator())
-    middleware_list.append(middleware.RequireJSON())
-    app = falcon.API(middleware=middleware_list)
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
@@ -67,6 +60,53 @@ def build_app(db=None):
         for route, resource in endpoints:
             app.add_route(version_path + route, resource)
 
+    return app
+
+
+def build_app_v0():
+    """Instantiate the root freezer-api app
+
+    Old versions of falcon (< 0.2.0) don't have a named 'middleware' argument.
+    This was introduced in version 0.2.0b1, so before that we need to instead
+    provide "before" hooks (request processing) and "after" hooks (response
+    processing).
+
+    :return: falcon WSGI app
+    """
+
+    # injecting FreezerContext & hooks
+    before_hooks = utils.before_hooks() + [
+        middleware.RequireJSON().as_before_hook()]
+    after_hooks = [middleware.JSONTranslator().as_after_hook()]
+
+    # The signature of falcon.API() differs between versions, suppress pylint:
+    # pylint: disable=unexpected-keyword-arg
+    app = falcon.API(before=before_hooks, after=after_hooks)
+
+    app = configure_app(app)
+    return app
+
+
+def build_app_v1():
+    """Building routes and forming the root freezer-api app
+
+    This uses the 'middleware' named argument to specify middleware for falcon
+    instead of the 'before' and 'after' hooks that were removed after 0.3.0
+    (both approaches were available for versions 0.2.0 - 0.3.0)
+
+    :return: falcon WSGI app
+    """
+    # injecting FreezerContext & hooks
+    middleware_list = [utils.FuncMiddleware(hook) for hook in
+                       utils.before_hooks()]
+    middleware_list.append(middleware.RequireJSON())
+    middleware_list.append(middleware.JSONTranslator())
+
+    # The signature of falcon.API() differs between versions, suppress pylint:
+    # pylint: disable=unexpected-keyword-arg
+    app = falcon.API(middleware=middleware_list)
+
+    app = configure_app(app)
     return app
 
 
