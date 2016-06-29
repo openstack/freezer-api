@@ -17,21 +17,24 @@ limitations under the License.
 """
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
+from .common import *
 
 from freezer_api.api import v1
 import json
 
 
-class TestHomedocResource(unittest.TestCase):
+class TestHomedocResource(FreezerBaseTestCase):
 
     def setUp(self):
         self.resource = v1.homedoc.Resource()
-        self.req = Mock()
+        self.req = MagicMock()
+        self.req.__getitem__.side_effect = get_req_items
+        super(TestHomedocResource, self).setUp()
 
     def test_on_get_return_resources_information(self):
         self.resource.on_get(self.req, self.req)
         result = json.loads(self.req.data.decode('utf-8'))
-        print("TEST HIME DOC RESULT: {}".format(result))
+        print("TEST HOME DOC RESULT: {}".format(result))
         expected_result = v1.homedoc.HOME_DOC
         self.assertEquals(result, expected_result)

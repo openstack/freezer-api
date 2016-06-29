@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import random
 import falcon
@@ -27,11 +27,13 @@ from freezer_api.common.exceptions import *
 from freezer_api.api.v1 import sessions as v1_sessions
 
 
-class TestSessionsCollectionResource(unittest.TestCase):
+class TestSessionsCollectionResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestSessionsCollectionResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_session_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_sessions.SessionsCollectionResource(self.mock_db)
@@ -68,11 +70,14 @@ class TestSessionsCollectionResource(unittest.TestCase):
         self.assertEqual(self.mock_req.status, falcon.HTTP_201)
         self.assertEqual(self.mock_req.body, expected_result)
 
-class TestSessionsResource(unittest.TestCase):
+
+class TestSessionsResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestSessionsResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.env.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_session_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_sessions.SessionsResource(self.mock_db)
@@ -147,11 +152,13 @@ class TestSessionsResource(unittest.TestCase):
                           fake_session_0['session_id'])
 
 
-class TestSessionsAction(unittest.TestCase):
+class TestSessionsAction(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestSessionsAction, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_session_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_sessions.SessionsAction(self.mock_db)
@@ -309,9 +316,10 @@ class TestSessionsAction(unittest.TestCase):
         self.assertEqual(self.mock_req.body, expected_result)
 
 
-class TestSessions(unittest.TestCase):
+class TestSessions(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestSessions, self).setUp()
         self.session_doc = {}
         self.session = v1_sessions.Session(self.session_doc)
 
@@ -343,13 +351,13 @@ class TestSessions(unittest.TestCase):
         self.assertEquals(res, 'success')
 
 
-
-
-class TestSessionsJobs(unittest.TestCase):
+class TestSessionsJobs(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestSessionsJobs, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_session_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_sessions.SessionsJob(self.mock_db)

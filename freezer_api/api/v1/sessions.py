@@ -17,10 +17,11 @@ limitations under the License.
 
 import falcon
 from six import iteritems
+import time
 
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
-import time
+from freezer_api import policy
 
 
 class SessionsCollectionResource(resource.BaseResource):
@@ -30,6 +31,7 @@ class SessionsCollectionResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('sessions:get_all')
     def on_get(self, req, resp):
         # GET /v1/sessions(?limit,offset)     Lists sessions
         user_id = req.get_header('X-User-ID')
@@ -40,6 +42,7 @@ class SessionsCollectionResource(resource.BaseResource):
                                           limit=limit, search=search)
         resp.body = {'sessions': obj_list}
 
+    @policy.enforce('sessions:create')
     def on_post(self, req, resp):
         # POST /v1/sessions    Creates session entry
         doc = self.json_body(req)
@@ -60,6 +63,7 @@ class SessionsResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('sessions:get')
     def on_get(self, req, resp, session_id):
         # GET /v1/sessions/{session_id}     retrieves the specified session
         # search in body
@@ -70,6 +74,7 @@ class SessionsResource(resource.BaseResource):
         else:
             resp.status = falcon.HTTP_404
 
+    @policy.enforce('sessions:delete')
     def on_delete(self, req, resp, session_id):
         # DELETE /v1/sessions/{session_id}     Deletes the specified session
         user_id = req.get_header('X-User-ID')
@@ -77,6 +82,7 @@ class SessionsResource(resource.BaseResource):
         resp.body = {'session_id': session_id}
         resp.status = falcon.HTTP_204
 
+    @policy.enforce('sessions:update')
     def on_patch(self, req, resp, session_id):
         # PATCH /v1/sessions/{session_id}     updates the specified session
         user_id = req.get_header('X-User-ID') or ''
@@ -86,6 +92,7 @@ class SessionsResource(resource.BaseResource):
                                              patch_doc=doc)
         resp.body = {'session_id': session_id, 'version': new_version}
 
+    @policy.enforce('sessions:replace')
     def on_post(self, req, resp, session_id):
         # PUT /v1/sessions/{session_id} creates/replaces the specified session
         user_id = req.get_header('X-User-ID') or ''
@@ -108,6 +115,7 @@ class SessionsAction(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('sessions:action:create')
     def on_post(self, req, resp, session_id):
         # POST /v1/sessions/{session_id}/action
         # executes an action on the specified session
@@ -267,6 +275,7 @@ class SessionsJob(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('sessions:job:add')
     def on_put(self, req, resp, session_id, job_id):
         """
         add a job to a session
@@ -312,6 +321,7 @@ class SessionsJob(resource.BaseResource):
                            patch_doc=job_update_doc)
         resp.status = falcon.HTTP_204
 
+    @policy.enforce('sessions:job:remove')
     def on_delete(self, req, resp, session_id, job_id):
         """
         remove a job from the session

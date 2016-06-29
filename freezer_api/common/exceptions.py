@@ -79,7 +79,7 @@ class AccessForbidden(FreezerAPIException):
     def handle(ex, req, resp, params):
         raise falcon.HTTPForbidden(
             title=_("Access Forbidden"),
-            description=ex.message)
+            description="You are not allowed to access this resource")
 
 
 class MethodNotImplemented(FreezerAPIException):

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import falcon
 
@@ -26,7 +26,8 @@ class TestExceptions(unittest.TestCase):
     def setUp(self):
         self.ex = Mock()
         self.ex.message = 'test exception'
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.context = {}
 
     def test_FreezerAPIException(self):

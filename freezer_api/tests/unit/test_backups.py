@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import falcon
 from freezer_api.api.v1 import backups
@@ -26,11 +26,13 @@ from freezer_api.common.exceptions import *
 from .common import *
 
 
-class TestBackupsCollectionResource(unittest.TestCase):
+class TestBackupsCollectionResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestBackupsCollectionResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = {'X-User-ID': fake_data_0_user_id}
         self.mock_req.status = falcon.HTTP_200
         self.resource = backups.BackupsCollectionResource(self.mock_db)
@@ -69,11 +71,13 @@ class TestBackupsCollectionResource(unittest.TestCase):
         self.assertEqual(self.mock_req.status, falcon.HTTP_201)
 
 
-class TestBackupsResource(unittest.TestCase):
+class TestBackupsResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestBackupsResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = {'X-User-ID': fake_data_0_user_id}
         self.mock_req.status = falcon.HTTP_200
         self.resource = backups.BackupsResource(self.mock_db)

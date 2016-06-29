@@ -21,6 +21,7 @@ import uuid
 
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api import policy
 
 
 class JobsBaseResource(resource.BaseResource):
@@ -67,6 +68,7 @@ class JobsCollectionResource(JobsBaseResource):
     Handler for endpoint: /v1/jobs
     """
 
+    @policy.enforce('jobs:get_all')
     def on_get(self, req, resp):
         # GET /v1/jobs(?limit,offset)     Lists jobs
         user_id = req.get_header('X-User-ID')
@@ -77,6 +79,7 @@ class JobsCollectionResource(JobsBaseResource):
                                       limit=limit, search=search)
         resp.body = {'jobs': obj_list}
 
+    @policy.enforce('jobs:create')
     def on_post(self, req, resp):
         # POST /v1/jobs    Creates job entry
         try:
@@ -97,6 +100,7 @@ class JobsResource(JobsBaseResource):
     Handler for endpoint: /v1/jobs/{job_id}
     """
 
+    @policy.enforce('jobs:get')
     def on_get(self, req, resp, job_id):
         # GET /v1/jobs/{job_id}     retrieves the specified job
         # search in body
@@ -107,6 +111,7 @@ class JobsResource(JobsBaseResource):
         else:
             resp.status = falcon.HTTP_404
 
+    @policy.enforce('jobs:delete')
     def on_delete(self, req, resp, job_id):
         # DELETE /v1/jobs/{job_id}     Deletes the specified job
         user_id = req.get_header('X-User-ID')
@@ -114,6 +119,7 @@ class JobsResource(JobsBaseResource):
         resp.body = {'job_id': job_id}
         resp.status = falcon.HTTP_204
 
+    @policy.enforce('jobs:update')
     def on_patch(self, req, resp, job_id):
         # PATCH /v1/jobs/{job_id}     updates the specified job
         user_id = req.get_header('X-User-ID') or ''
@@ -124,6 +130,7 @@ class JobsResource(JobsBaseResource):
                                          patch_doc=job.doc)
         resp.body = {'job_id': job_id, 'version': new_version}
 
+    @policy.enforce('jobs:create')
     def on_post(self, req, resp, job_id):
         # PUT /v1/jobs/{job_id}     creates/replaces the specified job
         user_id = req.get_header('X-User-ID') or ''
@@ -148,6 +155,7 @@ class JobsEvent(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('jobs:event:create')
     def on_post(self, req, resp, job_id):
         # POST /v1/jobs/{job_id}/event
         # requests an event on the specified job

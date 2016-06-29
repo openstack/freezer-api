@@ -33,7 +33,9 @@ from freezer_api.api import versions
 from freezer_api.common import _i18n
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api import policy
 from freezer_api.storage import driver
+
 
 CONF = cfg.CONF
 _LOG = log.getLogger(__name__)
@@ -48,7 +50,10 @@ def configure_app(app, db=None):
     """
     if not db:
         db = driver.get_db()
-
+    
+    # setup freezer policy    
+    policy.setup_policy(CONF)
+    
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
 
@@ -112,7 +117,7 @@ def build_app_v1():
 
 def main():
     # setup opts
-    config.parse_args()
+    config.parse_args(args=sys.argv[1:])
     config.setup_logging()
     paste_conf = config.find_paste_config()
 

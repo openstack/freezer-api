@@ -18,6 +18,7 @@ http://tools.ietf.org/html/draft-nottingham-json-home-03
 
 import json
 
+
 HOME_DOC = {
     'resources': {
         'rel/backups': {

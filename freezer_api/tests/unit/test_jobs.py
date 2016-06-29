@@ -17,7 +17,7 @@ limitations under the License.
 """
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import random
 import json
@@ -28,9 +28,10 @@ from freezer_api.common.exceptions import *
 from freezer_api.api.v1 import jobs as v1_jobs
 
 
-class TestJobsBaseResource(unittest.TestCase):
+class TestJobsBaseResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestJobsBaseResource, self).setUp()
         self.mock_db = Mock()
         self.resource = v1_jobs.JobsBaseResource(self.mock_db)
 
@@ -128,13 +129,15 @@ class TestJobsBaseResource(unittest.TestCase):
                                                    doc=new_doc)
 
 
-class TestJobsCollectionResource(unittest.TestCase):
+class TestJobsCollectionResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestJobsCollectionResource, self).setUp()
         self.mock_json_body = Mock()
         self.mock_json_body.return_value = {}
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_job_0_user_id
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_jobs.JobsCollectionResource(self.mock_db)
@@ -166,11 +169,13 @@ class TestJobsCollectionResource(unittest.TestCase):
         self.assertEqual(self.mock_req.body, expected_result)
 
 
-class TestJobsResource(unittest.TestCase):
+class TestJobsResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestJobsResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.stream.read.return_value = {}
         self.mock_req.get_header.return_value = fake_job_0_user_id
         self.mock_req.status = falcon.HTTP_200
@@ -241,11 +246,13 @@ class TestJobsResource(unittest.TestCase):
                           fake_job_0_job_id)
 
 
-class TestJobsEvent(unittest.TestCase):
+class TestJobsEvent(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestJobsEvent, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_session_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_jobs.JobsEvent(self.mock_db)
@@ -279,7 +286,10 @@ class TestJobsEvent(unittest.TestCase):
         self.assertEqual(self.mock_req.body, expected_result)
 
 
-class TestJobs(unittest.TestCase):
+class TestJobs(FreezerBaseTestCase):
+
+    def setUp(self):
+        super(TestJobs, self).setUp()
 
     def _test_job_start(self, status, event, response, need_update):
         job_schedule = {}

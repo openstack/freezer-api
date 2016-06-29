@@ -18,6 +18,7 @@ limitations under the License.
 import falcon
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api import policy
 
 
 class ActionsCollectionResource(resource.BaseResource):
@@ -27,6 +28,7 @@ class ActionsCollectionResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('actions:get_all')
     def on_get(self, req, resp):
         # GET /v1/actions(?limit,offset)     Lists actions
         user_id = req.get_header('X-User-ID')
@@ -37,6 +39,7 @@ class ActionsCollectionResource(resource.BaseResource):
                                          limit=limit, search=search)
         resp.body = {'actions': obj_list}
 
+    @policy.enforce('actions:create')
     def on_post(self, req, resp):
         # POST /v1/actions    Creates action entry
         doc = self.json_body(req)
@@ -57,6 +60,7 @@ class ActionsResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('actions:get')
     def on_get(self, req, resp, action_id):
         # GET /v1/actions/{action_id}     retrieves the specified action
         # search in body
@@ -67,6 +71,7 @@ class ActionsResource(resource.BaseResource):
         else:
             resp.status = falcon.HTTP_404
 
+    @policy.enforce('actions:delete')
     def on_delete(self, req, resp, action_id):
         # DELETE /v1/actions/{action_id}     Deletes the specified action
         user_id = req.get_header('X-User-ID')
@@ -74,6 +79,7 @@ class ActionsResource(resource.BaseResource):
         resp.body = {'action_id': action_id}
         resp.status = falcon.HTTP_204
 
+    @policy.enforce('actions:update')
     def on_patch(self, req, resp, action_id):
         # PATCH /v1/actions/{action_id}     updates the specified action
         user_id = req.get_header('X-User-ID') or ''
@@ -83,6 +89,7 @@ class ActionsResource(resource.BaseResource):
                                             patch_doc=doc)
         resp.body = {'action_id': action_id, 'version': new_version}
 
+    @policy.enforce('actions:replace')
     def on_post(self, req, resp, action_id):
         # PUT /v1/actions/{job_id}     creates/replaces the specified action
         user_id = req.get_header('X-User-ID') or ''

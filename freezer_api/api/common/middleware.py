@@ -17,7 +17,13 @@ limitations under the License.
 
 import falcon
 import json
+import webob.dec
+import webob.exc
 
+from falcon import Request
+
+
+from freezer_api.context import FreezerContext
 from oslo_log import log
 
 import freezer_api.common.exceptions as freezer_api_exc
@@ -42,11 +48,11 @@ class Middleware(object):
         """
         return None
 
-    def process_response(self, resp):
+    def process_response(self, response):
         """
         Implement this to modify your response
         """
-        return None
+        return response
 
     @classmethod
     def factory(cls, global_conf, **local_conf):
@@ -54,16 +60,18 @@ class Middleware(object):
             return cls(app)
         return filter
 
-    def __call__(self, req, resp):
+    @webob.dec.wsgify
+    def __call__(self, req, params=None):
         response = self.process_request(req)
         if response:
             return response
         response = req.get_response(self.app)
         response.req = req
         try:
-            self.process_response(response)
-        except falcon.HTTPError as e:
+            return self.process_response(response)
+        except webob.exc.HTTPException as e:
             LOG.error(e)
+            return e
 
 
 # @todo this should be removed and oslo.middleware should be used instead
@@ -153,3 +161,62 @@ class JSONTranslator(HookableMiddlewareMixin, object):
 
         if isinstance(resp.body, dict):
             resp.body = json.dumps(resp.body)
+
+
+class BaseContextMiddleware(Middleware):
+    def process_response(self, response):
+        try:
+            request_id = response.request.context.request_id
+        except AttributeError:
+            LOG.warning('Unable to retrieve request id from context')
+        else:
+            # For python 3 compatibility need to use bytes type
+            prefix = b'req-' if isinstance(request_id, bytes) else 'req-'
+
+            if not request_id.startswith(prefix):
+                request_id = prefix + request_id
+
+            response.headers['x-openstack-request-id'] = request_id
+        return response
+
+
+class ContextMiddleware(BaseContextMiddleware):
+    """
+    Simple WSGI app to support HAProxy polling.
+    If the requested url matches the configured path it replies
+    with a 200 otherwise passes the request to the inner app
+    """
+
+    def get_context(self, req):
+        token = req.headers.get('X-Auth-Token')
+        userid = req.headers.get('X-User-Id')
+        domainid = req.headers.get('X-Domain-Id')
+        tenantid = req.headers.get('X-Tenant-Id')
+        user_domain_id = req.headers.get('X-User-Domain-Id')
+        projectid = req.headers.get('X-Project-Id')
+        project_domain_id = req.headers.get('X-Project-Domain-Id')
+        request_id = req.headers.get('X-Openstack-Request-ID')
+        roles_header = req.headers.get('X-Roles', '')
+        roles = [r.strip().lower() for r in roles_header.split(',')]
+        is_admin = 'admin' in roles
+
+        return FreezerContext(auth_token=token,
+                              user=userid,
+                              tenant=tenantid or projectid,
+                              domain=domainid,
+                              user_domain=user_domain_id,
+                              project_domain=project_domain_id,
+                              is_admin=is_admin,
+                              request_id=request_id,
+                              resource_uuid=None,
+                              roles=roles
+                              )
+
+    def process_request(self, req):
+        if req.headers.get('X-Identity-Status') == "Confirmed":
+            # falcon is overwriting the context variable in the request
+            # so we need to set the context in env variable
+            req.context = self.get_context(req)
+            req.environ['freezer.context'] = req.context
+        else:
+            raise webob.exc.HTTPUnauthorized()

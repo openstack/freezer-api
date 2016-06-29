@@ -89,6 +89,7 @@ function configure_freezer_api {
 
     sudo cp $FREEZER_API_DIR/etc/freezer/freezer-api.conf.sample $FREEZER_API_CONF_DIR/freezer-api.conf
     sudo cp $FREEZER_API_DIR/etc/freezer/freezer-paste.ini $FREEZER_API_CONF_DIR/freezer-paste.ini
+    sudo cp $FREEZER_API_DIR/etc/freezer/policy.json $FREEZER_API_CONF_DIR/policy.json
 
     # set paste configuration
     iniset $FREEZER_API_CONF 'paste_deploy' config_file $FREEZER_API_CONF_DIR/freezer-paste.ini

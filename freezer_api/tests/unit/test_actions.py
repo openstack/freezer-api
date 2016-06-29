@@ -16,7 +16,7 @@ limitations under the License.
 """
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import random
 import falcon
@@ -27,11 +27,13 @@ from freezer_api.common.exceptions import *
 from freezer_api.api.v1 import actions as v1_actions
 
 
-class TestActionsCollectionResource(unittest.TestCase):
+class TestActionsCollectionResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestActionsCollectionResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_action_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_actions.ActionsCollectionResource(self.mock_db)
@@ -69,17 +71,20 @@ class TestActionsCollectionResource(unittest.TestCase):
         self.assertEqual(self.mock_req.body, expected_result)
 
 
-class TestActionsResource(unittest.TestCase):
+class TestActionsResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestActionsResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_action_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_actions.ActionsResource(self.mock_db)
         self.mock_json_body = Mock()
         self.mock_json_body.return_value = {}
         self.resource.json_body = self.mock_json_body
+
 
     def test_create_resource(self):
         self.assertIsInstance(self.resource, v1_actions.ActionsResource)

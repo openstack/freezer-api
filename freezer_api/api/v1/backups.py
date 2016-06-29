@@ -18,6 +18,7 @@ limitations under the License.
 import falcon
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api import policy
 
 
 class BackupsCollectionResource(resource.BaseResource):
@@ -27,6 +28,7 @@ class BackupsCollectionResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('backups:get_all')
     def on_get(self, req, resp):
         # GET /v1/backups(?limit,offset)     Lists backups
         user_id = req.get_header('X-User-ID')
@@ -37,6 +39,7 @@ class BackupsCollectionResource(resource.BaseResource):
                                       limit=limit, search=search)
         resp.body = {'backups': obj_list}
 
+    @policy.enforce('backups:create')
     def on_post(self, req, resp):
         # POST /v1/backups    Creates backup entry
         doc = self.json_body(req)
@@ -58,6 +61,7 @@ class BackupsResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
+    @policy.enforce('backups:get')
     def on_get(self, req, resp, backup_id):
         # GET /v1/backups/{backup_id}     Get backup details
         user_id = req.get_header('X-User-ID')
@@ -67,6 +71,7 @@ class BackupsResource(resource.BaseResource):
         else:
             resp.status = falcon.HTTP_404
 
+    @policy.enforce('backups:delete')
     def on_delete(self, req, resp, backup_id):
         # DELETE /v1/backups/{backup_id}     Deletes the specified backup
         user_id = req.get_header('X-User-ID')

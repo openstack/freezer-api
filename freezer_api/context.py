@@ -28,8 +28,7 @@ class FreezerContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 resource_uuid=None, overwrite=True, roles=None,
-                 service_catalog=None, all_tenants=False):
+                 resource_uuid=None, overwrite=True, roles=None):
         super(FreezerContext, self).__init__(
             auth_token=auth_token,
             user=user,
@@ -44,8 +43,6 @@ class FreezerContext(context.RequestContext):
             resource_uuid=resource_uuid,
             overwrite=overwrite,
             roles=roles)
-        self.service_catalog = service_catalog
-        self.all_tenants = all_tenants
 
     @classmethod
     def from_dict(cls, values):
@@ -61,6 +58,10 @@ class FreezerContext(context.RequestContext):
             _context.show_deleted = show_deleted
 
         return _context
+
+    @property
+    def view_deleted(self):
+        return self.show_deleted or self.is_admin
 
 
 def get_admin_context(show_deleted="no"):

@@ -16,9 +16,22 @@ limitations under the License.
 
 """
 
-
-import io
 import copy
+import fixtures
+import io
+import os
+import shutil
+import sys
+import testtools
+
+from oslo_config import cfg
+from oslo_config import fixture as cfg_fixture
+
+from freezer_api.common import config
+from freezer_api.common import exceptions
+from freezer_api import policy
+
+CONF = cfg.CONF
 
 fake_data_0_backup_id = 'freezer_container_alpha_important_data_backup_8475903425_0'
 fake_data_0_user_id = 'qwerty1234'
@@ -414,3 +427,54 @@ class FakeReqResp:
 
     def get_header(self, key):
         return self.header.get(key, None)
+
+
+class FreezerBaseTestCase(testtools.TestCase):
+
+    def setUp(self):
+        try:
+            super(FreezerBaseTestCase, self).setUp()
+        except:
+            super().setUp()
+
+        self._config_fixture = self.useFixture(cfg_fixture.Config())
+        config.parse_args(args=[])
+        self.addCleanup(CONF.reset)
+        self.test_dir = self.useFixture(fixtures.TempDir()).path
+        self.conf_dir = os.path.join(self.test_dir, 'etc')
+        os.makedirs(self.conf_dir)
+        self.configure_policy()
+        policy.ENFORCER = FakePolicyEnforcer()
+
+    def configure_policy(self):
+        src_policy_file = 'etc/freezer/policy.json'
+        # copy policy file to test config dir
+        shutil.copy(src_policy_file, self.conf_dir)
+        policy_file = os.path.join(self.conf_dir, 'policy.json')
+        self._config_fixture.config(policy_file=policy_file, group='oslo_policy')
+
+
+
+
+class FakePolicyEnforcer(object):
+    def __init__(self, *args, **kwargs):
+        self.rules = {}
+
+    def enforce(self, rule, action, ctxt, do_raise=True, exc=exceptions.AccessForbidden):
+        if self.rules.get(rule) == False:
+            raise exceptions.AccessForbidden()
+
+
+class FakeContext():
+    def __init__(self, *args, **kwargs):
+        self.context = {}
+
+    def to_dict(self):
+        return self.context
+
+
+def get_req_items(name):
+    req_info = {'freezer.context': FakeContext()}
+    return req_info[name]
+
+policy.ENFORCER = FakePolicyEnforcer()

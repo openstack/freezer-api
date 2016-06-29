@@ -17,6 +17,7 @@ limitations under the License.
 import falcon
 from paste import deploy
 from pkg_resources import parse_version
+import sys
 
 from freezer_api.cmd.api import build_app_v0
 from freezer_api.cmd.api import build_app_v1
@@ -43,9 +44,12 @@ def freezer_app_factory(global_conf, **local_conf):
 
 def initialize_app(conf=None, name='main'):
     """ initializing app for paste to deploy it """
-    
-    config.parse_args()
+
+    # register and parse arguments
+    config.parse_args(args=sys.argv[1:])
+    # register logging opts
     config.setup_logging()
+    # locate and load paste file
     conf = config.find_paste_config()
     app = deploy.loadapp('config:%s' % conf, name=name)
     return app

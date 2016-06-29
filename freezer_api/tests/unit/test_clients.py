@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from mock import Mock, patch
+from mock import Mock, MagicMock, patch
 
 import falcon
 
@@ -24,11 +24,13 @@ from freezer_api.common.exceptions import *
 from freezer_api.api.v1 import clients as v1_clients
 
 
-class TestClientsCollectionResource(unittest.TestCase):
+class TestClientsCollectionResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestClientsCollectionResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_data_0_user_id
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_clients.ClientsCollectionResource(self.mock_db)
@@ -65,11 +67,13 @@ class TestClientsCollectionResource(unittest.TestCase):
         self.assertEqual(self.mock_req.body, expected_result)
 
 
-class TestClientsResource(unittest.TestCase):
+class TestClientsResource(FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestClientsResource, self).setUp()
         self.mock_db = Mock()
-        self.mock_req = Mock()
+        self.mock_req = MagicMock()
+        self.mock_req.__getitem__.side_effect = get_req_items
         self.mock_req.get_header.return_value = fake_data_0_user_id
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_clients.ClientsResource(self.mock_db)

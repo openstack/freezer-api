@@ -1,0 +1,39 @@
+{
+    "context_is_admin": "role:admin",
+    "admin_or_owner": "is_admin:True or project_id:%(project_id)s",
+    "default": "rule:admin_or_owner",
+
+    "jobs:get_all": "",
+    "jobs:create": "",
+    "jobs:get": "",
+    "jobs:delete": "",
+    "jobs:update": "",
+    "jobs:event:create": "",
+
+    "actions:get_all": "",
+    "actions:create": "",
+    "actions:get": "",
+    "actions:delete": "",
+    "actions:update": "",
+    "actions:replace": "",
+
+    "sessions:get_all": "",
+    "sessions:create": "",
+    "sessions:get": "",
+    "sessions:delete": "",
+    "sessions:update": "",
+    "sessions:replace": "",
+    "sessions:action:create": "",
+    "sessions:job:add": "",
+    "sessions:job:remove": "",
+
+    "backups:get_all": "",
+    "backups:create": "",
+    "backups:get": "",
+    "backups:delete": "",
+
+    "clients:get_all": "",
+    "clients:create": "",
+    "clients:get": "",
+    "clients:delete": "",
+}

@@ -15,10 +15,10 @@ limitations under the License.
 """
 
 import os
-import sys
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_policy import policy
 
 from freezer_api import __version__ as FREEZER_API_VERSION
 from freezer_api.storage import driver
@@ -50,7 +50,7 @@ def api_common_opts():
     return _COMMON
 
 
-def parse_args():
+def parse_args(args=[]):
     CONF.register_cli_opts(api_common_opts())
     driver.register_elk_opts()
     # register paste configuration
@@ -59,8 +59,9 @@ def parse_args():
     CONF.register_group(paste_grp)
     CONF.register_opts(paste_deploy, group=paste_grp)
     log.register_options(CONF)
+    policy.Enforcer(CONF)
     default_config_files = cfg.find_config_files('freezer', 'freezer-api')
-    CONF(args=sys.argv[1:],
+    CONF(args=args,
          project='freezer-api',
          default_config_files=default_config_files,
          version=FREEZER_API_VERSION
