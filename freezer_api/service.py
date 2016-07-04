@@ -30,7 +30,8 @@ FALCON_MINVERSION_MIDDLEWARE = parse_version('0.2.0b1')
 
 
 def freezer_app_factory(global_conf, **local_conf):
-    current_version = parse_version(falcon.__version__)
+    current_version = parse_version(
+        falcon.__version__ if hasattr(falcon, '__version__') else falcon.version)
 
     # Check the currently installed version of falcon in order to invoke it
     # correctly.

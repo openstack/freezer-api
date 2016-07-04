@@ -18,6 +18,7 @@ limitations under the License.
 import unittest
 from mock import Mock, patch, create_autospec
 
+import falcon
 from freezer_api.service import freezer_app_factory
 
 
@@ -45,7 +46,8 @@ class TestService(unittest.TestCase):
         # old before=,after= invocation and ensure that freezer-api isn't trying
         # to invoke it in the old style.
         for version_string in self.falcon_versions_hooks:
-            with patch('falcon.__version__', version_string):
+            version_attribute = '__version__' if hasattr(falcon, '__version__') else 'version'
+            with patch('falcon.' + version_attribute, version_string):
                 # Attempt to invoke a mocked version of falcon to see what args
                 # it was called with
                 freezer_app_factory(None)
@@ -75,7 +77,8 @@ class TestService(unittest.TestCase):
         # old before=,after= invocation and ensure that freezer-api isn't trying
         # to invoke it in the old style.
         for version_string in self.falcon_versions_middleware:
-            with patch('falcon.__version__', version_string):
+            version_attribute = '__version__' if hasattr(falcon, '__version__') else 'version'
+            with patch('falcon.' + version_attribute, version_string):
                 # Attempt to invoke a mocked version of falcon to see what args
                 # it was called with
                 freezer_app_factory(None)
