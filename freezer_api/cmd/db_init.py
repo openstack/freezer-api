@@ -57,8 +57,8 @@ class ElastichsearchEngine(object):
 
     def set_number_of_replicas(self, n):
         if self.number_of_replicas_match(n):
-            print ('Number of replicas matches. '
-                   'Current value is {0}'.format(n))
+            print('Number of replicas matches. '
+                  'Current value is {0}'.format(n))
         else:
             self.askput_number_of_replicas(n)
 
@@ -158,9 +158,9 @@ class ElastichsearchEngine(object):
             # explicit consent to update without explicit consent to erase:
             # do not erase type and return error code
             self.exit_code = os.EX_DATAERR
-            print ('{0}/{1} DOES NOT MATCH. '
-                   'Need explicit consent to erase types'
-                   .format(self.es_index, es_type))
+            print('{0}/{1} DOES NOT MATCH. '
+                  'Need explicit consent to erase types'
+                  .format(self.es_index, es_type))
             return
         prompt_message = ('Type {0}/{1}/{2} needs to be deleted. '
                           'Proceed (y/n) ? '.format(self.es_url,
