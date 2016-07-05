@@ -20,20 +20,16 @@ TOC
 1. Installation
 ===============
 
-1.1 Install required packages
+1.1 Install freezer-api
 -----------------------------
 ::
 
   # git clone https://git.openstack.org/openstack/freezer-api.git
-  # cd freezer-api && sudo python setup.py install
+  # cd freezer-api
+  # pip install ./
 
-1.2 Install freezer_api
------------------------
-::
 
-  # pip install -r requirements.txt
-
-1.3 edit config file
+1.2 edit config file
 --------------------
 ::
 
@@ -43,7 +39,7 @@ TOC
   # sudo vi /etc/freezer/freezer-paste.ini
 
 
-1.4 setup/configure the db
+1.3 setup/configure the db
 --------------------------
 The currently supported db is Elasticsearch. In case you are using a dedicated instance
 of the server, you'll need to start it. Depending on the OS flavor it might be a:
@@ -108,13 +104,13 @@ Correct Example::
 
    # freezer-manage -y -e db sync
 
-1.5 run simple instance
+1.4 run simple instance
 -----------------------
 ::
 
   # freezer-api
 
-1.6 examples running using uwsgi
+1.5 examples running using uwsgi
 --------------------------------
 ::
 
@@ -123,7 +119,7 @@ Correct Example::
   # uwsgi --https :9090,foobar.crt,foobar.key --need-app --master --module freezer_api.cmd.wsgi:application
 
 
-1.7 example running freezer-api with apache2
+1.6 example running freezer-api with apache2
 --------------------------------------------
 ::
 
