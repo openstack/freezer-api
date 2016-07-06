@@ -26,6 +26,8 @@ from keystonemiddleware import opts
 
 CONF = cfg.CONF
 
+AUTH_GROUP, AUTH_OPTS = opts.list_auth_token_opts()[0]
+
 paste_deploy = [
         cfg.StrOpt('config_file', default='freezer-paste.ini',
                    help='Name of the paste configuration file that defines '
@@ -119,7 +121,7 @@ def list_opts():
         None: api_common_opts(),
         'storage': driver.get_elk_opts(),
         'paste_deploy': paste_deploy,
-        opts.auth_token_opts[0][0]: opts.auth_token_opts[0][1]
+        AUTH_GROUP: AUTH_OPTS
     }
     return _OPTS.items()
 
