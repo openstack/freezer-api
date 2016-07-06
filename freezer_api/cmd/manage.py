@@ -191,10 +191,10 @@ class ElasticSearchManager(object):
         for doc_type, body in _mappings.items():
             check = self.create_one_mapping(doc_type, body)
             if check:
-                print ("Creating or Updating {0} is {1}".format(
+                print("Creating or Updating {0} is {1}".format(
                     doc_type, check.get('acknowledged')))
             else:
-                print ("Couldn't update {0}. Request returned {1}".format(
+                print("Couldn't update {0}. Request returned {1}".format(
                     doc_type, check.get('acknowledged')))
 
     def _create_index(self):
@@ -257,19 +257,19 @@ class ElasticSearchManager(object):
         """
         # check if index doesn't exist return
         if not self._check_index_exists(index=self.index):
-            print ("Index {0} doesn't exists.".format(self.index))
+            print("Index {0} doesn't exists.".format(self.index))
             return
         # remove mappings
         _mappings = self.get_required_mappings()
         for doc_type, body in _mappings.items():
             check = self.remove_one_mapping(doc_type)
             if not check:
-                print ("Deleting {0} is failed".format(doc_type))
+                print("Deleting {0} is failed".format(doc_type))
             elif check:
-                print ("Deleting {0} is {1}".format(
+                print("Deleting {0} is {1}".format(
                     doc_type, check.get('acknowledged')))
             else:
-                print ("Couldn't delete {0}. Request returned {1}".format(
+                print("Couldn't delete {0}. Request returned {1}".format(
                     doc_type, check.get('acknowledged')))
         del_index = self.prompt('Do you want to remove index as well ? (y/n) ')
         if del_index:
@@ -290,9 +290,9 @@ class ElasticSearchManager(object):
         """
         # check if index doesn't exist return
         if not self._check_index_exists(index=self.index):
-            print ("Index {0} doesn't exists.".format(self.index))
+            print("Index {0} doesn't exists.".format(self.index))
             return
-        print (json.dumps(self.elk.indices.get_mapping(index=self.index)))
+        print(json.dumps(self.elk.indices.get_mapping(index=self.index)))
 
     def update_settings(self):
         """
@@ -345,7 +345,7 @@ def main():
             raise Exception('Option {0} not found !'.format(CONF.db.options))
     except Exception as e:
         LOG.error(e)
-        print (e)
+        print(e)
 
 
 if __name__ == '__main__':
