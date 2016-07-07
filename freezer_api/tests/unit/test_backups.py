@@ -64,7 +64,6 @@ class TestBackupsCollectionResource(unittest.TestCase):
         self.mock_db.add_backup.return_value = fake_data_0_wrapped_backup_metadata['backup_id']
         self.resource.on_post(self.mock_req, self.mock_req)
         expected_result = {'backup_id': fake_data_0_wrapped_backup_metadata['backup_id']}
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
         self.assertEqual(self.mock_req.body, expected_result)
         self.assertEqual(self.mock_req.status, falcon.HTTP_201)
 
