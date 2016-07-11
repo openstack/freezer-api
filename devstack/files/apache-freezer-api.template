@@ -1,7 +1,7 @@
 Listen %SERVICE_HOST%:%FREEZER_API_PORT%
 
 <VirtualHost *:%FREEZER_API_PORT%>
-    WSGIDaemonProcess freezer-api processes=2 threads=2 user=%USER%
+    WSGIDaemonProcess freezer-api processes=2 threads=2 user=%USER% display-name=%{GROUP}
     WSGIProcessGroup freezer-api
     WSGIApplicationGroup freezer-api
     WSGIScriptAlias / %FREEZER_API_DIR%/freezer_api/cmd/wsgi.py
