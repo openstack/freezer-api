@@ -44,7 +44,7 @@ class NumberOfReplicasException(Exception):
     pass
 
 
-class ElastichsearchEngine(object):
+class ElasticSearchEngine(object):
     def __init__(self, es_url, es_index, args):
         self.es_url = es_url
         self.es_index = es_index
@@ -362,9 +362,9 @@ def main():
                              elasticsearch_replicas or
                              DEFAULT_REPLICAS)
 
-    es_manager = ElastichsearchEngine(es_url=elasticsearch_url,
-                                      es_index=elasticsearch_index,
-                                      args=args)
+    es_manager = ElasticSearchEngine(es_url=elasticsearch_url,
+                                     es_index=elasticsearch_index,
+                                     args=args)
     if args.verbose:
         print("  db url: {0}".format(elasticsearch_url))
         print("db index: {0}".format(elasticsearch_index))

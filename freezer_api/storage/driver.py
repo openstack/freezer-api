@@ -74,7 +74,7 @@ def register_elk_opts():
 def get_options():
     if CONF.storage.ca_certs:
         if not os.path.isfile(CONF.storage.ca_certs):
-            raise Exception('Elasticsearch configuration error: '
+            raise Exception('ElasticSearch configuration error: '
                             'CA_certs file not found ({0})'
                             .format(CONF.storage.ca_certs))
 
@@ -92,7 +92,7 @@ def get_db():
     opts = get_options()
     db_engine = opts.pop('db')
     if db_engine == 'elasticsearch':
-        logging.debug(_i18n._LI('Elastichsearch config options: %s') % str(opts))
+        logging.debug(_i18n._LI('ElasticSearch config options: %s') % str(opts))
         db = elastic.ElasticSearchEngine(**opts)
     else:
         raise Exception(_i18n._('Database Engine %s not supported') % db_engine)

@@ -16,12 +16,12 @@ limitations under the License.
 """
 
 import os
-import unittest
 import json
+import unittest
 from mock import Mock, patch
 
 import requests
-from freezer_api.cmd.db_init import (ElastichsearchEngine,
+from freezer_api.cmd.db_init import (ElasticSearchEngine,
                                      get_args,
                                      find_config_file,
                                      parse_config_file,
@@ -33,7 +33,8 @@ from freezer_api.cmd.db_init import (ElastichsearchEngine,
 
 from freezer_api.common import db_mappings
 
-class TestElasticsearchEngine(unittest.TestCase):
+
+class TestElasticSearchEngine(unittest.TestCase):
 
     def setUp(self):
         self.test_mappings = {
@@ -50,17 +51,17 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.mock_args.select_mapping = ''
         self.mock_args.erase = False
         self.mock_args.replicas = 0
-        self.es_manager = ElastichsearchEngine(es_url='http://test:9333',
-                                               es_index='freezerindex',
-                                               args=self.mock_args)
+        self.es_manager = ElasticSearchEngine(es_url='http://test:9333',
+                                              es_index='freezerindex',
+                                              args=self.mock_args)
 
     def test_new(self):
-        self.assertIsInstance(self.es_manager, ElastichsearchEngine)
+        self.assertIsInstance(self.es_manager, ElasticSearchEngine)
 
-    @patch.object(ElastichsearchEngine, 'check_index_exists')
-    @patch.object(ElastichsearchEngine, 'mapping_match')
-    @patch.object(ElastichsearchEngine, 'askput_mapping')
-    @patch.object(ElastichsearchEngine, 'set_number_of_replicas')
+    @patch.object(ElasticSearchEngine, 'check_index_exists')
+    @patch.object(ElasticSearchEngine, 'mapping_match')
+    @patch.object(ElasticSearchEngine, 'askput_mapping')
+    @patch.object(ElasticSearchEngine, 'set_number_of_replicas')
     def test_put_mappings_does_nothing_when_mappings_match(self,
                                                            mock_set_number_of_replicas,
                                                            mock_askput_mapping,
@@ -69,10 +70,10 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.es_manager.put_mappings(self.test_mappings)
         self.assertEquals(mock_askput_mapping.call_count, 0)
 
-    @patch.object(ElastichsearchEngine, 'check_index_exists')
-    @patch.object(ElastichsearchEngine, 'mapping_match')
-    @patch.object(ElastichsearchEngine, 'askput_mapping')
-    @patch.object(ElastichsearchEngine, 'set_number_of_replicas')
+    @patch.object(ElasticSearchEngine, 'check_index_exists')
+    @patch.object(ElasticSearchEngine, 'mapping_match')
+    @patch.object(ElasticSearchEngine, 'askput_mapping')
+    @patch.object(ElasticSearchEngine, 'set_number_of_replicas')
     def test_put_mappings_calls_askput_when_mappings_match_not(self,
                                                                mock_set_number_of_replicas,
                                                                mock_askput_mapping,
@@ -82,10 +83,10 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.es_manager.put_mappings(self.test_mappings)
         self.assertEquals(mock_askput_mapping.call_count, 3)
 
-    @patch.object(ElastichsearchEngine, 'proceed')
-    @patch.object(ElastichsearchEngine, 'delete_type')
-    @patch.object(ElastichsearchEngine, 'put_mapping')
-    @patch.object(ElastichsearchEngine, 'set_number_of_replicas')
+    @patch.object(ElasticSearchEngine, 'proceed')
+    @patch.object(ElasticSearchEngine, 'delete_type')
+    @patch.object(ElasticSearchEngine, 'put_mapping')
+    @patch.object(ElasticSearchEngine, 'set_number_of_replicas')
     def test_askput_calls_delete_and_put_mappings_when_always_yes_and_erase(self,
                                                                             mock_set_number_of_replicas,
                                                                             mock_put_mapping,
@@ -102,7 +103,6 @@ class TestElasticsearchEngine(unittest.TestCase):
         self.mock_args.test_only = True
         res = self.es_manager.askput_mapping('jobs', self.test_mappings['jobs'])
         self.assertEquals(None, res)
-
 
     @patch('freezer_api.cmd.db_init.requests')
     def test_mapping_match_not_found_returns_false(self, mock_requests):
@@ -217,7 +217,6 @@ class TestElasticsearchEngine(unittest.TestCase):
         mock_requests.codes.BAD_REQUEST = 400
         res = self.es_manager.check_index_exists()
         self.assertEquals(res, None)
-
 
     @patch('freezer_api.cmd.db_init.requests')
     def test_check_index_raises_Exception_when_return_code_not_in_OK_BADREQ(self, mock_requests):
@@ -378,7 +377,7 @@ class TestDbInit(unittest.TestCase):
 
     @patch('freezer_api.cmd.db_init.parse_config_file')
     def test_get_db_params_returns_args_parameters(self, mock_parse_config_file):
-        mock_parse_config_file.return_value = (None, None, None, None   )
+        mock_parse_config_file.return_value = (None, None, None, None)
         mock_args = Mock()
         mock_args.host = 'pumpkin'
         mock_args.port = 12345
@@ -387,32 +386,35 @@ class TestDbInit(unittest.TestCase):
         self.assertEquals(elasticsearch_url, 'http://pumpkin:12345')
         self.assertEquals(elasticsearch_index, 'ciccio')
 
-    @patch('freezer_api.cmd.db_init.ElastichsearchEngine')
+    @patch('freezer_api.cmd.db_init.ElasticSearchEngine')
     @patch('freezer_api.cmd.db_init.get_db_params')
     @patch('freezer_api.cmd.db_init.get_args')
-    def test_main_calls_esmanager_put_mappings_with_mappings(self, mock_get_args, mock_get_db_params,
-                                                             mock_ElastichsearchEngine):
+    def test_main_calls_esmanager_put_mappings_with_mappings(self,
+                                                             mock_get_args,
+                                                             mock_get_db_params,
+                                                             mock_es_engine):
         mock_get_args.return_value = self.mock_args
         mock_get_db_params.return_value = 'url', 'index', 0
         mock_es_manager = Mock()
         mock_es_manager.exit_code = os.EX_OK
 
-        mock_ElastichsearchEngine.return_value = mock_es_manager
+        mock_es_engine.return_value = mock_es_manager
 
         res = main()
         self.assertEquals(res, os.EX_OK)
         mappings = db_mappings.get_mappings()
         mock_es_manager.put_mappings.assert_called_with(mappings)
 
-    @patch('freezer_api.cmd.db_init.ElastichsearchEngine')
+    @patch('freezer_api.cmd.db_init.ElasticSearchEngine')
     @patch('freezer_api.cmd.db_init.get_db_params')
     @patch('freezer_api.cmd.db_init.get_args')
-    def test_main_return_EX_DATAERR_exitcode_on_error(self, mock_get_args, mock_get_db_params,
-                                                    mock_ElastichsearchEngine):
+    def test_main_return_EX_DATAERR_exitcode_on_error(self, mock_get_args,
+                                                      mock_get_db_params,
+                                                      mock_es_engine):
         mock_get_args.return_value = self.mock_args
         mock_get_db_params.return_value = 'url', 'index', 0
         mock_es_manager = Mock()
-        mock_ElastichsearchEngine.return_value = mock_es_manager
+        mock_es_engine.return_value = mock_es_manager
 
         mock_es_manager.put_mappings.side_effect = Exception('test error')
 
