@@ -14,8 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-import copy 
+import copy
 
+fqdn_regex = "([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d])" \
+             "(\\.([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d]))*"
+project_regex = "[\\w\\-]+"  # Allow all letters, numbers, underscore and minus
+client_id_regex = "^{project}_{host}$".format(project=project_regex,
+                                              host=fqdn_regex)
 
 freezer_action_properties = {
     "action": {
@@ -188,7 +193,7 @@ job_schema = {
         },
         "client_id": {
             "id": "client_id",
-            "pattern": "^[\w-]+$",
+            "pattern": client_id_regex,
             "type": "string"
         },
         "session_id": {
@@ -279,7 +284,7 @@ job_patch_schema = {
         },
         "client_id": {
             "id": "client_id",
-            "pattern": "^[\w-]+$",
+            "pattern": client_id_regex,
             "type": "string"
         },
         "session_id": {
