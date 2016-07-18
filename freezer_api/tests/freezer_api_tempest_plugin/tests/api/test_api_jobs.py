@@ -16,6 +16,44 @@ import json
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 from tempest import test
+from tempest.lib.exceptions import BadRequest
+
+fake_job = {
+    "job_actions":
+        [
+            {
+                "freezer_action":
+                    {
+                        "action": "backup",
+                        "mode": "fs",
+                        "src_file": "/home/tylerdurden/project_mayhem",
+                        "backup_name": "project_mayhem_backup",
+                        "container": "my_backup_container",
+                    },
+                "exit_status": "success",
+                "max_retries": 1,
+                "max_retries_interval": 1,
+                "mandatory": True
+            }
+        ],
+    "job_schedule":
+        {
+            "time_created": 1234,
+            "time_started": 1234,
+            "time_ended": 0,
+            "status": "stop",
+            "schedule_date": "2015-06-02T16:20:00",
+            "schedule_month": "1-6, 9-12",
+            "schedule_day": "mon, wed, fri",
+            "schedule_hour": "03",
+            "schedule_minute": "25",
+        },
+    "job_id": "blabla",
+    "client_id": "01b0f00a-4ce2-11e6-beb8-9e71128cae77_myhost.mydomain.mytld",
+    "user_id": "blabla",
+    "description": "scheduled one shot"
+}
+
 
 class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
@@ -41,44 +79,8 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
     @test.attr(type="gate")
     def test_api_jobs_post(self):
 
-        job = {
-            "job_actions":
-                [
-                    {
-                        "freezer_action":
-                            {
-                                "action": "backup",
-                                "mode": "fs",
-                                "src_file": "/home/tylerdurden/project_mayhem",
-                                "backup_name": "project_mayhem_backup",
-                                "container": "my_backup_container",
-                            },
-                        "exit_status": "success",
-                        "max_retries": 1,
-                        "max_retries_interval": 1,
-                        "mandatory": True
-                    }
-                ],
-            "job_schedule":
-                {
-                    "time_created": 1234,
-                    "time_started": 1234,
-                    "time_ended": 0,
-                    "status": "stop",
-                    "schedule_date": "2015-06-02T16:20:00",
-                    "schedule_month": "1-6, 9-12",
-                    "schedule_day": "mon, wed, fri",
-                    "schedule_hour": "03",
-                    "schedule_minute": "25",
-                },
-            "job_id": "blabla",
-            "client_id": "blabla",
-            "user_id": "blabla",
-            "description": "scheduled one shot"
-        }
-
         # Create the job with POST
-        resp, response_body = self.freezer_api_client.post_jobs(job)
+        resp, response_body = self.freezer_api_client.post_jobs(fake_job)
         self.assertEqual(201, resp.status)
 
         self.assertIn('job_id', response_body)
@@ -88,7 +90,28 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         resp, response_body = self.freezer_api_client.get_jobs(job_id)
         self.assertEqual(200, resp.status)
 
-       # Delete the job
+        # Delete the job
         resp, response_body = self.freezer_api_client.delete_jobs(
             job_id)
         self.assertEqual(204, resp.status)
+
+    @test.attr(type="gate")
+    def test_api_jobs_with_invalid_client_project_id_fail(self):
+        """Ensure that a job submitted with a bad client_id project id fails"""
+        fake_bad_job = fake_job
+        fake_bad_job['client_id'] = 'bad%project$id_host.domain.tld'
+
+        # Create the job with POST
+        self.assertRaises(BadRequest, lambda: self.freezer_api_client.post_jobs(
+            fake_bad_job))
+
+    @test.attr(type="gate")
+    def test_api_jobs_with_invalid_client_host_fail(self):
+        """Ensure that a job submitted with a bad client_id hostname fails"""
+        fake_bad_job = fake_job
+        fake_bad_job['client_id'] = "01b0f00a-4ce2-11e6-beb8-9e71128cae77" \
+            "_bad_hostname.bad/domain.b"
+
+        # Create the job with POST
+        self.assertRaises(BadRequest, lambda: self.freezer_api_client.post_jobs(
+            fake_bad_job))
