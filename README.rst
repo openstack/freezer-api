@@ -5,54 +5,58 @@ Freezer API
 TOC
 ===
 
-1. Installation
-2. Devstack Plugin
-3. Concepts and definitions
-4. API registration
-5. API routes
-6. Backup metadata structure
-7. Freezer Client document structure
-8. Jobs
-9. Actions
-10. Sessions
-11. Known Issues
+#. Installation
+#. Devstack Plugin
+#. Concepts and definitions
+#. API registration
+#. API routes
+#. Backup metadata structure
+#. Freezer Client document structure
+#. Jobs
+#. Actions
+#. Sessions
+#. Known Issues
 
-1. Installation
-===============
+Installation
+============
 
-1.1 Install freezer-api
------------------------------
-::
+Install freezer-api
+-------------------
+
+.. code-block::
 
   # git clone https://git.openstack.org/openstack/freezer-api.git
   # cd freezer-api
   # pip install ./
 
+edit config file
+----------------
 
-1.2 edit config file
---------------------
-::
+.. code-block::
 
   # sudo cp etc/freezer/freezer-api.conf /etc/freezer/freezer-api.conf
   # sudo cp etc/freezer/freezer-paste.ini /etc/freezer/freezer-paste.ini
   # sudo vi /etc/freezer/freezer-api.conf
   # sudo vi /etc/freezer/freezer-paste.ini
 
+setup/configure the db
+----------------------
 
-1.3 setup/configure the db
---------------------------
 The currently supported db is Elasticsearch. In case you are using a dedicated instance
 of the server, you'll need to start it. Depending on the OS flavor it might be a:
-::
+
+.. code-block::
 
   # service elasticsearch start
 
-or, on systemd::
+or, on systemd
+
+.. code-block::
 
   # systemctl start elasticsearch
 
 Elasticsearch needs to know what type of data each document's field contains.
-This information is contained in the "mapping", or schema definition.
+This information is contained in the `mapping`, or schema definition.
 Elasticsearch will use dynamic mapping to try to guess the field type from
 the basic datatypes available in JSON, but some field's properties have to be
 explicitly declared to tune the indexing engine.
@@ -63,38 +67,40 @@ To do that, use the freezer-manage command:
 
 You should have updated your configuration files before doing this step.
 freezer-manage has the following options:
-- To create the db mappings use the following command::
+
+* To create the db mappings use the following command::
 
   # freezer-manage db sync
 
-- To update the db mappings using the following command. Update means that you
- might have some mappings and you want to update it with a more recent ones ::
+* To update the db mappings using the following command. Update means that you
+  might have some mappings and you want to update it with a more recent ones 
+  ::
 
   # freezer-manage db update
 
-- To remove the db mappings using the following command ::
+* To remove the db mappings using the following command ::
 
   # freezer-manage db remove
 
-- To print the db mappings using the following command ::
+* To print the db mappings using the following command ::
 
   # freezer-manage db show
 
-- To update your settings (number of replicas) all what you need to do is to
- change its value in the configuration file and then run the following command ::
+* To update your settings (number of replicas) all what you need to do is to
+  change its value in the configuration file and then run the following command ::
 
   # freezer-manage db update-settings
 
 If you provided an invalid number of replicas that will cause problems later on,
 so it's highly recommended to make sure that you are using the correct number
-of replicas. For more info click here .. _Replicas https://www.elastic.co/guide/en/elasticsearch/guide/current/replica-shards.html
+of replicas. For more info click here `Elasticsearch_Replicas_instructions <https://www.elastic.co/guide/en/elasticsearch/guide/current/replica-shards.html>`_
 
-- To get information about optional additional parameters::
+* To get information about optional additional parameters::
 
   # freezer-manage -h
 
-- If you want to add any additional parameter like --yes or --erase, they should
- be before the db option. Check the following examples:
+* If you want to add any additional parameter like --yes or --erase, they should
+  be before the db option. Check the following examples:
 
 Wrong Example::
 
@@ -104,24 +110,27 @@ Correct Example::
 
    # freezer-manage -y -e db sync
 
-1.4 run simple instance
------------------------
-::
+run simple instance
+-------------------
+
+.. code-block::
 
   # freezer-api
 
-1.5 examples running using uwsgi
---------------------------------
-::
+examples running using uwsgi
+----------------------------
+
+.. code-block::
 
   # uwsgi --http :9090 --need-app --master --module freezer_api.cmd.wsgi:application
 
   # uwsgi --https :9090,foobar.crt,foobar.key --need-app --master --module freezer_api.cmd.wsgi:application
 
 
-1.6 example running freezer-api with apache2
---------------------------------------------
-::
+example running freezer-api with apache2
+----------------------------------------
+
+.. code-block::
 
     # sudo vi /etc/apache2/sites-enabled/freezer-api.conf
 
@@ -145,62 +154,71 @@ Correct Example::
         </Directory>
     </VirtualHost>
 
-2. Devstack Plugin
-==================
+Devstack Plugin
+===============
 
-2.1 Edit local.conf
--------------------
+Edit local.conf
+---------------
 
 To configure the Freezer API with DevStack, you will need to enable the
 freezer-api plugin by adding one line to the [[local|localrc]] section
-of your local.conf file::
+of your local.conf file:
+
+.. code-block:: 
 
     enable_plugin freezer-api <GITURL> [GITREF]
 
-where::
+where
+
+.. code-block:: 
 
     <GITURL> is the URL of a freezer-api repository
     [GITREF] is an optional git ref (branch/ref/tag).  The default is master.
 
-For example::
+For example
+
+.. code-block::
 
     enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git master
 
+Plugin Options
+---------------
 
-2.2 Plugin Options
-------------------
 The plugin makes use of apache2 by default.
-To use the *uwsgi* server set the following environment variable::
+To use the *uwsgi* server set the following environment variable
+
+.. code-block:: 
 
     export FREEZER_API_SERVER_TYPE=uwsgi
 
 The default port is *9090*. To configure the api to listen on a different port
-set the variable FREEZER_API_PORT.
-For example to make use of port 19090 use::
+set the variable `FREEZER_API_PORT`.
+For example to make use of port 19090 use
+
+.. code-block::
 
     export FREEZER_API_PORT=19090
 
-For more information, see:
-http://docs.openstack.org/developer/devstack/plugins.html
+For more information, see `openstack_devstack_plugins_install <http://docs.openstack.org/developer/devstack/plugins.html>`_
 
-
-3. Concepts and definitions
+Concepts and definitions
 ===========================
 
 *hostname* is _probably_ going to be the host fqdn.
 
 *backup_id*
-defined as "container_hostname_backupname_timestamp_level" uniquely
+defined as `container_hostname_backupname_timestamp_level` uniquely
 identifies a backup
 
 *backup_set*
-defined as "container_hostname_backupname" identifies a group of related
+defined as `container_hostname_backupname` identifies a group of related
 backups which share the same container,hostname and backupname
 
 
-4. API registration
+API registration
 ===================
-::
+
+.. code-block::
 
     # openstack user create --domain default --password-prompt freezer
     # openstack role add --project service --user freezer admin
@@ -212,19 +230,21 @@ backups which share the same container,hostname and backupname
     # openstack endpoint create --region RegionOne backup admin http://freezer_api_adminurl:port
 
 
-5. API routes
-=============
+API routes
+==========
 
 General
 -------
-::
+
+.. code-block:: 
 
     GET /       List API version
     GET /v1     JSON Home document, see http://tools.ietf.org/html/draft-nottingham-json-home-03
 
 Backup metadata
 ---------------
-::
+
+.. code-block::
 
     GET    /v1/backups(?limit,offset)  Lists backups
     POST   /v1/backups                 Creates backup entry
@@ -234,7 +254,8 @@ Backup metadata
 
 Freezer clients management
 --------------------------
-::
+
+.. code-block::
 
     GET    /v1/clients(?limit,offset)       Lists registered clients
     POST   /v1/clients                      Creates client entry
@@ -245,7 +266,8 @@ Freezer clients management
 
 Freezer jobs management
 -----------------------
-::
+
+.. code-block::
 
     GET    /v1/jobs(?limit,offset)     Lists registered jobs
     POST   /v1/jobs                    Creates job entry
@@ -257,7 +279,8 @@ Freezer jobs management
 
 Freezer actions management
 --------------------------
-::
+
+.. code-block::
 
     GET    /v1/actions(?limit,offset)  Lists registered action
     POST   /v1/actions                 Creates action entry
@@ -269,7 +292,8 @@ Freezer actions management
 
 Freezer sessions management
 ---------------------------
-::
+
+.. code-block::
 
     GET    /v1/sessions(?limit,offset)  Lists registered session
     POST   /v1/sessions                 Creates session entry
@@ -284,10 +308,13 @@ Freezer sessions management
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
 
-6. Backup metadata structure
+Backup metadata structure
 ============================
-NOTE: sizes are in MB
-::
+
+.. note:: 
+   sizes are in MB
+
+.. code-block::
 
     backup_metadata:=
     {
@@ -316,9 +343,9 @@ NOTE: sizes are in MB
 
 
 The api wraps backup_metadata dictionary with some additional information.
-It stores and returns the information provided in this form:
+It stores and returns the information provided in this form
 
-::
+.. code-block:: 
 
     {
       "backup_id": string         #  container_hostname_backupname_timestamp_level
@@ -335,12 +362,14 @@ It stores and returns the information provided in this form:
     }
 
 
-7. Freezer Client document structure
+Freezer Client document structure
 ====================================
 
 Identifies a freezer client for the purpose of sending action
 
-client_info document contains information relevant for client identification::
+client_info document contains information relevant for client identification
+
+.. code-block::
 
     client_info:=
     {
@@ -351,7 +380,9 @@ client_info document contains information relevant for client identification::
     }
 
 
-client_type document embeds the client_info and adds user_id::
+client_type document embeds the client_info and adds user_id
+
+.. code-block::
 
     client_type :=
     {
@@ -360,8 +391,9 @@ client_type document embeds the client_info and adds user_id::
     }
 
 
-8. Jobs
+Jobs
 =======
+
 A job describes a single action to be executed by a freezer client, for example a backup, or a restore.
 It contains the necessary information as if they were provided on the command line.
 
@@ -370,7 +402,7 @@ job_id, user_id, client_id, status, scheduling information etc
 
 Scheduling information enables future/recurrent execution of jobs
 
-::
+.. code-block:: 
 
     +---------------------+
     | Job                 |
@@ -386,7 +418,9 @@ Scheduling information enables future/recurrent execution of jobs
                                               +-------------------+
 
 
-job document structure::
+job document structure
+
+.. code-block::
 
     "job": {
       "job_action":   { parameters for freezer to execute a specific action }
@@ -437,34 +471,38 @@ job document structure::
     }
 
 
-8.1 Scheduling Time Information
+Scheduling Time Information
 -------------------------------
 
-Three types of scheduling can be identified:
+Three types of scheduling can be identified
+
   * date - used for single run jobs
   * interval - periodic jobs, providing an interval value
   * cron-like jobs
 
 Each type has specific parameters which can be given.
 
-8.1.1 date scheduling
----------------------
-::
+date scheduling
+----------------
+
+.. code-block::
 
   "schedule_date":      : datetime isoformat
 
-8.1.2 interval scheduling
+interval scheduling
 -------------------------
-::
+
+.. code-block::
 
   "schedule_interval"   : "continuous", "N weeks" / "N days" / "N hours" / "N minutes" / "N seconds"
 
   "schedule_start_date" : datetime isoformat
   "schedule_end_date"   : datetime isoformat
 
-8.1.3 cron-like scheduling
---------------------------
-::
+cron-like scheduling
+--------------------
+
+.. code-block::
 
   "schedule_year"       : 4 digit year
   "schedule_month"      : 1-12
@@ -478,10 +516,12 @@ Each type has specific parameters which can be given.
   "schedule_start_date" : datetime isoformat
   "schedule_end_date"   : datetime isoformat
 
-8.2 Job examples
-----------------
+Job examples
+------------
 
-example backup freezer_action::
+example backup freezer_action
+
+.. code-block::
 
     "freezer_action": {
       "action" : "backup"
@@ -499,7 +539,9 @@ example backup freezer_action::
       "max_cpu_priority" : false
     }
 
-example restore freezer_action::
+example restore freezer_action
+
+.. code-block::
 
     "freezer_action": {
       "action": "restore"
@@ -512,7 +554,9 @@ example restore freezer_action::
 
 
 example scheduled backup job.
-job will be executed once at the provided datetime::
+job will be executed once at the provided datetime
+
+.. code-block::
 
     "job": {
         "job_actions":
@@ -566,17 +610,19 @@ job will be executed once at the provided datetime::
 
                 "status":  "stop",
                 "event": "start"
-                "schedule_interval" : "1 day"
+                "schedule_interval" : "1 days"
                 "schedule_start_date" : "2015-06-02T16:20:00"
             },
-        "job_id": "blabla",
-        "client_id": "blabla",
-        "user_id": "blabla",
+        "job_id": "4822e482fcbb439189a1ad616ac0a72f",
+        "client_id": "26b4ea367ac64702868653912e9428cc_freezer.mydomain.myid",
+        "user_id": "35a322dfb2b14f40bc53a29a14309021",
         "description": "daily backup",
     }
 
 
-multiple scheduling choices allowed::
+multiple scheduling choices allowed
+
+.. code-block::
 
     "job": {
         "job_actions":
@@ -599,7 +645,9 @@ multiple scheduling choices allowed::
     }
 
 
-Finished job with result::
+Finished job with result
+
+.. code-block::
 
     "job": {
         "job_actions": [ ... ],
@@ -620,14 +668,16 @@ Finished job with result::
     }
 
 
-8.2 Actions default value
--------------------------
+Actions default values
+---------------------
 
 It is possible to define properties that span across multiple actions
 This allow not to rewrite values that might be the same in multiple actions.
 If properties are specifically set in one action, then the specified value is the one used.
 
-Example::
+Example
+
+.. code-block::
 
     "job": {
         "action_defaults": {
@@ -661,7 +711,9 @@ Example::
     }
 
 
-Is Equivalent to::
+Is Equivalent to
+
+.. code-block::
 
     "job": {
         "job_actions": [{
@@ -696,12 +748,14 @@ Is Equivalent to::
     }
 
 
-9 Actions
-=========
+Actions
+=======
+
 Actions are stored only to facilitate the assembling of different actions into jobs in the web UI.
 They are not directly used by the scheduler.
-They are stored in this structure:
-::
+They are stored in this structure
+
+.. code-block::
 
   {
       "freezer_action": {
@@ -718,8 +772,9 @@ They are stored in this structure:
   }
 
 
-9. Sessions
-===========
+Sessions
+========
+
 A session is a group of jobs which share the same scheduling time. A session is identified
 by its **session_id** and has a numeric tag (**session_tag**) which is incremented each time that a new session
 is started.
@@ -730,9 +785,10 @@ When a job is added to a session, the scheduling time of the session is copied i
 job data structure, so that any job belonging to the same session will start at the same time.
 
 
-10.1 Session Data Structure
----------------------------
-::
+Session Data Structure
+-----------------------
+
+.. code-block::
 
   session =
   {
@@ -765,18 +821,22 @@ job data structure, so that any job belonging to the same session will start at 
     "user_id": string
   }
 
-10.2 Session actions
---------------------
+Session actions
+---------------
+
 When the freezer scheduler running on a node wants to start a session,
-it sends a POST request to the following endpoint: ::
+it sends a POST request to the following endpoint:
+
+.. code-block::
 
     POST   /v1/sessions/{sessions_id}/action
 
 The body of the request bears the action and parameters
 
-10.2.1 Session START action
----------------------------
-::
+Session START action
+---------------------
+
+.. code-block::
 
     {
         "start": {
@@ -785,16 +845,19 @@ The body of the request bears the action and parameters
         }
     }
 
-Example of a successful response: ::
+Example of a successful response
+
+.. code-block::
 
     {
         'result': 'success',
         'session_tag': 23
     }
 
-10.2.2 Session STOP action
---------------------------
-::
+Session STOP action
+--------------------
+
+.. code-block::
 
     {
         "end": {
@@ -804,17 +867,20 @@ Example of a successful response: ::
         }
     }
 
-10.3 Session-Job association
-----------------------------
+Session-Job association
+------------------------
+
+.. code-block::
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
 
-11. Known Issues
-================
+Known Issues
+=============
 
-11.1 Versions of falcon < 0.1.8
--------------------------------
+Versions of falcon < 0.1.8
+---------------------------
+
 Versions of `falcon <https://falconframework.org/>`_ prior to 0.1.8 (to be precise,
 before `this commit <https://github.com/falconry/falcon/commit/8805eb400e62f74ef548a39a597a0ac5948cd57e>`_)
 do not have support for error handlers, which are used internally by freezer-api
