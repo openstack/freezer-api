@@ -669,7 +669,7 @@ Finished job with result
 
 
 Actions default values
----------------------
+----------------------
 
 It is possible to define properties that span across multiple actions
 This allow not to rewrite values that might be the same in multiple actions.
