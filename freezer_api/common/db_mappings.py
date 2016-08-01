@@ -23,195 +23,195 @@ clients_mapping = {
             "properties": {
                 "client_id": {
                     "index": "not_analyzed",
-                    "type": "string",
+                    "type": "string"
                 },
                 "config_id": {
                     "index": "not_analyzed",
-                    "type": "string",
+                    "type": "string"
                 },
                 "description": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "hostname": {
-                    "type": "string",
-                },
-            },
+                    "type": "string"
+                }
+            }
         },
         "user_id": {
             "index": "not_analyzed",
-            "type": "string",
+            "type": "string"
         },
         "uuid": {
             "index": "not_analyzed",
             "type": "string"
-        },
-    },
+        }
+    }
 }
 
 backups_mapping = {
     "properties": {
         "backup_id": {
             "index": "not_analyzed",
-            "type": "string",
+            "type": "string"
         },
         "backup_metadata": {
             "properties": {
                 "action": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "always_level": {
-                    "type": "boolean",
+                    "type": "boolean"
                 },
                 "backup_media": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "backup_name": {
                     "index": "not_analyzed",
-                    "type": "string",
+                    "type": "string"
                 },
                 "backup_session": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "backup_size_compressed": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "backup_size_uncompressed": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "broken_links": {
                     "index": "not_analyzed",
-                    "type": "string",
+                    "type": "string"
                 },
                 "cli": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "client_os": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "client_version": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "compression": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "log_file": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "proxy": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "ssh_key": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "ssh_username": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "ssh_host": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "ssh_port": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "storage": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "compression_alg": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "container": {
                     "index": "not_analyzed",
-                    "type": "string",
+                    "type": "string"
                 },
                 "container_segments": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "curr_backup_level": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "current_level": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "dry_run": {
-                    "type": "boolean",
+                    "type": "boolean"
                 },
                 "encrypted": {
-                    "type": "boolean",
+                    "type": "boolean"
                 },
                 "excluded_files": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "fs_real_path": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "host_name": {
                     "index": "not_analyzed",
-                    "type": "string",
+                    "type": "string"
                 },
                 "hostname": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "level": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "max_level": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "meta_data_file": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "mode": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "no_incremental": {
-                    "type": "boolean",
+                    "type": "boolean"
                 },
                 "overwrite": {
-                    "type": "boolean",
+                    "type": "boolean"
                 },
                 "path_to_backup": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "time_stamp": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "timestamp": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "total_backup_session_size": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "total_broken_links": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "total_directories": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "total_fs_files": {
-                    "type": "long",
+                    "type": "long"
                 },
                 "version": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "vol_snap_path": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "os_auth_version": {
-                    "type": "string",
+                    "type": "string"
                 },
                 "consistency_checksum": {
                     "type": "string"
-                },
-            },
+                }
+            }
         },
         "backup_uuid": {
-            "type": "string",
+            "type": "string"
         },
         "user_id": {
             "index": "not_analyzed",
-            "type": "string",
+            "type": "string"
         },
         "user_name": {
-            "type": "string",
+            "type": "string"
         },
         "client_id": {
             "index": "not_analyzed",
@@ -220,8 +220,8 @@ backups_mapping = {
         "job_id": {
             "index": "not_analyzed",
             "type": "string"
-        },
-    },
+        }
+    }
 }
 
 jobs_mapping = {
@@ -236,6 +236,10 @@ jobs_mapping = {
         "job_actions": {
             "properties": {
                 "action_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "index": "not_analyzed",
                     "type": "string"
                 },
                 "freezer_action": {
@@ -323,11 +327,11 @@ jobs_mapping = {
                             "type": "string"
                         },
                         "no_incremental": {
-                            "type": "boolean",
+                            "type": "boolean"
                         },
                         "overwrite": {
-                            "type": "boolean",
-                        },
+                            "type": "boolean"
+                        }
                     }
                 },
                 "mandatory": {
@@ -338,10 +342,6 @@ jobs_mapping = {
                 },
                 "max_retries_interval": {
                     "type": "long"
-                },
-                "user_id": {
-                    "index": "not_analyzed",
-                    "type": "string"
                 }
             }
         },
