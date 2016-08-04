@@ -18,9 +18,9 @@ import copy
 
 fqdn_regex = "([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d])" \
              "(\\.([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d]))*"
-project_regex = "[\\w\\-]+"  # Allow all letters, numbers, underscore and minus
-client_id_regex = "^{project}_{host}$".format(project=project_regex,
-                                              host=fqdn_regex)
+project_regex = "(?:([\\w\\-]+)\_)?"  # Allow alphanumeric, underscore and minus
+client_id_regex = "^{project}{host}$".format(project=project_regex,
+                                             host=fqdn_regex)
 
 freezer_action_properties = {
     "action": {
