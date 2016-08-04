@@ -140,3 +140,12 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         # Create the job with POST
         self.assertRaises(BadRequest, lambda: self.freezer_api_client.post_jobs(
             fake_bad_job))
+
+    def test_api_jobs_with_only_fqdn_succeeds(self):
+        """Ensure that a job submitted with only an FQDN succeeds"""
+        fqdn_only_job = fake_job
+        fqdn_only_job['client_id'] = 'padawan-ccp-c1-m1-mgmt'
+
+        # Attempt to post the job, should succeed
+        resp, response_body = self.freezer_api_client.post_jobs(fqdn_only_job)
+        self.assertEquals(201, resp.status)
