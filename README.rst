@@ -15,7 +15,7 @@ TOC
      7. Freezer Client document structure
      8. Jobs
      9. Actions
-    10. Sessions
+     10. Sessions
 
 1. Installation
 ===============
@@ -293,7 +293,7 @@ client_info document contains information relevant for client identification::
       "client_id": string   actually a concatenation "tenant-id_hostname"
       "hostname": string
       "description": string
-      "uuid":
+      "uuid": string
     }
 
 
@@ -632,8 +632,8 @@ Is Equivalent to::
     }
 
 
-9 Actions
-=========
+9. Actions
+==========
 Actions are stored only to facilitate the assembling of different actions into jobs in the web UI.
 They are not directly used by the scheduler.
 They are stored in this structure:
@@ -654,8 +654,8 @@ They are stored in this structure:
   }
 
 
-9. Sessions
-===========
+10. Sessions
+============
 A session is a group of jobs which share the same scheduling time. A session is identified
 by its **session_id** and has a numeric tag (**session_tag**) which is incremented each time that a new session
 is started.
@@ -667,7 +667,7 @@ job data structure, so that any job belonging to the same session will start at 
 
 
 10.1 Session Data Structure
---------------------------
+---------------------------
 ::
 
   session =
@@ -702,7 +702,7 @@ job data structure, so that any job belonging to the same session will start at 
   }
 
 10.2 Session actions
--------------------
+--------------------
 When the freezer scheduler running on a node wants to start a session,
 it sends a POST request to the following endpoint: ::
 
@@ -710,8 +710,8 @@ it sends a POST request to the following endpoint: ::
 
 The body of the request bears the action and parameters
 
-109.2.1 Session START action
---------------------------
+10.2.1 Session START action
+---------------------------
 ::
 
     {
@@ -721,7 +721,7 @@ The body of the request bears the action and parameters
         }
     }
 
-Example of a succesfull response: ::
+Example of a successful response: ::
 
     {
         'result': 'success',
@@ -729,7 +729,7 @@ Example of a succesfull response: ::
     }
 
 10.2.2 Session STOP action
--------------------------
+--------------------------
 ::
 
     {
@@ -741,7 +741,7 @@ Example of a succesfull response: ::
     }
 
 10.3 Session-Job association
----------------------------
+----------------------------
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
