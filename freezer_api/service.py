@@ -42,11 +42,10 @@ def freezer_app_factory(global_conf, **local_conf):
 
 
 def initialize_app(conf=None, name='main'):
-    try:
-        config.parse_args()
-        config.setup_logging()
-    except Exception as e:
-        pass
+    """ initializing app for paste to deploy it """
+    
+    config.parse_args()
+    config.setup_logging()
     conf = config.find_paste_config()
     app = deploy.loadapp('config:%s' % conf, name=name)
     return app
