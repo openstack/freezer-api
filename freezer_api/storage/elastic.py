@@ -16,7 +16,6 @@ limitations under the License.
 """
 
 import elasticsearch
-from elasticsearch import helpers as es_helpers
 
 import logging
 import uuid
@@ -113,8 +112,10 @@ class TypeManager:
     def delete(self, user_id, doc_id):
         query_dsl = self.get_search_query(user_id, doc_id)
         try:
-            results = es_helpers.scan(self.es, index=self.index,
-                                      doc_type=self.doc_type, query=query_dsl)
+            results = self.es.search(index=self.index,
+                                     doc_type=self.doc_type,
+                                     body=query_dsl)
+            results = results['hits']['hits']
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message=_i18n._('Scan operation failed: %s') % e)
