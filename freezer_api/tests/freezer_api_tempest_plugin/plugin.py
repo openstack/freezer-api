@@ -37,5 +37,5 @@ class FreezerApiTempestPlugin(plugins.TempestPlugin):
                                   freezer_api_config.FreezerApiGroup)
 
     def get_opt_lists(self):
-        return [(freezer_api_config.frezer_api_group.name,
+        return [(freezer_api_config.freezer_api_group.name,
                  freezer_api_config.FreezerApiGroup)]
