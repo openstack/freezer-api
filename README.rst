@@ -135,7 +135,7 @@ example running freezer-api with apache2
     # sudo vi /etc/apache2/sites-enabled/freezer-api.conf
 
     <VirtualHost ...>
-        WSGIDaemonProcess freezer-api processes=2 threads=2 user=freezer
+        WSGIDaemonProcess freezer-api processes=2 threads=2 user=freezer display-name=%{GROUP}
         WSGIProcessGroup freezer-api
         WSGIApplicationGroup freezer-api
         WSGIScriptAlias / /opt/stack/freezer_api/cmd/wsgi.py
