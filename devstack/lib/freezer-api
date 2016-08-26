@@ -196,6 +196,14 @@ function create_freezer_api_accounts {
 
 function configure_apache_freezer_app {
     local freezer_api_apache_conf=$(apache_site_config_for freezer-api)
+
+    # Add a %LOCAL_LISTEN% parameter to conditionally listen 127.0.0.1 when
+    # not already doing so to allow monitoring checks
+    local local_listen="Listen 127.0.0.1:$FREEZER_API_PORT"
+    if [[ "${SERVICE_HOST}" == "127.0.0.1" ]] || [[ "${SERVICE_HOST}" == "localhost" ]]; then
+        local_listen=""
+    fi
+
     sudo cp $FREEZER_API_FILES/apache-freezer-api.template $freezer_api_apache_conf
     sudo sed -e "
         s|%FREEZER_API_PORT%|$FREEZER_API_PORT|g;
@@ -203,7 +211,8 @@ function configure_apache_freezer_app {
         s|%USER%|$STACK_USER|g;
         s|%FREEZER_API_DIR%|$FREEZER_API_DIR|g;
         s|%APACHE_NAME%|$APACHE_NAME|g;
-        s|%VIRTUALENV%|$venv_path|g
+        s|%VIRTUALENV%|$venv_path|g;
+        s|%LOCAL_LISTEN%|$local_listen|g
     " -i $freezer_api_apache_conf
 }
 

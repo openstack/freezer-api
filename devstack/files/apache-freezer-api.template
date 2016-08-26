@@ -1,5 +1,9 @@
 Listen %SERVICE_HOST%:%FREEZER_API_PORT%
 
+# Placeholder to conditionally insert a 'Listen 127.0.0.1' directive when
+# %SERVICE_HOST% is not already 127.0.0.1
+%LOCAL_LISTEN%
+
 <VirtualHost *:%FREEZER_API_PORT%>
     WSGIDaemonProcess freezer-api processes=2 threads=2 user=%USER% display-name=%{GROUP}
     WSGIProcessGroup freezer-api
