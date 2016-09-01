@@ -387,6 +387,9 @@ jobs_mapping = {
                 },
                 "time_started": {
                     "type": "long"
+                },
+                "current_pid": {
+                    "type": "long"
                 }
             }
         },

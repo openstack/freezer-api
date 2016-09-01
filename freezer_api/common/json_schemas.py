@@ -143,6 +143,10 @@ job_schedule_properties = {
         "id": "schedule_second",
         "type": "string"
     },
+    "current_pid": {
+        "id": "current_pid",
+        "type": "integer"
+    }
 }
 
 job_schema = {
