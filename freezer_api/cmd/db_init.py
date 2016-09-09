@@ -33,7 +33,7 @@ from freezer_api.common import db_mappings
 DEFAULT_CONF_PATH = '/etc/freezer/freezer-api.conf'
 DEFAULT_ES_SERVER_PORT = 9200
 DEFAULT_INDEX = 'freezer'
-DEFAULT_REPLICAS = 1
+DEFAULT_REPLICAS = 0
 
 
 class MergeMappingException(Exception):
@@ -351,6 +351,8 @@ def get_db_params(args):
 
 
 def main():
+    print("Using the freezer-db-init script is deprecated. Please use "
+          "freezer-manage instead.")
     mappings = db_mappings.get_mappings()
 
     args = get_args(mapping_choices=mappings.keys())

@@ -57,9 +57,10 @@ def get_elk_opts():
                    default=None,
                    help='path to CA certs on disk'),
         cfg.IntOpt('number_of_replicas',
-                   default=2,
-                   help='Number of replicas for elk cluster. Default is 2. '
-                        'Use 0 for no replicas')
+                   default=0,
+                   help='Number of replicas for elk cluster. Default is 0. '
+                        'Use 0 for no replicas. This should be set to (number '
+                        'of node in the ES cluter -1).')
     ]
     return storage_opts
 
