@@ -34,7 +34,7 @@ LOG = log.getLogger(__name__)
 
 DEFAULT_ES_SERVER_PORT = 9200
 DEFAULT_INDEX = 'freezer'
-DEFAULT_REPLICAS = 1
+DEFAULT_REPLICAS = 0
 
 
 def add_db_opts(subparser):

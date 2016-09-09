@@ -347,6 +347,8 @@
 # path to CA certs on disk (string value)
 #ca_certs = <None>
 
-# Number of replicas for elk cluster. Default is 2. Use 0 for no replicas
+# Number of replicas for elk cluster. Default is 0. Use 0 for no replicas
+# In a production environment, this value should be equal to:
+# (Number of elasticsearch node in the cluster - 1)
 # (integer value)
-#number_of_replicas = 2
+#number_of_replicas = 0
