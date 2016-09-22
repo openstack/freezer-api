@@ -34,7 +34,8 @@ edit config file
 
 .. code-block::
 
-  # sudo cp etc/freezer/freezer-api.conf /etc/freezer/freezer-api.conf
+  # sudo mkdir -p /etc/freezer
+  # sudo cp etc/freezer/freezer-api.conf.sample /etc/freezer/freezer-api.conf
   # sudo cp etc/freezer/freezer-paste.ini /etc/freezer/freezer-paste.ini
   # sudo vi /etc/freezer/freezer-api.conf
   # sudo vi /etc/freezer/freezer-paste.ini
