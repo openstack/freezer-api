@@ -33,6 +33,6 @@ class TestVersionResource(unittest.TestCase):
 
     def test_on_get_return_versions(self):
         self.resource.on_get(self.req, self.req)
-        self.assertEquals(self.req.status, falcon.HTTP_300)
+        self.assertEqual(self.req.status, falcon.HTTP_300)
         expected_result = json.dumps({'versions': [v1.VERSION]})
-        self.assertEquals(self.req.data, expected_result)
+        self.assertEqual(self.req.data, expected_result)

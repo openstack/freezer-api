@@ -107,7 +107,7 @@ class TestActionsResource(FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req, fake_action_0['action_id'])
         result = self.mock_req.body
         expected_result = {'action_id': fake_action_0['action_id']}
-        self.assertEquals(self.mock_req.status, falcon.HTTP_204)
+        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)
 
     def test_on_patch_ok_with_some_fields(self):

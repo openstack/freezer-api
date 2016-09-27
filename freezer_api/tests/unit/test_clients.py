@@ -103,5 +103,5 @@ class TestClientsResource(FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req, fake_client_info_0['client_id'])
         result = self.mock_req.body
         expected_result = {'client_id': fake_client_info_0['client_id']}
-        self.assertEquals(self.mock_req.status, falcon.HTTP_204)
+        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)

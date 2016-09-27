@@ -37,4 +37,4 @@ class TestHomedocResource(FreezerBaseTestCase):
         result = json.loads(self.req.data.decode('utf-8'))
         print("TEST HOME DOC RESULT: {}".format(result))
         expected_result = v1.homedoc.HOME_DOC
-        self.assertEquals(result, expected_result)
+        self.assertEqual(result, expected_result)

@@ -38,7 +38,7 @@ class TestJobsBaseResource(FreezerBaseTestCase):
     def test_get_action_returns_found_action(self):
         self.mock_db.get_action.return_value = 'awesome_result'
         result = self.resource.get_action('user-id', 'action-id')
-        self.assertEquals(result, 'awesome_result')
+        self.assertEqual(result, 'awesome_result')
 
     def test_get_action_returns_none_when_action_not_found(self):
         self.mock_db.get_action.side_effect = DocumentNotFound('regular test failure')
@@ -202,7 +202,7 @@ class TestJobsResource(FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req, fake_job_0_job_id)
         result = self.mock_req.body
         expected_result = {'job_id': fake_job_0_job_id}
-        self.assertEquals(self.mock_req.status, falcon.HTTP_204)
+        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)
 
     def test_on_patch_ok_with_some_fields(self):
@@ -299,7 +299,7 @@ class TestJobs(FreezerBaseTestCase):
             job_schedule['event'] = event
         job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.start()
-        self.assertEquals(res, response)
+        self.assertEqual(res, response)
         self.assertEqual(job.need_update, need_update)
 
     def _test_job_stop(self, status, event, response, need_update):
@@ -310,7 +310,7 @@ class TestJobs(FreezerBaseTestCase):
             job_schedule['event'] = event
         job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.stop()
-        self.assertEquals(res, response)
+        self.assertEqual(res, response)
         self.assertEqual(job.need_update, need_update)
 
     def _test_job_abort(self, status, event, response, need_update):
@@ -321,7 +321,7 @@ class TestJobs(FreezerBaseTestCase):
             job_schedule['event'] = event
         job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.abort()
-        self.assertEquals(res, response)
+        self.assertEqual(res, response)
         self.assertEqual(job.need_update, need_update)
 
 
