@@ -610,7 +610,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         self.eng.job_manager.get.return_value = None
         res = self.eng.get_job(user_id=fake_client_entry_0['user_id'],
                                   job_id=fake_client_info_0['client_id'])
-        self.assertEqual(res, None)
+        self.assertIsNone(res)
         self.eng.job_manager.get.assert_called_with(
             fake_client_entry_0['user_id'],
             fake_client_info_0['client_id'])
@@ -745,7 +745,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
         self.eng.action_manager.get.return_value = None
         res = self.eng.get_action(user_id=fake_action_0['user_id'],
                                   action_id=fake_action_0['action_id'])
-        self.assertEqual(res, None)
+        self.assertIsNone(res)
         self.eng.action_manager.get.assert_called_with(
             fake_action_0['user_id'],
             fake_action_0['action_id'])
@@ -879,7 +879,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         self.eng.session_manager.get.return_value = None
         res = self.eng.get_session(user_id=fake_session_0['user_id'],
                                    session_id=fake_session_0['session_id'])
-        self.assertEqual(res, None)
+        self.assertIsNone(res)
         self.eng.session_manager.get.assert_called_with(
             fake_session_0['user_id'],
             fake_session_0['session_id'])
