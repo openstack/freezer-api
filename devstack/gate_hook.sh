@@ -20,5 +20,7 @@ export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.or
 
 export DEVSTACK_GATE_TEMPEST_REGEX="freezer_api_tempest_plugin"
 
+export PROJECTS="openstack/python-freezerclient $PROJECTS"
+
 # Invoke default behavior.
 $BASE/new/devstack-gate/devstack-vm-gate.sh
