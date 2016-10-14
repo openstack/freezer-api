@@ -148,4 +148,4 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
         # Attempt to post the job, should succeed
         resp, response_body = self.freezer_api_client.post_jobs(fqdn_only_job)
-        self.assertEquals(201, resp.status)
+        self.assertEqual(201, resp.status)

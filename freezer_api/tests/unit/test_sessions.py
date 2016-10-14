@@ -106,7 +106,7 @@ class TestSessionsResource(FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req, fake_session_0['session_id'])
         result = self.mock_req.body
         expected_result = {'session_id': fake_session_0['session_id']}
-        self.assertEquals(self.mock_req.status, falcon.HTTP_204)
+        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)
 
     def test_on_patch_ok_with_some_fields(self):
@@ -332,7 +332,7 @@ class TestSessions(FreezerBaseTestCase):
                                     'job2': {'status': 'running',
                                              'result': ''}}
         res = self.session.get_job_overall_result()
-        self.assertEquals(res, 'running')
+        self.assertEqual(res, 'running')
 
     def test_overall_result_fail(self):
         self.session_doc['jobs'] = {'job1': {'status': 'completed',
@@ -340,7 +340,7 @@ class TestSessions(FreezerBaseTestCase):
                                     'job2': {'status': 'completed',
                                              'result': 'fail'}}
         res = self.session.get_job_overall_result()
-        self.assertEquals(res, 'fail')
+        self.assertEqual(res, 'fail')
 
     def test_overall_result_success(self):
         self.session_doc['jobs'] = {'job1': {'status': 'completed',
@@ -348,7 +348,7 @@ class TestSessions(FreezerBaseTestCase):
                                     'job2': {'status': 'completed',
                                              'result': 'success'}}
         res = self.session.get_job_overall_result()
-        self.assertEquals(res, 'success')
+        self.assertEqual(res, 'success')
 
 
 class TestSessionsJobs(FreezerBaseTestCase):

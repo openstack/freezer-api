@@ -103,5 +103,5 @@ class TestBackupsResource(FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req, fake_data_0_backup_id)
         result = self.mock_req.body
         expected_result = {'backup_id': fake_data_0_backup_id}
-        self.assertEquals(self.mock_req.status, falcon.HTTP_204)
+        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)
