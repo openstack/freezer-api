@@ -63,9 +63,19 @@ function cleanup_freezer_api {
     ${TOP_DIR}/pkg/elasticsearch.sh uninstall
 }
 
+# add openjdk-7 repo support for xenial
+function add_jdk7_rep {
+
+    sudo add-apt-repository -y ppa:openjdk-r/ppa
+    apt_get_update
+}
+
 # executed during: stack install
 function install_freezer_api {
 
+    if [[ is_ubuntu ]]; then
+        add_jdk7_rep
+    fi
     git_clone $FREEZER_API_REPO $FREEZER_API_DIR $FREEZER_API_BRANCH
 
     ${TOP_DIR}/pkg/elasticsearch.sh download
