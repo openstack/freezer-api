@@ -88,6 +88,13 @@ function install_freezer_api {
     fi
 }
 
+# Setup python-freezerclient
+function install_freezerclient {
+
+    git_clone $FREEZERCLIENT_REPO $FREEZERCLIENT_DIR $FREEZERCLIENT_BRANCH
+    setup_develop $FREEZERCLIENT_DIR
+}
+
 # executed during: stack post-config
 function configure_freezer_api {
 

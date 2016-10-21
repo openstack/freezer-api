@@ -32,6 +32,11 @@ FREEZER_API_SERVER_TYPE=${FREEZER_API_SERVER_TYPE:-apache2}
 FREEZER_API_SERVICE_PROTOCOL=http
 FREEZER_API_PORT=9090
 
+# Setup python-freezerclient
+FREEZERCLIENT_DIR=$DEST/python-freezerclient
+FREEZERCLIENT_REPO=${FREEZERCLIENT_REPO:-${GIT_BASE}/openstack/python-freezerclient.git}
+FREEZERCLIENT_BRANCH=${FREEZERCLIENT_BRANCH:-master}
+
 enable_service freezer-api
 
 # Tell Tempest this project is present

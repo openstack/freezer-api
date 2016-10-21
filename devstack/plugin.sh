@@ -31,6 +31,7 @@ if is_service_enabled freezer-api; then
         echo_summary "Initializing Freezer API"
         init_freezer_api
         start_freezer_api
+        install_freezerclient
     fi
 
     if [[ "$1" == "unstack" ]]; then
