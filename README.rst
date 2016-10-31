@@ -37,6 +37,7 @@ edit config file
   # sudo mkdir -p /etc/freezer
   # sudo cp etc/freezer/freezer-api.conf.sample /etc/freezer/freezer-api.conf
   # sudo cp etc/freezer/freezer-paste.ini /etc/freezer/freezer-paste.ini
+  # sudo cp etc/freezer/policy.json /etc/freezer/policy.json
   # sudo vi /etc/freezer/freezer-api.conf
   # sudo vi /etc/freezer/freezer-paste.ini
 
