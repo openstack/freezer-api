@@ -123,9 +123,9 @@ example running freezer-api with apache2
         WSGIApplicationGroup freezer-api
         WSGIScriptAlias / /opt/stack/freezer_api/cmd/wsgi.py
 
+        ErrorLogFormat "%M"
         ErrorLog /var/log/freezer-api/freezer-api.log
         CustomLog /var/log/freezer-api/freezer-api_access.log combined
-        LogLevel info
 
         <Directory /opt/stack/freezer_api>
           Options Indexes FollowSymLinks MultiViews
