@@ -263,7 +263,7 @@ Freezer clients management
     POST   /v1/clients                      Creates client entry
 
     GET    /v1/clients/{freezerc_id}     Get client details
-    UPDATE /v1/clients/{freezerc_id}     Updates the specified client information
+    PATCH  /v1/clients/{freezerc_id}     Updates the specified client information
     DELETE /v1/clients/{freezerc_id}     Deletes the specified client information
 
 Freezer jobs management
@@ -308,7 +308,7 @@ Freezer sessions management
     POST   /v1/sessions/{sessions_id}/action           requests actions (e.g. start/end) upon a specific session
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
-    DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
+    DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    deletes the job from the session
 
 Backup metadata structure
 ============================
