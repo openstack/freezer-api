@@ -142,10 +142,8 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
         expected = self._build_expected_data(backup_id, metadata)
 
-        # TODO(JonasPf): Currently there is no way to know the uuid as the api client
-        # until this is fixed we'll ignore it.
-        del(expected['backup_uuid'])
-        del(response_body['backup_uuid'])
+        # backup_id is generated automatically, we can't know it
+        del(response_body['backup_id'])
 
         self.assertEqual(200, resp.status)
         self.assertEqual(expected, response_body)
@@ -189,21 +187,11 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
         expected = self._build_expected_data(backup_id, metadata)
 
-        # TODO(JonasPf): Currently there is no way to know the uuid as the api client
-        # until this is fixed we'll ignore it.
-        del(expected['backup_uuid'])
-        del(response_body['backup_uuid'])
+        # backup_id is generated automatically, we can't know it
+        del(response_body['backup_id'])
 
         self.assertEqual(200, resp.status)
         self.assertEqual(expected, response_body)
-
-    @test.attr(type="gate")
-    def test_api_backups_post_twice(self):
-        """ Create the same backup twice expecting an error message """
-        metadata = self._build_metadata("test_freezer_backups")
-        self._create_temporary_backup(metadata)
-
-        self.assertRaises(tempest.lib.exceptions.Conflict, self._create_temporary_backup, metadata)
 
     @test.attr(type="gate")
     def test_api_backups_delete(self):
@@ -232,9 +220,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
     def _build_expected_data(self, backup_id, metadata):
         return {
             'user_name': self.os.credentials.username,
-            'backup_uuid': None,
             'user_id': self.os.credentials.user_id,
-            'backup_id': backup_id,
             'backup_metadata': metadata
         }
 

@@ -53,7 +53,7 @@ DATA_user_id = 'AUx6F07NwlhuOVELWtHx'
 
 DATA_user_name = 'gegrex55NPlwlhuOVELWtHv'
 
-DATA_backup_id = 'freezer_container_alpha_important_data_backup_12341234_0'
+DATA_backup_id = 'd78f820089d64b7b9096d3133ca3162d'
 
 DATA_wrapped_backup_metadata = {
     'user_id': DATA_user_id,
@@ -94,20 +94,12 @@ class TestBackupMetadataDoc(unittest.TestCase):
             user_name=DATA_user_name,
             data=DATA_backup_metadata)
 
-    def test_backup_id(self):
-        assert (self.backup_metadata.backup_id == DATA_backup_id)
-
     def test_is_valid_return_True_when_valid(self):
         self.assertTrue(self.backup_metadata.is_valid())
 
     def test_is_valid_returns_False_when_user_id_empty(self):
         self.backup_metadata.user_id = ''
         self.assertFalse(self.backup_metadata.is_valid())
-
-    def test_backup_id_correct(self):
-        self.assertEqual(self.backup_metadata.backup_id, DATA_backup_id)
-        self.backup_metadata.data['container'] = 'different'
-        self.assertNotEqual(self.backup_metadata.backup_id, DATA_backup_id)
 
 
 class TestJobDoc(unittest.TestCase):

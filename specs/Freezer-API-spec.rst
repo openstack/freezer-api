@@ -144,7 +144,7 @@ Example
 ::
 
     {
-        "backup_id": "freezer_container_alpha_important_data_backup_123444324_1"
+        "backup_id": "b740ed9ad2b646aba304ef54c21c6774"
     }
 
 3.2 List backup information
@@ -180,7 +180,7 @@ Example
     "backups": [
         {
             "backup_id":
-            "freezer_container_alpha_important_data_backup_123444324_1",
+            "b740ed9ad2b646aba304ef54c21c6774",
             "backup_metadata": {
                 "backup_name": "important_data_backup",
                 "backup_session": 12344321,
@@ -205,7 +205,7 @@ Example
         },
         {
             "backup_id":
-            "freezer_container_alpha_important_data_backup_123444311_0",
+            "b740ed9ad2b646aba304ef54c21c6774",
             "backup_metadata": {
                 "backup_name": "important_data_backup",
                 "backup_session": 12344311,
@@ -253,7 +253,7 @@ Example
 
 
   {
-    "backup_id": "freezer_container_alpha_important_data_backup_123444311_0",
+    "backup_id": "b740ed9ad2b646aba304ef54c21c6774",
     "backup_metadata": {
         "backup_name": "important_data_backup",
         "backup_session": 12344311,
