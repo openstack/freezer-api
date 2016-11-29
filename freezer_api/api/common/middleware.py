@@ -166,7 +166,7 @@ class JSONTranslator(HookableMiddlewareMixin, object):
 class BaseContextMiddleware(Middleware):
     def process_response(self, response):
         try:
-            request_id = response.request.context.request_id
+            request_id = response.req.context.request_id
         except AttributeError:
             LOG.warning('Unable to retrieve request id from context')
         else:
