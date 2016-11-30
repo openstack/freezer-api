@@ -14,9 +14,10 @@
 
 import json
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+from tempest.lib import exceptions
 from tempest import test
-from tempest.lib.exceptions import BadRequest
+
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
 
 class TestFreezerApiActions(base.BaseFreezerApiTest):
@@ -47,7 +48,7 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
 
         # limits <= 0 should raise a bad request error
         for bad_limit in [0, -1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_actions,
                               limit=bad_limit)
 
@@ -61,7 +62,7 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
 
         # offsets < 0 should return 400
         for bad_offset in [-1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_actions,
                               offset=bad_offset)
 
@@ -143,7 +144,6 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
         self.assertEqual(False, max_cpu_priority)
 
         self.assertIn('user_id', resp_body_json)
-        user_id = resp_body_json['user_id']
 
         self.assertIn('log_file', resp_body_json)
         log_file = resp_body_json['log_file']

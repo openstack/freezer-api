@@ -16,20 +16,21 @@ limitations under the License.
 
 """
 
+import json
 import unittest
-from mock import Mock
 
 import falcon
-from freezer_api.api import versions
+import mock
+
 from freezer_api.api import v1
-import json
+from freezer_api.api import versions
 
 
 class TestVersionResource(unittest.TestCase):
 
     def setUp(self):
         self.resource = versions.Resource()
-        self.req = Mock()
+        self.req = mock.Mock()
 
     def test_on_get_return_versions(self):
         self.resource.on_get(self.req, self.req)

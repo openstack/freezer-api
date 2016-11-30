@@ -14,7 +14,7 @@
 
 from tempest import clients
 
-from freezer_api.tests.freezer_api_tempest_plugin.services import \
+from freezer_api.tests.freezer_api_tempest_plugin.services import\
     freezer_api_client
 
 

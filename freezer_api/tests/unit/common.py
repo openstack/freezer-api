@@ -17,15 +17,14 @@ limitations under the License.
 """
 
 import copy
-import fixtures
 import io
 import os
 import shutil
-import sys
-import testtools
 
+import fixtures
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
+import testtools
 
 from freezer_api.common import config
 from freezer_api.common import exceptions
@@ -49,15 +48,15 @@ fake_data_0_wrapped_backup_metadata = {
         "curr_backup_level": 0,
         "backup_session": 8475903425,
         "max_level": 5,
-        "mode" : "fs",
+        "mode": "fs",
         "fs_real_path": "/blabla",
         "vol_snap_path": "/blablasnap",
-        "total_broken_links" : 0,
-        "total_fs_files" : 11,
-        "total_directories" : 2,
-        "backup_size_uncompressed" : 4567,
-        "backup_size_compressed" : 1212,
-        "total_backup_session_size" : 6789,
+        "total_broken_links": 0,
+        "total_fs_files": 11,
+        "total_directories": 2,
+        "backup_size_uncompressed": 4567,
+        "backup_size_compressed": 1212,
+        "total_backup_session_size": 6789,
         "compression_alg": "None",
         "encrypted": "false",
         "client_os": "linux",
@@ -78,12 +77,12 @@ fake_data_0_backup_metadata = {
     "mode": "fs",
     "fs_real_path": "/blabla",
     "vol_snap_path": "/blablasnap",
-    "total_broken_links" : 0,
-    "total_fs_files" : 11,
-    "total_directories" : 2,
-    "backup_size_uncompressed" : 4567,
-    "backup_size_compressed" : 1212,
-    "total_backup_session_size" : 6789,
+    "total_broken_links": 0,
+    "total_fs_files": 11,
+    "total_directories": 2,
+    "backup_size_uncompressed": 4567,
+    "backup_size_compressed": 1212,
+    "total_backup_session_size": 6789,
     "compression_alg": "None",
     "encrypted": "false",
     "client_os": "linux",
@@ -102,12 +101,12 @@ fake_malformed_data_0_backup_metadata = {
     "mode": "fs",
     "fs_real_path": "/blabla",
     "vol_snap_path": "/blablasnap",
-    "total_broken_links" : 0,
-    "total_fs_files" : 11,
-    "total_directories" : 2,
-    "backup_size_uncompressed" : 4567,
-    "backup_size_compressed" : 1212,
-    "total_backup_session_size" : 6789,
+    "total_broken_links": 0,
+    "total_fs_files": 11,
+    "total_directories": 2,
+    "backup_size_uncompressed": 4567,
+    "backup_size_compressed": 1212,
+    "total_backup_session_size": 6789,
     "compression_alg": "None",
     "encrypted": "false",
     "client_os": "linux",
@@ -115,7 +114,6 @@ fake_malformed_data_0_backup_metadata = {
     "excluded_files": ["excluded_file_01", "excluded_file_02"],
     "cli": ""
 }
-
 
 fake_data_0_elasticsearch_hit = {
     "_shards": {
@@ -138,15 +136,15 @@ fake_data_0_elasticsearch_hit = {
                     "curr_backup_level": 0,
                     "backup_session": 8475903425,
                     "max_level": 5,
-                    "mode" : "fs",
+                    "mode": "fs",
                     "fs_real_path": "/blabla",
                     "vol_snap_path": "/blablasnap",
-                    "total_broken_links" : 0,
-                    "total_fs_files" : 11,
-                    "total_directories" : 2,
-                    "backup_size_uncompressed" : 4567,
-                    "backup_size_compressed" : 1212,
-                    "total_backup_session_size" : 6789,
+                    "total_broken_links": 0,
+                    "total_fs_files": 11,
+                    "total_directories": 2,
+                    "backup_size_uncompressed": 4567,
+                    "backup_size_compressed": 1212,
+                    "total_backup_session_size": 6789,
                     "compression_alg": "None",
                     "encrypted": "false",
                     "client_os": "linux",
@@ -162,7 +160,6 @@ fake_data_0_elasticsearch_hit = {
     "timed_out": False,
     "took": 3
 }
-
 
 fake_data_0_elasticsearch_miss = {
     "_shards": {
@@ -188,7 +185,6 @@ fake_job_0_elasticsearch_not_found = {
     "_type": "job",
     "found": False
 }
-
 
 fake_job_0 = {
     "job_actions": [
@@ -233,13 +229,16 @@ fake_job_0 = {
     "description": "test action 4"
 }
 
+
 def get_fake_job_0():
     return copy.deepcopy(fake_job_0)
+
 
 def get_fake_job_1():
     job = copy.deepcopy(fake_job_0)
     job["job_id"] = 'pqoqurioew'
     return job
+
 
 fake_job_0_elasticsearch_found = {
     "_id": "e7181e5e-2c75-43f8-92c0-c037ae5f11e4",
@@ -249,7 +248,6 @@ fake_job_0_elasticsearch_found = {
     "_version": 1,
     "found": True
 }
-
 
 fake_data_1_wrapped_backup_metadata = {
     'backup_id': 'b740ed9ad2b646aba304ef54c21c6774',
@@ -263,15 +261,15 @@ fake_data_1_wrapped_backup_metadata = {
         "curr_backup_level": 1,
         "backup_session": 8475903425,
         "max_level": 5,
-        "mode" : "fs",
+        "mode": "fs",
         "fs_real_path": "/blabla",
         "vol_snap_path": "/blablasnap",
-        "total_broken_links" : 0,
-        "total_fs_files" : 11,
-        "total_directories" : 2,
-        "backup_size_uncompressed" : 4567,
-        "backup_size_compressed" : 1212,
-        "total_backup_session_size" : 6789,
+        "total_broken_links": 0,
+        "total_fs_files": 11,
+        "total_directories": 2,
+        "backup_size_uncompressed": 4567,
+        "backup_size_compressed": 1212,
+        "total_backup_session_size": 6789,
         "compression_alg": "None",
         "encrypted": "false",
         "client_os": "linux",
@@ -282,27 +280,26 @@ fake_data_1_wrapped_backup_metadata = {
 }
 
 fake_client_info_0 = {
-  "client_id": "test-tenant_5253_test-hostname_09544",
-  "description": "some usefule text here",
-  "config_id": "config_id_contains_uuid_of_config"
+    "client_id": "test-tenant_5253_test-hostname_09544",
+    "description": "some usefule text here",
+    "config_id": "config_id_contains_uuid_of_config"
 }
 
 fake_client_info_1 = {
-  "client_id": "test-tenant_5253_test-hostname_6543",
-  "description": "also some useful text here",
-  "config_id": "config_id_blablawhatever"
+    "client_id": "test-tenant_5253_test-hostname_6543",
+    "description": "also some useful text here",
+    "config_id": "config_id_blablawhatever"
 }
 
 fake_client_entry_0 = {
-  "client" : fake_client_info_0,
-  "user_id": "user_id-is-provided-keystone"
+    "client": fake_client_info_0,
+    "user_id": "user_id-is-provided-keystone"
 }
 
 fake_client_entry_1 = {
-  "client" : fake_client_info_0,
-  "user_id": "user_id-is-provided-keystone"
+    "client": fake_client_info_0,
+    "user_id": "user_id-is-provided-keystone"
 }
-
 
 fake_action_0 = {
     "freezer_action":
@@ -321,7 +318,6 @@ fake_action_0 = {
     "action_id": "qwerqwerqwerrewq",
     "user_id": "user_id-is-provided-by-keystone"
 }
-
 
 fake_action_1 = {
     "freezer_action":
@@ -411,12 +407,12 @@ fake_session_1 = {
 def get_fake_session_0():
     return copy.deepcopy(fake_session_0)
 
+
 def get_fake_session_1():
     return copy.deepcopy(fake_session_1)
 
 
-class FakeReqResp:
-
+class FakeReqResp(object):
     def __init__(self, method='GET', body=''):
         self.method = method
         self.body = body
@@ -430,11 +426,10 @@ class FakeReqResp:
 
 
 class FreezerBaseTestCase(testtools.TestCase):
-
     def setUp(self):
         try:
             super(FreezerBaseTestCase, self).setUp()
-        except:
+        except Exception:
             super().setUp()
 
         self._config_fixture = self.useFixture(cfg_fixture.Config())
@@ -451,21 +446,21 @@ class FreezerBaseTestCase(testtools.TestCase):
         # copy policy file to test config dir
         shutil.copy(src_policy_file, self.conf_dir)
         policy_file = os.path.join(self.conf_dir, 'policy.json')
-        self._config_fixture.config(policy_file=policy_file, group='oslo_policy')
-
-
+        self._config_fixture.config(policy_file=policy_file,
+                                    group='oslo_policy')
 
 
 class FakePolicyEnforcer(object):
     def __init__(self, *args, **kwargs):
         self.rules = {}
 
-    def enforce(self, rule, action, ctxt, do_raise=True, exc=exceptions.AccessForbidden):
-        if self.rules.get(rule) == False:
+    def enforce(self, rule, action, ctxt, do_raise=True,
+                exc=exceptions.AccessForbidden):
+        if self.rules.get(rule) is False:
             raise exceptions.AccessForbidden()
 
 
-class FakeContext():
+class FakeContext(object):
     def __init__(self, *args, **kwargs):
         self.context = {}
 
@@ -476,5 +471,6 @@ class FakeContext():
 def get_req_items(name):
     req_info = {'freezer.context': FakeContext()}
     return req_info[name]
+
 
 policy.ENFORCER = FakePolicyEnforcer()

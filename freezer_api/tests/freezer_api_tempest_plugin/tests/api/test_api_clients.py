@@ -15,12 +15,13 @@
 import json
 import time
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+from tempest.lib import exceptions
 from tempest import test
-from tempest.lib.exceptions import BadRequest
+
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+
 
 class TestFreezerApiClients(base.BaseFreezerApiTest):
-
     @classmethod
     def resource_setup(cls):
         super(TestFreezerApiClients, cls).resource_setup()
@@ -49,7 +50,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
 
         # limits <= 0 should raise a bad request error
         for bad_limit in [0, -1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_clients,
                               limit=bad_limit)
 
@@ -63,14 +64,12 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
 
         # offsets < 0 should return 400
         for bad_offset in [-1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_clients,
                               offset=bad_offset)
 
     @test.attr(type="gate")
     def test_api_clients_post(self):
-
-
         client = {'client_id': 'test-client-id',
                   'hostname': 'test-host-name',
                   'description': 'a test client',

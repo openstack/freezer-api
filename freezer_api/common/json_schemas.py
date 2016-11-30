@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-import copy
 
 fqdn_regex = "([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d])" \
              "(\\.([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d]))*"
-project_regex = "(?:([\\w\\-]+)\_)?"  # Allow alphanumeric, underscore and minus
+# Allow alphanumeric, underscore and minus
+project_regex = "(?:([\\w\\-]+)\_)?"
 client_id_regex = "^{project}{host}$".format(project=project_regex,
                                              host=fqdn_regex)
 

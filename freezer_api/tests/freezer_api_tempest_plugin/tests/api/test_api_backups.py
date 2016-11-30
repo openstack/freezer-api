@@ -12,21 +12,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import operator
 import json
-import tempest
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+import tempest
 from tempest import test
 
-class TestFreezerApiBackups(base.BaseFreezerApiTest):
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
+
+class TestFreezerApiBackups(base.BaseFreezerApiTest):
     credentials = ['primary', 'alt']
 
     @test.attr(type="gate")
     def test_api_backups_list(self):
         for i in range(1, 4):
-            self._create_temporary_backup(self._build_metadata("test_freezer_backups_" + str(i)))
+            self._create_temporary_backup(
+                self._build_metadata("test_freezer_backups_" + str(i)))
 
         resp, response_body = self.freezer_api_client.get_backups()
         self.assertEqual(200, resp.status)
@@ -42,8 +43,10 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
     @test.attr(type="gate")
     def test_api_backups_list_other_users_backups(self):
-        """ Test if it is not possible to list backups from a different user """
-        self._create_temporary_backup(self._build_metadata("test_freezer_backups"))
+        # Test if it is not possible to list backups
+        # from a different user
+        self._create_temporary_backup(
+            self._build_metadata("test_freezer_backups"))
 
         # Switching to alt_user here
         resp, response_body = self.os_alt.freezer_api_client.get_backups()
@@ -61,7 +64,8 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
     @test.attr(type="gate")
     def test_api_backups_list_limit(self):
         for i in range(1, 9):
-            self._create_temporary_backup(self._build_metadata("test_freezer_backups_" + str(i)))
+            self._create_temporary_backup(
+                self._build_metadata("test_freezer_backups_" + str(i)))
 
         resp, response_body = self.freezer_api_client.get_backups(limit=5)
         self.assertEqual(200, resp.status)
@@ -110,11 +114,12 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
     @test.attr(type="gate")
     def test_api_backups_list_limit_offset(self):
-        """ Test pagination by grabbing the backups in two steps and comparing to the list of
-        all backups.
+        """ Test pagination by grabbing the backups in two steps and
+        comparing to the list of all backups.
         """
         for i in range(1, 9):
-            self._create_temporary_backup(self._build_metadata("test_freezer_backups_" + str(i)))
+            self._create_temporary_backup(
+                self._build_metadata("test_freezer_backups_" + str(i)))
 
         resp, response_body = self.freezer_api_client.get_backups(limit=5)
         self.assertEqual(200, resp.status)
@@ -123,14 +128,16 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         first_5_backups = response_body['backups']
         self.assertEqual(5, len(first_5_backups))
 
-        resp, response_body = self.freezer_api_client.get_backups(limit=3, offset=5)
+        resp, response_body = self.freezer_api_client.get_backups(limit=3,
+                                                                  offset=5)
         second_3_backups = response_body['backups']
         self.assertEqual(3, len(second_3_backups))
 
         resp, response_body = self.freezer_api_client.get_backups()
         all_backups = response_body['backups']
 
-        self.assertEqual(len(all_backups), len(first_5_backups + second_3_backups))
+        self.assertEqual(len(all_backups),
+                         len(first_5_backups + second_3_backups))
         self.assertEqual(all_backups, first_5_backups + second_3_backups)
 
     @test.attr(type="gate")
@@ -161,16 +168,18 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
         # Passing in an empty dict for headers to avoid automatically
         # generating headers
-        resp, response_body = self.freezer_api_client.post(uri, request_body, headers={})
+        resp, response_body = self.freezer_api_client.post(uri, request_body,
+                                                           headers={})
 
         self.assertEqual(resp.status, 201)
 
     @test.attr(type="gate")
     def test_api_backups_post_incomplete(self):
         metadata = self._build_metadata("test_freezer_backups")
-        del(metadata['container'])
+        del (metadata['container'])
 
-        self.assertRaises(tempest.lib.exceptions.BadRequest, self.freezer_api_client.post_backups, metadata)
+        self.assertRaises(tempest.lib.exceptions.BadRequest,
+                          self.freezer_api_client.post_backups, metadata)
 
     @test.attr(type="gate")
     def test_api_backups_post_minimal(self):
@@ -209,7 +218,8 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         backup_id = self._create_temporary_backup(metadata)
 
         # Switching user
-        resp, response_body = self.os_alt.freezer_api_client.delete_backups(backup_id)
+        resp, response_body = self.os_alt.freezer_api_client.delete_backups(
+            backup_id)
         self.assertEqual('204', resp['status'])
         self.assertEmpty(response_body)
 
@@ -285,5 +295,6 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         # resp, response_body = self.freezer_api_client.get_backups(backup_id)
         resp, response_body = self.freezer_api_client.get_backups()
 
-        result = next((b for b in response_body['backups'] if b['backup_id'] == backup_id))
+        result = next((b for b in response_body['backups'] if
+                       b['backup_id'] == backup_id))
         return resp, result

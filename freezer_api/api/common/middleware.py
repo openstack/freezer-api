@@ -15,18 +15,15 @@ limitations under the License.
 
 """
 
-import falcon
 import json
+
+import falcon
+from oslo_log import log
 import webob.dec
 import webob.exc
 
-from falcon import Request
-
-
-from freezer_api.context import FreezerContext
-from oslo_log import log
-
-import freezer_api.common.exceptions as freezer_api_exc
+from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api import context
 
 LOG = log.getLogger(__name__)
 
@@ -58,6 +55,7 @@ class Middleware(object):
     def factory(cls, global_conf, **local_conf):
         def filter(app):
             return cls(app)
+
         return filter
 
     @webob.dec.wsgify
@@ -81,6 +79,7 @@ class HealthApp(Middleware):
     If the requested url matches the configured path it replies
     with a 200 otherwise passes the request to the inner app
     """
+
     def __call__(self, environ, start_response):
         if environ.get('PATH_INFO') == '/v1/health':
             start_response('200 OK', [])
@@ -115,7 +114,8 @@ class HookableMiddlewareMixin(object):
             return before_hook
         except AttributeError as ex:
             # No such method, we presume.
-            message_template = "Failed to get before hook from middleware {0} - {1}"
+            message_template = ("Failed to get before hook from middleware "
+                                "{0} - {1}")
             message = message_template.format(self.__name__, ex.message)
             LOG.error(message)
             LOG.exception(ex)
@@ -126,6 +126,7 @@ class HookableMiddlewareMixin(object):
 
         :return: after hook function
         """
+
         # Need to wrap this up in a closure because the parameter counts
         # differ
         def after_hook(req, resp, resource=None):
@@ -135,7 +136,8 @@ class HookableMiddlewareMixin(object):
             return after_hook
         except AttributeError as ex:
             # No such method, we presume.
-            message_template = "Failed to get after hook from middleware {0} - {1}"
+            message_template = ("Failed to get after hook from middleware "
+                                "{0} - {1}")
             message = message_template.format(self.__name__, ex.message)
             LOG.error(message)
             LOG.exception(ex)
@@ -143,7 +145,6 @@ class HookableMiddlewareMixin(object):
 
 
 class RequireJSON(HookableMiddlewareMixin, object):
-
     def process_request(self, req, resp):
         if not req.client_accepts_json:
             raise falcon.HTTPNotAcceptable(
@@ -152,7 +153,6 @@ class RequireJSON(HookableMiddlewareMixin, object):
 
 
 class JSONTranslator(HookableMiddlewareMixin, object):
-
     def process_response(self, req, resp, resource):
         if not hasattr(resp, 'body'):
             return
@@ -200,17 +200,17 @@ class ContextMiddleware(BaseContextMiddleware):
         roles = [r.strip().lower() for r in roles_header.split(',')]
         is_admin = 'admin' in roles
 
-        return FreezerContext(auth_token=token,
-                              user=userid,
-                              tenant=tenantid or projectid,
-                              domain=domainid,
-                              user_domain=user_domain_id,
-                              project_domain=project_domain_id,
-                              is_admin=is_admin,
-                              request_id=request_id,
-                              resource_uuid=None,
-                              roles=roles
-                              )
+        return context.FreezerContext(auth_token=token,
+                                      user=userid,
+                                      tenant=tenantid or projectid,
+                                      domain=domainid,
+                                      user_domain=user_domain_id,
+                                      project_domain=project_domain_id,
+                                      is_admin=is_admin,
+                                      request_id=request_id,
+                                      resource_uuid=None,
+                                      roles=roles
+                                      )
 
     def process_request(self, req):
         if req.headers.get('X-Identity-Status') == "Confirmed":

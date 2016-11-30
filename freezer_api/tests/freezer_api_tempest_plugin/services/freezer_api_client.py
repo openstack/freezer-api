@@ -15,15 +15,13 @@
 import urllib
 
 from oslo_serialization import jsonutils as json
-
-
 from tempest import config
 from tempest.lib.common import rest_client
 
 CONF = config.CONF
 
-class FreezerApiClient(rest_client.RestClient):
 
+class FreezerApiClient(rest_client.RestClient):
     def __init__(self, auth_provider):
         super(FreezerApiClient, self).__init__(
             auth_provider,
@@ -70,7 +68,7 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_clients(self, client_id = None, **params):
+    def get_clients(self, client_id=None, **params):
 
         if client_id is None:
             uri = '/v1/clients'
@@ -94,7 +92,7 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_jobs(self, job_id = None, **params):
+    def get_jobs(self, job_id=None, **params):
 
         if job_id is None:
             uri = '/v1/jobs'
@@ -118,7 +116,7 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_actions(self, action_id = None, **params):
+    def get_actions(self, action_id=None, **params):
 
         if action_id is None:
             uri = '/v1/actions'
@@ -130,7 +128,7 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.get(uri)
         return resp, response_body
 
-    def post_actions(self, action, action_id = None):
+    def post_actions(self, action, action_id=None):
 
         request_body = json.dumps(action)
 
@@ -156,7 +154,7 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.delete(uri)
         return resp, response_body
 
-    def get_sessions(self, session_id = None, **params):
+    def get_sessions(self, session_id=None, **params):
 
         if session_id is None:
             uri = '/v1/sessions'

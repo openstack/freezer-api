@@ -11,15 +11,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 from tempest import config
-from tempest.common import credentials_factory
-import tempest.test
+from tempest import test
 
 from freezer_api.tests.freezer_api_tempest_plugin import clients
 
 CONF = config.CONF
 
-class BaseFreezerApiTest(tempest.test.BaseTestCase):
+
+class BaseFreezerApiTest(test.BaseTestCase):
     """Base test case class for all Freezer API tests."""
 
     credentials = ['primary']
@@ -30,4 +31,3 @@ class BaseFreezerApiTest(tempest.test.BaseTestCase):
     def setup_clients(cls):
         super(BaseFreezerApiTest, cls).setup_clients()
         cls.freezer_api_client = cls.os.freezer_api_client
-

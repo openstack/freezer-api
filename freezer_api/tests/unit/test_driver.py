@@ -16,18 +16,18 @@ limitations under the License.
 
 """
 
-
 import unittest
-from mock import Mock, patch
+
+import mock
+from mock import patch
 
 from freezer_api.storage import driver
 
 
 class TestStorageDriver(unittest.TestCase):
-
     @patch('freezer_api.storage.driver.logging')
     def test_get_db_raises_when_db_not_supported(self, mock_logging):
-        mock_CONF = Mock()
+        mock_CONF = mock.Mock()
         mock_CONF.storage.db = 'nodb'
         driver.CONF = mock_CONF
         self.assertRaises(Exception, driver.get_db)
@@ -36,13 +36,14 @@ class TestStorageDriver(unittest.TestCase):
     @patch('freezer_api.storage.driver.logging')
     def test_get_db_elastic(self, mock_logging, mock_elastic):
         driver.register_elk_opts()
-        db = driver.get_db()
+        driver.get_db()
         self.assertTrue(mock_elastic.ElasticSearchEngine)
 
     @patch('freezer_api.storage.driver.elastic')
     @patch('freezer_api.storage.driver.logging')
-    def test_get_db_elastic_raises_Exception_when_cert_file_not_found(self, mock_logging, mock_elastic):
-        mock_CONF = Mock()
+    def test_get_db_elastic_raises_Exception_when_cert_file_not_found(
+            self, mock_logging, mock_elastic):
+        mock_CONF = mock.Mock()
         mock_CONF.storage.db = 'elasticsearch'
         mock_CONF.storage.hosts = 'es_server'
         mock_CONF.storage.verify_certs = 'False'
@@ -55,8 +56,9 @@ class TestStorageDriver(unittest.TestCase):
 
     @patch('freezer_api.storage.driver.elastic')
     @patch('freezer_api.storage.driver.logging')
-    def test_get_db_elastic_raises_Exception_when_hosts_not_defined(self, mock_logging, mock_elastic):
-        mock_CONF = Mock()
+    def test_get_db_elastic_raises_Exception_when_hosts_not_defined(
+            self, mock_logging, mock_elastic):
+        mock_CONF = mock.Mock()
         mock_CONF.storage.db = 'elasticsearch'
         mock_CONF.storage.hosts = ''
         mock_CONF.storage.endpoint = ''

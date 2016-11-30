@@ -14,9 +14,10 @@
 
 import json
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+from tempest.lib import exceptions
 from tempest import test
-from tempest.lib.exceptions import BadRequest
+
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
 fake_job = {
     "job_actions":
@@ -54,8 +55,8 @@ fake_job = {
     "description": "scheduled one shot"
 }
 
-class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
+class TestFreezerApiJobs(base.BaseFreezerApiTest):
     @classmethod
     def resource_setup(cls):
         super(TestFreezerApiJobs, cls).resource_setup()
@@ -84,7 +85,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
         # limits <= 0 should raise a bad request error
         for bad_limit in [0, -1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_jobs,
                               limit=bad_limit)
 
@@ -97,7 +98,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
 
         # offsets < 0 should return 400
         for bad_offset in [-1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_jobs,
                               offset=bad_offset)
 
@@ -127,19 +128,21 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         fake_bad_job['client_id'] = 'bad%project$id_host.domain.tld'
 
         # Create the job with POST
-        self.assertRaises(BadRequest, lambda: self.freezer_api_client.post_jobs(
-            fake_bad_job))
+        self.assertRaises(exceptions.BadRequest,
+                          lambda: self.freezer_api_client.post_jobs(
+                              fake_bad_job))
 
     @test.attr(type="gate")
     def test_api_jobs_with_invalid_client_host_fail(self):
         """Ensure that a job submitted with a bad client_id hostname fails"""
         fake_bad_job = fake_job
-        fake_bad_job['client_id'] = "01b0f00a-4ce2-11e6-beb8-9e71128cae77" \
-            "_bad_hostname.bad/domain.b"
+        fake_bad_job['client_id'] = ("01b0f00a-4ce2-11e6-beb8-9e71128cae77"
+                                     "_bad_hostname.bad/domain.b")
 
         # Create the job with POST
-        self.assertRaises(BadRequest, lambda: self.freezer_api_client.post_jobs(
-            fake_bad_job))
+        self.assertRaises(exceptions.BadRequest,
+                          lambda: self.freezer_api_client.post_jobs(
+                              fake_bad_job))
 
     def test_api_jobs_with_only_fqdn_succeeds(self):
         """Ensure that a job submitted with only an FQDN succeeds"""

@@ -17,7 +17,7 @@ limitations under the License.
 
 from oslo_log import log
 
-from freezer_api.context import FreezerContext
+from freezer_api import context
 
 LOG = log.getLogger(__name__)
 
@@ -31,11 +31,11 @@ def inject_context(req, resp, params):
     roles = req.get_header('X-ROLES')
     roles = roles and roles.split(',') or []
 
-    ctxt = FreezerContext(auth_token=auth_token,
-                          user=user_id,
-                          tenant=tenant,
-                          request_id=request_id,
-                          roles=roles)
+    ctxt = context.FreezerContext(auth_token=auth_token,
+                                  user=user_id,
+                                  tenant=tenant,
+                                  request_id=request_id,
+                                  roles=roles)
 
     req.env['freezer.context'] = ctxt
     LOG.info('Request context set')

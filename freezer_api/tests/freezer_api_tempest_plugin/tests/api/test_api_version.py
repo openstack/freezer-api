@@ -14,11 +14,12 @@
 
 import json
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 from tempest import test
 
-class TestFreezerApiVersion(base.BaseFreezerApiTest):
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
+
+class TestFreezerApiVersion(base.BaseFreezerApiTest):
     @classmethod
     def resource_setup(cls):
         super(TestFreezerApiVersion, cls).resource_setup()
@@ -29,7 +30,6 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
 
     @test.attr(type="gate")
     def test_api_version(self):
-
         resp, response_body = self.freezer_api_client.get_version()
         self.assertEqual(300, resp.status)
 
@@ -52,10 +52,8 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
         self.assertEqual('CURRENT', status)
         self.assertIn('updated', current_version)
 
-
     @test.attr(type="gate")
     def test_api_version_v1(self):
-
         resp, response_body = self.freezer_api_client.get_version_v1()
         self.assertEqual(200, resp.status)
 

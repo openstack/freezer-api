@@ -15,29 +15,26 @@ limitations under the License.
 
 """
 
-import unittest
-from mock import Mock, MagicMock, patch
-
 import random
-import falcon
 
-from .common import *
-from freezer_api.common.exceptions import *
+import falcon
+import mock
 
 from freezer_api.api.v1 import actions as v1_actions
+from freezer_api.common import exceptions
+from freezer_api.tests.unit import common
 
 
-class TestActionsCollectionResource(FreezerBaseTestCase):
-
+class TestActionsCollectionResource(common.FreezerBaseTestCase):
     def setUp(self):
         super(TestActionsCollectionResource, self).setUp()
-        self.mock_db = Mock()
-        self.mock_req = MagicMock()
-        self.mock_req.__getitem__.side_effect = get_req_items
-        self.mock_req.get_header.return_value = fake_action_0['user_id']
+        self.mock_db = mock.Mock()
+        self.mock_req = mock.MagicMock()
+        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.get_header.return_value = common.fake_action_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_actions.ActionsCollectionResource(self.mock_db)
-        self.mock_json_body = Mock()
+        self.mock_json_body = mock.Mock()
         self.mock_json_body.return_value = {}
         self.resource.json_body = self.mock_json_body
 
@@ -50,19 +47,23 @@ class TestActionsCollectionResource(FreezerBaseTestCase):
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
     def test_on_get_return_correct_list(self):
-        self.mock_db.search_action.return_value = [get_fake_action_0(), get_fake_action_1()]
-        expected_result = {'actions': [get_fake_action_0(), get_fake_action_1()]}
+        self.mock_db.search_action.return_value = [common.get_fake_action_0(),
+                                                   common.get_fake_action_1()]
+        expected_result = {'actions': [common.get_fake_action_0(),
+                                       common.get_fake_action_1()]}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
         self.assertEqual(result, expected_result)
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
     def test_on_post_raises_when_missing_body(self):
-        self.mock_db.add_action.return_value = fake_action_0['action_id']
-        self.assertRaises(BadDataFormat, self.resource.on_post, self.mock_req, self.mock_req)
+        self.mock_db.add_action.return_value = common.fake_action_0[
+            'action_id']
+        self.assertRaises(exceptions.BadDataFormat, self.resource.on_post,
+                          self.mock_req, self.mock_req)
 
     def test_on_post_inserts_correct_data(self):
-        action = get_fake_action_0()
+        action = common.get_fake_action_0()
         self.mock_json_body.return_value = action
         self.mock_db.add_action.return_value = 'pjiofrdslaikfunr'
         expected_result = {'action_id': 'pjiofrdslaikfunr'}
@@ -71,20 +72,18 @@ class TestActionsCollectionResource(FreezerBaseTestCase):
         self.assertEqual(self.mock_req.body, expected_result)
 
 
-class TestActionsResource(FreezerBaseTestCase):
-
+class TestActionsResource(common.FreezerBaseTestCase):
     def setUp(self):
         super(TestActionsResource, self).setUp()
-        self.mock_db = Mock()
-        self.mock_req = MagicMock()
-        self.mock_req.__getitem__.side_effect = get_req_items
-        self.mock_req.get_header.return_value = fake_action_0['user_id']
+        self.mock_db = mock.Mock()
+        self.mock_req = mock.MagicMock()
+        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.get_header.return_value = common.fake_action_0['user_id']
         self.mock_req.status = falcon.HTTP_200
         self.resource = v1_actions.ActionsResource(self.mock_db)
-        self.mock_json_body = Mock()
+        self.mock_json_body = mock.Mock()
         self.mock_json_body.return_value = {}
         self.resource.json_body = self.mock_json_body
-
 
     def test_create_resource(self):
         self.assertIsInstance(self.resource, v1_actions.ActionsResource)
@@ -92,21 +91,24 @@ class TestActionsResource(FreezerBaseTestCase):
     def test_on_get_return_no_result_and_404_when_not_found(self):
         self.mock_db.get_action.return_value = None
         self.mock_req.body = None
-        self.resource.on_get(self.mock_req, self.mock_req, fake_action_0['action_id'])
+        self.resource.on_get(self.mock_req, self.mock_req,
+                             common.fake_action_0['action_id'])
         self.assertIsNone(self.mock_req.body)
         self.assertEqual(self.mock_req.status, falcon.HTTP_404)
 
     def test_on_get_return_correct_data(self):
-        self.mock_db.get_action.return_value = get_fake_action_0()
-        self.resource.on_get(self.mock_req, self.mock_req, fake_action_0['action_id'])
+        self.mock_db.get_action.return_value = common.get_fake_action_0()
+        self.resource.on_get(self.mock_req, self.mock_req,
+                             common.fake_action_0['action_id'])
         result = self.mock_req.body
-        self.assertEqual(result, get_fake_action_0())
+        self.assertEqual(result, common.get_fake_action_0())
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
     def test_on_delete_removes_proper_data(self):
-        self.resource.on_delete(self.mock_req, self.mock_req, fake_action_0['action_id'])
+        self.resource.on_delete(self.mock_req, self.mock_req,
+                                common.fake_action_0['action_id'])
         result = self.mock_req.body
-        expected_result = {'action_id': fake_action_0['action_id']}
+        expected_result = {'action_id': common.fake_action_0['action_id']}
         self.assertEqual(self.mock_req.status, falcon.HTTP_204)
         self.assertEqual(result, expected_result)
 
@@ -117,15 +119,16 @@ class TestActionsResource(FreezerBaseTestCase):
                      'because': 'size_matters'}
         self.mock_json_body.return_value = patch_doc
 
-        expected_patch = patch_doc.copy()
+        patch_doc.copy()
 
-        expected_result = {'action_id': fake_action_0['action_id'],
+        expected_result = {'action_id': common.fake_action_0['action_id'],
                            'version': new_version}
 
-        self.resource.on_patch(self.mock_req, self.mock_req, fake_action_0['action_id'])
+        self.resource.on_patch(self.mock_req, self.mock_req,
+                               common.fake_action_0['action_id'])
         self.mock_db.update_action.assert_called_with(
-            user_id=fake_action_0['user_id'],
-            action_id=fake_action_0['action_id'],
+            user_id=common.fake_action_0['user_id'],
+            action_id=common.fake_action_0['action_id'],
             patch_doc=patch_doc)
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
         result = self.mock_req.body
@@ -134,20 +137,22 @@ class TestActionsResource(FreezerBaseTestCase):
     def test_on_post_ok(self):
         new_version = random.randint(0, 99)
         self.mock_db.replace_action.return_value = new_version
-        action = get_fake_action_0()
+        action = common.get_fake_action_0()
         self.mock_json_body.return_value = action
-        expected_result = {'action_id': fake_action_0['action_id'],
+        expected_result = {'action_id': common.fake_action_0['action_id'],
                            'version': new_version}
 
-        self.resource.on_post(self.mock_req, self.mock_req, fake_action_0['action_id'])
+        self.resource.on_post(self.mock_req, self.mock_req,
+                              common.fake_action_0['action_id'])
         self.assertEqual(self.mock_req.status, falcon.HTTP_201)
         self.assertEqual(self.mock_req.body, expected_result)
 
     def test_on_post_raises_when_db_replace_action_raises(self):
-        self.mock_db.replace_action.side_effect = AccessForbidden('regular test failure')
-        action = get_fake_action_0()
+        self.mock_db.replace_action.side_effect = exceptions.AccessForbidden(
+            'regular test failure')
+        action = common.get_fake_action_0()
         self.mock_json_body.return_value = action
-        self.assertRaises(AccessForbidden, self.resource.on_post,
+        self.assertRaises(exceptions.AccessForbidden, self.resource.on_post,
                           self.mock_req,
                           self.mock_req,
-                          fake_action_0['action_id'])
+                          common.fake_action_0['action_id'])

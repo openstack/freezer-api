@@ -16,9 +16,11 @@ Base resource with utility functions
 
 """
 
-import falcon
-from freezer_api.common import exceptions as freezer_api_exc
 import json
+
+import falcon
+
+from freezer_api.common import exceptions as freezer_api_exc
 
 
 class BaseResource(object):

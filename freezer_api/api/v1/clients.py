@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 import falcon
+
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api import policy
@@ -70,7 +71,7 @@ class ClientsResource(resource.BaseResource):
             resp.body = obj[0]
         else:
             resp.status = falcon.HTTP_404
-    
+
     @policy.enforce('clients:delete')
     def on_delete(self, req, resp, client_id):
         # DELETE /v1/clients/{client_id}     Deletes the specified backup

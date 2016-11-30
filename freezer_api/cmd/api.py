@@ -17,9 +17,10 @@ limitations under the License.
 """
 
 from __future__ import print_function
-import falcon
+
 import sys
 
+import falcon
 from oslo_config import cfg
 from oslo_log import log
 from paste import deploy
@@ -29,7 +30,6 @@ from freezer_api.api.common import middleware
 from freezer_api.api.common import utils
 from freezer_api.api import v1
 from freezer_api.api import versions
-
 from freezer_api.common import _i18n
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
@@ -50,10 +50,10 @@ def configure_app(app, db=None):
     """
     if not db:
         db = driver.get_db()
-    
-    # setup freezer policy    
+
+    # setup freezer policy
     policy.setup_policy(CONF)
-    
+
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
 
@@ -129,13 +129,14 @@ def main():
             application=deploy.loadapp('config:%s' % paste_conf, name='main'),
             host=ip,
             port=port)
-        message = _i18n._('Server listening on %(ip)s:%(port)s' %
-                          {'ip': ip, 'port': port})
+        message = (_i18n._('Server listening on %(ip)s:%(port)s') %
+                   {'ip': ip, 'port': port})
         _LOG.info(message)
         print(message)
     except KeyboardInterrupt:
         print(_i18n._("Thank You ! \nBye."))
         sys.exit(0)
+
 
 if __name__ == '__main__':
     main()

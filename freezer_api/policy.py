@@ -16,8 +16,9 @@ limitations under the License.
 
 import functools
 
-from freezer_api.common import exceptions
 from oslo_policy import policy
+
+from freezer_api.common import exceptions
 
 ENFORCER = None
 

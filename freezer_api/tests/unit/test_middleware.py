@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
 import unittest
-from mock import Mock
+
+import mock
 
 from freezer_api.api.common import middleware
 
@@ -25,20 +25,20 @@ from freezer_api.api.common import middleware
 class TestHealthApp(unittest.TestCase):
 
     def test_call_nested_app(self):
-        mock_app = Mock()
+        mock_app = mock.Mock()
         mock_app.return_value = ['app_body']
         health_app = middleware.HealthApp(mock_app)
         environ = {}
-        start_response = Mock()
+        start_response = mock.Mock()
         result = health_app(environ, start_response)
         self.assertEqual(result, ['app_body'])
 
     def test_return_200_when_paths_match(self):
-        mock_app = Mock()
+        mock_app = mock.Mock()
         mock_app.return_value = ['app_body']
         health_app = middleware.HealthApp(mock_app)
         environ = {'PATH_INFO': '/v1/health'}
-        start_response = Mock()
+        start_response = mock.Mock()
         result = health_app(environ, start_response)
         start_response.assert_called_once_with('200 OK', [])
         self.assertEqual(result, [])

@@ -16,8 +16,9 @@ limitations under the License.
 
 """
 
-import falcon
 import logging
+
+import falcon
 
 from freezer_api.common._i18n import _
 
@@ -30,7 +31,7 @@ class FreezerAPIException(falcon.HTTPError):
 
     def __init__(self, message=''):
         if message:
-            self.message = _(str(message))
+            self.message = _(str(message))  # noqa
         logging.error(message)
         Exception.__init__(self, message)
 

@@ -14,13 +14,13 @@
 
 import json
 
-from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
+from tempest.lib import exceptions
 from tempest import test
-from tempest.lib.exceptions import BadRequest
+
+from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
 
 class TestFreezerApiSessions(base.BaseFreezerApiTest):
-
     @classmethod
     def resource_setup(cls):
         super(TestFreezerApiSessions, cls).resource_setup()
@@ -50,7 +50,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
 
         # limits <= 0 should raise a bad request error
         for bad_limit in [0, -1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_sessions,
                               limit=bad_limit)
 
@@ -64,7 +64,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
 
         # offsets < 0 should return 400
         for bad_offset in [-1, -2]:
-            self.assertRaises(BadRequest,
+            self.assertRaises(exceptions.BadRequest,
                               self.freezer_api_client.get_sessions,
                               offset=bad_offset)
 
@@ -88,19 +88,20 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
                 "schedule_minute": "25",
             },
             "jobs": [
-                {'job_id_1': {
-                    "client_id": "client-id-1",
-                    "status": "stop",
-                    "result": "success",
-                    "time_started": 1234,
-                    "time_ended": 1234
-                },
-                    'job_id_2': {
+                {
+                    'job_id_1': {
                         "client_id": "client-id-1",
                         "status": "stop",
                         "result": "success",
                         "time_started": 1234,
                         "time_ended": 1234
+                    },
+                    'job_id_2': {
+                        "client_id": "client-id-1",
+                        "status": "stop",
+                        "result": "success",
+                        "time_started": 1234,
+                        "time_ended": 1234,
                     }
                 }
             ],

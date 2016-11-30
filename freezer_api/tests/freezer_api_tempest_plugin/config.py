@@ -15,7 +15,6 @@
 
 from oslo_config import cfg
 
-
 service_available_group = cfg.OptGroup(name="service_available",
                                        title="Available OpenStack Services")
 
@@ -26,7 +25,7 @@ ServiceAvailableGroup = [
 ]
 
 freezer_api_group = cfg.OptGroup(name="backup",
-                                title="Freezer API Service Options")
+                                 title="Freezer API Service Options")
 
 FreezerApiGroup = [
     cfg.StrOpt("region",

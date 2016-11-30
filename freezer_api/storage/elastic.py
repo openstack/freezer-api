@@ -15,20 +15,17 @@ limitations under the License.
 
 """
 
-import elasticsearch
-
 import logging
 import uuid
 
+import elasticsearch
+
 from freezer_api.common import _i18n
 from freezer_api.common import exceptions as freezer_api_exc
-from freezer_api.common.utils import ActionDoc
-from freezer_api.common.utils import BackupMetadataDoc
-from freezer_api.common.utils import JobDoc
-from freezer_api.common.utils import SessionDoc
+from freezer_api.common import utils
 
 
-class TypeManager:
+class TypeManager(object):
     def __init__(self, es, doc_type, index):
         self.es = es
         self.index = index
@@ -196,7 +193,8 @@ class JobTypeManager(TypeManager):
                 raise freezer_api_exc.DocumentExists(message=e.error)
             raise freezer_api_exc.DocumentNotFound(
                 message=_i18n._('Unable to find job to update '
-                          'with id %(id)s. %(e)s') % {'id': job_id, 'e': e})
+                                'with id %(id)s. %(e)s') % {'id': job_id,
+                                                            'e': e})
         except Exception:
             raise freezer_api_exc.StorageEngineError(
                 message=_i18n._('Unable to update job with id %s') % job_id)
@@ -230,10 +228,11 @@ class ActionTypeManager(TypeManager):
                 raise freezer_api_exc.DocumentExists(message=e.error)
             raise freezer_api_exc.DocumentNotFound(
                 message=_i18n._('Unable to find action to update '
-                          'with id %s') % action_id)
+                                'with id %s') % action_id)
         except Exception:
             raise freezer_api_exc.StorageEngineError(
-                message=_i18n._('Unable to update action with id %s') % action_id)
+                message=_i18n._(
+                    'Unable to update action with id %s') % action_id)
         return version
 
 
@@ -263,22 +262,23 @@ class SessionTypeManager(TypeManager):
             if e.status_code == 409:
                 raise freezer_api_exc.DocumentExists(message=e.error)
             raise freezer_api_exc.DocumentNotFound(
-                message=_i18n._(('Unable to update session '
-                           '%s. %s') % (session_id, e)))
+                message=_i18n._('Unable to update session '
+                                '%(id)s %(e)s') % {'id': session_id, 'e': e}
+            )
 
         except Exception:
             raise freezer_api_exc.StorageEngineError(
-                message=_i18n._('Unable to update session with id %s') % session_id)
+                message=_i18n._(
+                    'Unable to update session with id %s') % session_id)
         return version
 
 
 class ElasticSearchEngine(object):
-
     def __init__(self, index='freezer', **kwargs):
         self.index = index
         self.es = elasticsearch.Elasticsearch(**kwargs)
         logging.info(_i18n._LI('Storage backend: Elasticsearch '
-                         'at %s') % kwargs['hosts'])
+                               'at %s') % kwargs['hosts'])
         self.backup_manager = BackupTypeManager(self.es, 'backups')
         self.client_manager = ClientTypeManager(self.es, 'clients')
         self.job_manager = JobTypeManager(self.es, 'jobs')
@@ -297,9 +297,10 @@ class ElasticSearchEngine(object):
 
     def add_backup(self, user_id, user_name, doc):
         # raises if data is malformed (HTTP_400) or already present (HTTP_409)
-        backup_metadata_doc = BackupMetadataDoc(user_id, user_name, doc)
+        backup_metadata_doc = utils.BackupMetadataDoc(user_id, user_name, doc)
         if not backup_metadata_doc.is_valid():
-            raise freezer_api_exc.BadDataFormat(message=_i18n._('Bad Data Format'))
+            raise freezer_api_exc.BadDataFormat(
+                message=_i18n._('Bad Data Format'))
         backup_id = backup_metadata_doc.backup_id
         self.backup_manager.insert(backup_metadata_doc.serialize(), backup_id)
         return backup_id
@@ -319,11 +320,13 @@ class ElasticSearchEngine(object):
     def add_client(self, user_id, doc):
         client_id = doc.get('client_id', None)
         if client_id is None:
-            raise freezer_api_exc.BadDataFormat(message=_i18n._('Missing client ID'))
+            raise freezer_api_exc.BadDataFormat(
+                message=_i18n._('Missing client ID'))
         existing = self.client_manager.search(user_id, client_id)
         if existing:
             raise freezer_api_exc.DocumentExists(
-                message=_i18n._('Client already registered with ID %s') % client_id)
+                message=_i18n._(
+                    'Client already registered with ID %s') % client_id)
         client_doc = {'client': doc,
                       'user_id': user_id,
                       'uuid': uuid.uuid4().hex}
@@ -345,7 +348,7 @@ class ElasticSearchEngine(object):
                                        limit=limit)
 
     def add_job(self, user_id, doc):
-        jobdoc = JobDoc.create(doc, user_id)
+        jobdoc = utils.JobDoc.create(doc, user_id)
         job_id = jobdoc['job_id']
         self.job_manager.insert(jobdoc, job_id)
         logging.info(_i18n._LI('Job registered, job id: %s') % job_id)
@@ -355,7 +358,7 @@ class ElasticSearchEngine(object):
         return self.job_manager.delete(user_id, job_id)
 
     def update_job(self, user_id, job_id, patch_doc):
-        valid_patch = JobDoc.create_patch(patch_doc)
+        valid_patch = utils.JobDoc.create_patch(patch_doc)
 
         # check that document exists
         assert (self.job_manager.get(user_id, job_id))
@@ -373,14 +376,15 @@ class ElasticSearchEngine(object):
         except freezer_api_exc.DocumentNotFound:
             pass
 
-        valid_doc = JobDoc.update(doc, user_id, job_id)
+        valid_doc = utils.JobDoc.update(doc, user_id, job_id)
 
         (created, version) = self.job_manager.insert(valid_doc, job_id)
         if created:
             logging.info(_i18n._LI('Job %s created') % job_id)
         else:
-            logging.info(_i18n._LI('Job %(id)s replaced with version %(version)s' %
-                         {'id': job_id, 'version': version}))
+            logging.info(
+                _i18n._LI('Job %(id)s replaced with version %(version)s') %
+                {'id': job_id, 'version': version})
         return version
 
     def get_action(self, user_id, action_id):
@@ -394,7 +398,7 @@ class ElasticSearchEngine(object):
                                           limit=limit)
 
     def add_action(self, user_id, doc):
-        actiondoc = ActionDoc.create(doc, user_id)
+        actiondoc = utils.ActionDoc.create(doc, user_id)
         action_id = actiondoc['action_id']
         self.action_manager.insert(actiondoc, action_id)
         logging.info(_i18n._LI('Action registered, action id: %s') % action_id)
@@ -404,14 +408,15 @@ class ElasticSearchEngine(object):
         return self.action_manager.delete(user_id, action_id)
 
     def update_action(self, user_id, action_id, patch_doc):
-        valid_patch = ActionDoc.create_patch(patch_doc)
+        valid_patch = utils.ActionDoc.create_patch(patch_doc)
 
         # check that document exists
         assert (self.action_manager.get(user_id, action_id))
 
         version = self.action_manager.update(action_id, valid_patch)
-        logging.info(_i18n._LI('Action %(id)s updated to version %(version)s' %
-                     {'id': action_id, 'version': version}))
+        logging.info(
+            _i18n._LI('Action %(id)s updated to version %(version)s') %
+            {'id': action_id, 'version': version})
         return version
 
     def replace_action(self, user_id, action_id, doc):
@@ -422,14 +427,15 @@ class ElasticSearchEngine(object):
         except freezer_api_exc.DocumentNotFound:
             pass
 
-        valid_doc = ActionDoc.update(doc, user_id, action_id)
+        valid_doc = utils.ActionDoc.update(doc, user_id, action_id)
 
         (created, version) = self.action_manager.insert(valid_doc, action_id)
         if created:
             logging.info(_i18n._LI('Action %s created') % action_id)
         else:
-            logging.info(_i18n._LI('Action %(id)s replaced with version %(version)s'
-                         % {'id': action_id, 'version': version}))
+            logging.info(
+                _i18n._LI('Action %(id)s replaced with version %(version)s')
+                % {'id': action_id, 'version': version})
         return version
 
     def get_session(self, user_id, session_id):
@@ -443,24 +449,26 @@ class ElasticSearchEngine(object):
                                            limit=limit)
 
     def add_session(self, user_id, doc):
-        session_doc = SessionDoc.create(doc, user_id)
+        session_doc = utils.SessionDoc.create(doc, user_id)
         session_id = session_doc['session_id']
         self.session_manager.insert(session_doc, session_id)
-        logging.info(_i18n._LI('Session registered, session id: %s') % session_id)
+        logging.info(
+            _i18n._LI('Session registered, session id: %s') % session_id)
         return session_id
 
     def delete_session(self, user_id, session_id):
         return self.session_manager.delete(user_id, session_id)
 
     def update_session(self, user_id, session_id, patch_doc):
-        valid_patch = SessionDoc.create_patch(patch_doc)
+        valid_patch = utils.SessionDoc.create_patch(patch_doc)
 
         # check that document exists
         assert (self.session_manager.get(user_id, session_id))
 
         version = self.session_manager.update(session_id, valid_patch)
-        logging.info(_i18n._LI('Session %(id)s updated to version %(version)s' %
-                     {'id': session_id, 'version': version}))
+        logging.info(
+            _i18n._LI('Session %(id)s updated to version %(version)s') %
+            {'id': session_id, 'version': version})
         return version
 
     def replace_session(self, user_id, session_id, doc):
@@ -471,12 +479,13 @@ class ElasticSearchEngine(object):
         except freezer_api_exc.DocumentNotFound:
             pass
 
-        valid_doc = SessionDoc.update(doc, user_id, session_id)
+        valid_doc = utils.SessionDoc.update(doc, user_id, session_id)
 
         (created, version) = self.session_manager.insert(valid_doc, session_id)
         if created:
             logging.info(_i18n._LI('Session %s created') % session_id)
         else:
-            logging.info(_i18n._LI('Session %(id)s replaced with version %(version)s'
-                         % {'id': session_id, 'version': version}))
+            logging.info(
+                _i18n._LI('Session %(id)s replaced with version %(version)s')
+                % {'id': session_id, 'version': version})
         return version

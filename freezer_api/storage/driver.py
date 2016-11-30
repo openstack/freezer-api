@@ -30,7 +30,8 @@ def get_elk_opts():
     storage_opts = [
         cfg.StrOpt('db',
                    default='elasticsearch',
-                   help='specify the storage db to use (default: elasticsearch'),
+                   help='specify the storage db to use '
+                        '(default: elasticsearch)'),
         # use of 'endpoint' parameter name is deprecated, please use 'hosts'
         cfg.StrOpt('endpoint',
                    default='',
@@ -93,8 +94,10 @@ def get_db():
     opts = get_options()
     db_engine = opts.pop('db')
     if db_engine == 'elasticsearch':
-        logging.debug(_i18n._LI('ElasticSearch config options: %s') % str(opts))
+        logging.debug(
+            _i18n._LI('ElasticSearch config options: %s') % str(opts))
         db = elastic.ElasticSearchEngine(**opts)
     else:
-        raise Exception(_i18n._('Database Engine %s not supported') % db_engine)
+        raise Exception(
+            _i18n._('Database Engine %s not supported') % db_engine)
     return db

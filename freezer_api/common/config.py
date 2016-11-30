@@ -16,23 +16,23 @@ limitations under the License.
 
 import os
 
+from keystonemiddleware import opts
 from oslo_config import cfg
 from oslo_log import log
 from oslo_policy import policy
 
 from freezer_api import __version__ as FREEZER_API_VERSION
 from freezer_api.storage import driver
-from keystonemiddleware import opts
 
 CONF = cfg.CONF
 
 AUTH_GROUP, AUTH_OPTS = opts.list_auth_token_opts()[0]
 
 paste_deploy = [
-        cfg.StrOpt('config_file', default='freezer-paste.ini',
-                   help='Name of the paste configuration file that defines '
-                        'the available pipelines.'),
-    ]
+    cfg.StrOpt('config_file', default='freezer-paste.ini',
+               help='Name of the paste configuration file that defines '
+                    'the available pipelines.'),
+]
 
 
 def api_common_opts():
@@ -72,14 +72,14 @@ def parse_args(args=[]):
 
 def setup_logging():
     _DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
-                           'qpid=WARN', 'stevedore=WARN','oslo_log=INFO',
+                           'qpid=WARN', 'stevedore=WARN', 'oslo_log=INFO',
                            'iso8601=WARN',
                            'requests.packages.urllib3.connectionpool=WARN',
                            'urllib3.connectionpool=WARN', 'websocket=WARN',
                            'keystonemiddleware=WARN', 'routes.middleware=WARN']
     _DEFAULT_LOGGING_CONTEXT_FORMAT = ('%(asctime)s.%(msecs)03d %(process)d '
-                                       '%(levelname)s %(name)s [%(request_id)s '
-                                       '%(user_identity)s] %(instance)s '
+                                       '%(levelname)s %(name)s [%(request_id)s'
+                                       ' %(user_identity)s] %(instance)s '
                                        '%(message)s')
     log.set_defaults(_DEFAULT_LOGGING_CONTEXT_FORMAT, _DEFAULT_LOG_LEVELS)
     log.setup(CONF, 'freezer-api', version=FREEZER_API_VERSION)
@@ -98,18 +98,15 @@ def find_paste_config():
     """
     if CONF.paste_deploy.config_file:
         paste_config = CONF.paste_deploy.config_file
-        paste_config_value = paste_config
         if not os.path.isabs(paste_config):
             paste_config = CONF.find_file(paste_config)
     elif CONF.config_file:
         paste_config = CONF.config_file[0]
-        paste_config_value = paste_config
     else:
         # this provides backwards compatibility for keystone.conf files that
         # still have the entire paste configuration included, rather than just
         # a [paste_deploy] configuration section referring to an external file
         paste_config = CONF.find_file('freezer-api.conf')
-        paste_config_value = 'freezer-api.conf'
     if not paste_config or not os.path.exists(paste_config):
         raise Exception('paste configuration file {0} not found !'.
                         format(paste_config))
@@ -124,4 +121,3 @@ def list_opts():
         AUTH_GROUP: AUTH_OPTS
     }
     return _OPTS.items()
-

@@ -16,6 +16,7 @@ limitations under the License.
 """
 
 import falcon
+
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api import policy

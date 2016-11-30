@@ -14,15 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import jsonschema
 import time
 import uuid
+
+import jsonschema
 
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import json_schemas
 
 
-class BackupMetadataDoc:
+class BackupMetadataDoc(object):
     """
     Wraps a backup_metadata dict and adds some utility methods,
     and fields
@@ -51,7 +52,7 @@ class BackupMetadataDoc:
                 'backup_metadata': self.data}
 
 
-class JobDoc:
+class JobDoc(object):
     job_doc_validator = jsonschema.Draft4Validator(
         schema=json_schemas.job_schema)
     job_patch_validator = jsonschema.Draft4Validator(
@@ -105,7 +106,7 @@ class JobDoc:
         return doc
 
 
-class ActionDoc:
+class ActionDoc(object):
     action_doc_validator = jsonschema.Draft4Validator(
         schema=json_schemas.action_schema)
     action_patch_validator = jsonschema.Draft4Validator(
@@ -153,7 +154,7 @@ class ActionDoc:
         return doc
 
 
-class SessionDoc:
+class SessionDoc(object):
     session_doc_validator = jsonschema.Draft4Validator(
         schema=json_schemas.session_schema)
     session_patch_validator = jsonschema.Draft4Validator(

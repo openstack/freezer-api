@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import unittest
+
 from freezer_api import context
 
 
@@ -45,4 +46,3 @@ class TestFreezerContext(unittest.TestCase):
         self.assertEqual(ctxt.is_admin, False)
         self.assertEqual(ctxt.user, 'user02')
         self.assertEqual(ctxt.tenant, ctxt_dict.get('tenant'))
-

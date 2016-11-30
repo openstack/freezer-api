@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 """
-from freezer_api.service import initialize_app
+from freezer_api import service
 
-app = application = initialize_app()
+app = application = service.initialize_app()

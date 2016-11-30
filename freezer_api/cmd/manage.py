@@ -15,19 +15,17 @@ limitations under the License.
 
 """
 
-import elasticsearch
 import json
 import sys
 
+import elasticsearch
 from oslo_config import cfg
 from oslo_log import log
 
-
 from freezer_api import __version__ as FREEZER_API_VERSION
-from freezer_api.common.config import setup_logging
+from freezer_api.common import config
 from freezer_api.common import db_mappings
-from freezer_api.storage.driver import get_elk_opts
-
+from freezer_api.storage import driver
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -39,10 +37,11 @@ DEFAULT_REPLICAS = 0
 
 def add_db_opts(subparser):
     parser = subparser.add_parser('db')
-    parser.add_argument('options',
-                        choices=['sync', 'update', 'remove', 'show',
-                                 'update-settings'],
-                        help='Create/update/delete freezer-api mappings in elk')
+    parser.add_argument(
+        'options',
+        choices=['sync', 'update', 'remove', 'show', 'update-settings'],
+        help='Create/update/delete freezer-api mappings in elk'
+    )
 
 
 def parse_config(mapping_choices):
@@ -97,7 +96,7 @@ def parse_config(mapping_choices):
     ]
     opt_group = cfg.OptGroup(name='storage', title='Freezer Storage Engine')
     CONF.register_group(opt_group)
-    CONF.register_opts(get_elk_opts(), group=opt_group)
+    CONF.register_opts(driver.get_elk_opts(), group=opt_group)
     CONF.register_cli_opts(DB_INIT)
     log.register_options(CONF)
     default_config_files = cfg.find_config_files('freezer', 'freezer-api')
@@ -116,6 +115,7 @@ class ElasticSearchManager(object):
     remove: deletes the mappings
     show: print out all the mappings
     """
+
     def __init__(self, mappings):
         self.mappings = mappings.copy()
         self.index = CONF.storage.index or DEFAULT_INDEX
@@ -141,7 +141,8 @@ class ElasticSearchManager(object):
 
     def _check_mapping_exists(self, mappings):
         LOG.info('check if mappings: {0} exists or not'.format(mappings))
-        return self.elk.indices.exists_type(index=self.index, doc_type=mappings)
+        return self.elk.indices.exists_type(index=self.index,
+                                            doc_type=mappings)
 
     def get_required_mappings(self):
         """
@@ -221,10 +222,11 @@ class ElasticSearchManager(object):
         """
         # check if doc_type exists or not
         if self._check_mapping_exists(doc_type):
-            do_update = self.prompt('[[[ {0} ]]] already exists in index => {1}'
-                                    ' <= Do you want to update it ? (y/n) '
-                                    .format(doc_type, self.index)
-                                    )
+            do_update = self.prompt(
+                '[[[ {0} ]]] already exists in index => {1}'
+                ' <= Do you want to update it ? (y/n) '.format(doc_type,
+                                                               self.index)
+            )
             if do_update:
                 # Call elasticsearch library and put the mappings
                 return self.elk.indices.put_mapping(doc_type=doc_type,
@@ -302,12 +304,12 @@ class ElasticSearchManager(object):
         body = {
             'number_of_replicas':
                 CONF.storage.number_of_replicas or DEFAULT_REPLICAS
-            }
+        }
         return self.elk.indices.put_settings(body=body, index=self.index)
 
     def prompt(self, message):
         """
-        Helper function that is being used to ask the user for confirmation, ...
+        Helper function that is being used to ask the user for confirmation
         :param message: Message to be printed (To ask the user to confirm ...)
         :return: True or False
         """
@@ -324,7 +326,7 @@ class ElasticSearchManager(object):
 def main():
     mappings = db_mappings.get_mappings()
     parse_config(mapping_choices=mappings.keys())
-    setup_logging()
+    config.setup_logging()
     if not CONF.db:
         CONF.print_help()
         sys.exit(0)
@@ -350,4 +352,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
