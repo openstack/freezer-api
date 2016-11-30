@@ -10,9 +10,9 @@ Listen %SERVICE_HOST%:%FREEZER_API_PORT%
     WSGIApplicationGroup freezer-api
     WSGIScriptAlias / %FREEZER_API_DIR%/freezer_api/cmd/wsgi.py
 
+    ErrorLogFormat "%M"
     ErrorLog /var/log/%APACHE_NAME%/freezer-api.log
     CustomLog /var/log/%APACHE_NAME%/freezer-api_access.log combined
-    LogLevel info
 
     <Directory %FREEZER_API_DIR%/freezer_api>
       Options Indexes FollowSymLinks MultiViews
