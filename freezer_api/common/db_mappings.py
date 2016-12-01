@@ -203,9 +203,6 @@ backups_mapping = {
                 }
             }
         },
-        "backup_uuid": {
-            "type": "string"
-        },
         "user_id": {
             "index": "not_analyzed",
             "type": "string"

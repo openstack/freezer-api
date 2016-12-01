@@ -463,7 +463,7 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         res = self.eng.add_backup(fake_data_0_user_id,
                                   user_name=fake_data_0_user_name,
                                   doc=fake_data_0_backup_metadata)
-        self.assertEqual(res, fake_data_0_wrapped_backup_metadata['backup_id'])
+        self.assertTrue(res)
 
     def test_add_backup_raises_when_doc_exists(self):
         self.eng.backup_manager.search.return_value = [fake_data_0_wrapped_backup_metadata]

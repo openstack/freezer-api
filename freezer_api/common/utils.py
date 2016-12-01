@@ -30,42 +30,25 @@ class BackupMetadataDoc:
     def __init__(self, user_id='', user_name='', data={}):
         self.user_id = user_id
         self.user_name = user_name
+        self.backup_id = uuid.uuid4().hex
         self.data = data
 
     def is_valid(self):
         try:
             assert (self.backup_id is not '')
             assert (self.user_id is not '')
+            assert (self.data['container'] is not '')
+            assert (self.data['hostname'] is not '')
+            assert (self.data['backup_name'] is not '')
         except Exception:
             return False
         return True
 
     def serialize(self):
         return {'backup_id': self.backup_id,
-                'backup_uuid': self.backup_uuid,
                 'user_id': self.user_id,
                 'user_name': self.user_name,
                 'backup_metadata': self.data}
-
-    @property
-    def backup_set_id(self):
-        return '{0}_{1}_{2}'.format(
-            self.data['container'],
-            self.data['hostname'],
-            self.data['backup_name']
-        )
-
-    @property
-    def backup_id(self):
-        return '{0}_{1}_{2}'.format(
-            self.backup_set_id,
-            self.data['time_stamp'],
-            self.data['curr_backup_level']
-        )
-
-    @property
-    def backup_uuid(self):
-        return uuid.uuid4().hex
 
 
 class JobDoc:

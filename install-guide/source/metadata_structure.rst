@@ -40,7 +40,7 @@ It stores and returns the information provided in this form
 .. code-block:: json
 
     {
-      "backup_id": string         #  container_hostname_backupname_timestamp_level
+      "backup_id": string         # backup UUID
       "user_id": string,          # owner of the backup metadata (OS X-User-Id, keystone provided)
       "user_name": string         # owner of the backup metadata (OS X-User-Name, keystone provided)
 

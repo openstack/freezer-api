@@ -18,10 +18,4 @@ Concepts and definitions
 *hostname* is _probably_ going to be the host fqdn.
 
 *backup_id*
-defined as `container_hostname_backupname_timestamp_level` uniquely
-identifies a backup
-
-*backup_set*
-defined as `container_hostname_backupname` identifies a group of related
-backups which share the same container,hostname and backupname
-
+defined as UUID of a backup

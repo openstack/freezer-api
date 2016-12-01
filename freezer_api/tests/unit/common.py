@@ -33,12 +33,12 @@ from freezer_api import policy
 
 CONF = cfg.CONF
 
-fake_data_0_backup_id = 'freezer_container_alpha_important_data_backup_8475903425_0'
+fake_data_0_backup_id = 'b740ed9ad2b646aba304ef54c21c6774'
 fake_data_0_user_id = 'qwerty1234'
 fake_data_0_user_name = 'asdffdsa'
 
 fake_data_0_wrapped_backup_metadata = {
-    'backup_id': 'freezer_container_alpha_important_data_backup_8475903425_0',
+    'backup_id': 'b740ed9ad2b646aba304ef54c21c6774',
     'user_id': 'qwerty1234',
     'user_name': 'asdffdsa',
     'backup_metadata': {
@@ -252,7 +252,7 @@ fake_job_0_elasticsearch_found = {
 
 
 fake_data_1_wrapped_backup_metadata = {
-    'backup_id': 'freezer_container_alpha_important_data_backup_125235431_1',
+    'backup_id': 'b740ed9ad2b646aba304ef54c21c6774',
     'user_id': 'qwerty1234',
     'user_name': 'asdffdsa',
     'backup_metadata': {
