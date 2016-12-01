@@ -35,8 +35,8 @@ class BackupsCollectionResource(resource.BaseResource):
         offset = req.get_param_as_int('offset', min=0) or 0
         limit = req.get_param_as_int('limit', min=1) or 10
         search = self.json_body(req)
-        obj_list = self.db.get_backup(user_id=user_id, offset=offset,
-                                      limit=limit, search=search)
+        obj_list = self.db.search_backup(user_id=user_id, offset=offset,
+                                         limit=limit, search=search)
         resp.body = {'backups': obj_list}
 
     @policy.enforce('backups:create')

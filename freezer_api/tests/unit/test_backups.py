@@ -41,7 +41,7 @@ class TestBackupsCollectionResource(FreezerBaseTestCase):
         self.resource.json_body = self.mock_json_body
 
     def test_on_get_return_empty_list(self):
-        self.mock_db.get_backup.return_value = []
+        self.mock_db.search_backup.return_value = []
         expected_result = {'backups': []}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
@@ -49,7 +49,7 @@ class TestBackupsCollectionResource(FreezerBaseTestCase):
         self.assertEqual(self.mock_req.status, falcon.HTTP_200)
 
     def test_on_get_return_correct_list(self):
-        self.mock_db.get_backup.return_value = [fake_data_0_backup_metadata]
+        self.mock_db.search_backup.return_value = [fake_data_0_backup_metadata]
         expected_result = {'backups': [fake_data_0_backup_metadata]}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body

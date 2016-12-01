@@ -393,33 +393,31 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         self.eng.backup_manager = Mock()
 
     def test_get_backup_userid_and_backup_id_return_ok(self):
-        self.eng.backup_manager.search.return_value = [fake_data_0_wrapped_backup_metadata]
-        my_search = {'match': [{'some_field': 'some text'},
-                               {'description': 'some other text'}]}
+        self.eng.backup_manager.get.return_value = (
+            fake_data_0_wrapped_backup_metadata
+        )
         res = self.eng.get_backup(user_id=fake_data_0_user_id,
-                                  backup_id=fake_data_0_backup_id,
-                                  offset=3, limit=7,
-                                  search=my_search)
-        self.assertEqual(res, [fake_data_0_wrapped_backup_metadata])
-        self.eng.backup_manager.search.assert_called_with(
+                                  backup_id=fake_data_0_backup_id)
+
+        self.assertEqual(res, fake_data_0_wrapped_backup_metadata)
+        self.eng.backup_manager.get.assert_called_with(
             fake_data_0_wrapped_backup_metadata['user_id'],
-            fake_data_0_wrapped_backup_metadata['backup_id'],
-            search=my_search,
-            limit=7, offset=3)
+            fake_data_0_wrapped_backup_metadata['backup_id']
+        )
 
     def test_get_backup_list_with_userid_and_search_return_list(self):
-        self.eng.backup_manager.search.return_value = [fake_data_0_wrapped_backup_metadata,
-                                                       fake_data_1_wrapped_backup_metadata]
+        self.eng.backup_manager.search.return_value = [
+            fake_data_0_wrapped_backup_metadata,
+            fake_data_1_wrapped_backup_metadata]
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
-        res = self.eng.get_backup(user_id=fake_data_0_user_id,
-                                  offset=3, limit=7,
-                                  search=my_search)
+        res = self.eng.search_backup(user_id=fake_data_0_user_id,
+                                     offset=3, limit=7,
+                                     search=my_search)
         self.assertEqual(res, [fake_data_0_wrapped_backup_metadata,
                                fake_data_1_wrapped_backup_metadata])
         self.eng.backup_manager.search.assert_called_with(
             fake_data_0_wrapped_backup_metadata['user_id'],
-            None,
             search=my_search,
             limit=7, offset=3)
 
@@ -427,30 +425,24 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         self.eng.backup_manager.search.return_value = []
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
-        res = self.eng.get_backup(user_id=fake_data_0_user_id,
-                                  offset=3, limit=7,
-                                  search=my_search)
+        res = self.eng.search_backup(user_id=fake_data_0_user_id,
+                                     offset=3, limit=7,
+                                     search=my_search)
         self.assertEqual(res, [])
         self.eng.backup_manager.search.assert_called_with(
             fake_data_0_wrapped_backup_metadata['user_id'],
-            None,
             search=my_search,
             limit=7, offset=3)
 
     def test_get_backup_userid_and_backup_id_not_found_returns_empty(self):
-        self.eng.backup_manager.search.return_value = []
-        my_search = {'match': [{'some_field': 'some text'},
-                               {'description': 'some other text'}]}
+        self.eng.backup_manager.get.return_value = None
         res = self.eng.get_backup(user_id=fake_data_0_user_id,
-                                  backup_id=fake_data_0_backup_id,
-                                  offset=3, limit=7,
-                                  search=my_search)
-        self.assertEqual(res, [])
-        self.eng.backup_manager.search.assert_called_with(
+                                  backup_id=fake_data_0_backup_id)
+        self.assertIsNone(res)
+        self.eng.backup_manager.get.assert_called_with(
             fake_data_0_wrapped_backup_metadata['user_id'],
-            fake_data_0_wrapped_backup_metadata['backup_id'],
-            search=my_search,
-            limit=7, offset=3)
+            fake_data_0_wrapped_backup_metadata['backup_id']
+        )
 
     def test_add_backup_raises_when_data_is_malformed(self):
         self.assertRaises(BadDataFormat, self.eng.add_backup,
@@ -464,13 +456,6 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
                                   user_name=fake_data_0_user_name,
                                   doc=fake_data_0_backup_metadata)
         self.assertTrue(res)
-
-    def test_add_backup_raises_when_doc_exists(self):
-        self.eng.backup_manager.search.return_value = [fake_data_0_wrapped_backup_metadata]
-        self.assertRaises(DocumentExists, self.eng.add_backup,
-                          user_id=fake_data_0_user_id,
-                          user_name=fake_data_0_user_name,
-                          doc=fake_data_0_backup_metadata)
 
     def test_add_backup_raises_when_manager_insert_raises(self):
         self.eng.backup_manager.search.return_value = []

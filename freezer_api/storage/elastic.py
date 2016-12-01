@@ -285,11 +285,12 @@ class ElasticSearchEngine(object):
         self.action_manager = ActionTypeManager(self.es, 'actions')
         self.session_manager = SessionTypeManager(self.es, 'sessions')
 
-    def get_backup(self, user_id, backup_id=None,
-                   offset=0, limit=10, search=None):
+    def get_backup(self, user_id, backup_id):
+        return self.backup_manager.get(user_id, backup_id)
+
+    def search_backup(self, user_id, offset=0, limit=10, search=None):
         search = search or {}
         return self.backup_manager.search(user_id,
-                                          backup_id,
                                           search=search,
                                           offset=offset,
                                           limit=limit)
@@ -300,12 +301,7 @@ class ElasticSearchEngine(object):
         if not backup_metadata_doc.is_valid():
             raise freezer_api_exc.BadDataFormat(message=_i18n._('Bad Data Format'))
         backup_id = backup_metadata_doc.backup_id
-        existing = self.backup_manager.search(user_id, backup_id)
-        if existing:
-            raise freezer_api_exc.DocumentExists(
-                message=_i18n._('Backup data already existing with ID %s') %
-                backup_id)
-        self.backup_manager.insert(backup_metadata_doc.serialize())
+        self.backup_manager.insert(backup_metadata_doc.serialize(), backup_id)
         return backup_id
 
     def delete_backup(self, user_id, backup_id):
