@@ -136,8 +136,8 @@ class ElasticSearchManager(object):
         LOG.info('check if index: {0} exists or not'.format(index))
         try:
             return self.elk.indices.exists(index=index)
-        except elasticsearch.TransportError as e:
-            raise e
+        except elasticsearch.TransportError:
+            raise
 
     def _check_mapping_exists(self, mappings):
         LOG.info('check if mappings: {0} exists or not'.format(mappings))
@@ -247,8 +247,8 @@ class ElasticSearchManager(object):
         try:
             return self.elk.indices.delete_mapping(self.index,
                                                    doc_type=doc_type)
-        except Exception as e:
-            raise e
+        except Exception:
+            raise
 
     def remove_mappings(self):
         """
