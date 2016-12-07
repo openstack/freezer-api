@@ -73,7 +73,7 @@ function add_jdk7_rep {
 # executed during: stack install
 function install_freezer_api {
 
-    if [[ is_ubuntu ]]; then
+    if is_ubuntu; then
         add_jdk7_rep
     fi
     git_clone $FREEZER_API_REPO $FREEZER_API_DIR $FREEZER_API_BRANCH
