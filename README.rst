@@ -317,7 +317,7 @@ Freezer sessions management
     POST   /v1/sessions/{sessions_id}/action           requests actions (e.g. start/end) upon a specific session
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
-    DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    deletes the job from the session
+    DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    removes the job from the session
 
 Backup metadata structure
 ============================
@@ -884,7 +884,7 @@ Session-Job association
 .. code-block::
 
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
-    DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
+    DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    removes the job from the session
 
 Known Issues
 =============
