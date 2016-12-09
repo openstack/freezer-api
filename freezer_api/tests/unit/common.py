@@ -355,8 +355,8 @@ fake_session_0 = {
         "time_created": 1234,
         "time_started": 1234,
         "time_ended": 0,
-        "status": "invalid",
-        "schedule_time": "2015-06-02T16:20:00"
+        "status": "stop",
+        "schedule_date": "2015-06-02T16:20:00"
     },
     "jobs": {
         'venerescollataincorpodalolita': {
@@ -387,8 +387,8 @@ fake_session_1 = {
         "time_created": 1234,
         "time_started": 1234,
         "time_ended": 0,
-        "status": "invalid",
-        "schedule_time": "2015-06-02T16:20:00"
+        "status": "stop",
+        "schedule_date": "2015-06-02T16:20:00"
     },
     "jobs": {
         'venerescollataincorpodalolita': {
