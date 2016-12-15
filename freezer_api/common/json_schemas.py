@@ -51,7 +51,7 @@ freezer_action_properties = {
     },
 }
 
-job_schedule_properties = {
+schedule_properties = {
     "time_created": {
         "id": "time_created",
         "type": "integer"
@@ -187,7 +187,7 @@ job_schema = {
         "job_schedule": {
             "id": "job_schedule",
             "type": "object",
-            "properties": job_schedule_properties,
+            "properties": schedule_properties,
             "additionalProperties": False,
         },
         "job_id": {
@@ -278,7 +278,7 @@ job_patch_schema = {
         "job_schedule": {
             "id": "job_schedule",
             "type": "object",
-            "properties": job_schedule_properties,
+            "properties": schedule_properties,
             "additionalProperties": False,
         },
         "job_id": {
@@ -368,6 +368,12 @@ session_schema = {
     "id": "/",
     "type": "object",
     "properties": {
+        "schedule": {
+            "id": "schedule",
+            "type": "object",
+            "properties": schedule_properties,
+            "additionalProperties": False,
+        },
         "session_id": {
             "id": "session_id",
             "pattern": "^[\w-]+$",
@@ -403,6 +409,12 @@ session_patch_schema = {
     "id": "/",
     "type": "object",
     "properties": {
+        "schedule": {
+            "id": "schedule",
+            "type": "object",
+            "properties": schedule_properties,
+            "additionalProperties": False,
+        },
         "session_id": {
             "id": "session_id",
             "pattern": "^[\w-]+$",
