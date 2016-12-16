@@ -15,10 +15,8 @@ limitations under the License.
 
 """
 
-import logging
-import uuid
-
 import elasticsearch
+import logging
 
 from freezer_api.common import _i18n
 from freezer_api.common import exceptions as freezer_api_exc
@@ -318,18 +316,13 @@ class ElasticSearchEngine(object):
                                           limit=limit)
 
     def add_client(self, user_id, doc):
-        client_id = doc.get('client_id', None)
-        if client_id is None:
-            raise freezer_api_exc.BadDataFormat(
-                message=_i18n._('Missing client ID'))
+        client_doc = utils.ClientDoc.create(doc, user_id)
+        client_id = client_doc['client']['client_id']
         existing = self.client_manager.search(user_id, client_id)
         if existing:
             raise freezer_api_exc.DocumentExists(
                 message=_i18n._(
                     'Client already registered with ID %s') % client_id)
-        client_doc = {'client': doc,
-                      'user_id': user_id,
-                      'uuid': uuid.uuid4().hex}
         self.client_manager.insert(client_doc)
         logging.info(_i18n._LI('Client registered, client_id: %s') % client_id)
         return client_id
