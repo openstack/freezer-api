@@ -55,7 +55,6 @@ def get_elk_opts():
                     default=False,
                     help='turn on SSL certs verification'),
         cfg.StrOpt('ca_certs',
-                   default=None,
                    help='path to CA certs on disk'),
         cfg.IntOpt('number_of_replicas',
                    default=0,
