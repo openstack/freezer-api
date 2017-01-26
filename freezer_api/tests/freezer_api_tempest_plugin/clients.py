@@ -19,7 +19,7 @@ from freezer_api.tests.freezer_api_tempest_plugin.services import \
 
 
 class Manager(clients.Manager):
-    def __init__(self, credentials=None, service=None):
-        super(Manager, self).__init__(credentials, service)
+    def __init__(self, credentials=None):
+        super(Manager, self).__init__(credentials)
         self.freezer_api_client = freezer_api_client.FreezerApiClient(
             self.auth_provider)
