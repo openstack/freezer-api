@@ -156,7 +156,7 @@ function start_freezer_api {
     elif [[ "${FREEZER_API_SERVER_TYPE}" == "apache2" ]]; then
         enable_apache_site freezer-api
         restart_apache_server
-        tail_log freezer /var/log/$APACHE_NAME/freezer-api.log
+        tail_log freezer-api /var/log/$APACHE_NAME/freezer-api.log
         tail_log freezer-access /var/log/$APACHE_NAME/freezer-api_access.log
     fi
 }
