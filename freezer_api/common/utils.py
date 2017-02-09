@@ -204,3 +204,28 @@ class SessionDoc(object):
         })
         SessionDoc.validate(doc)
         return doc
+
+
+class ClientDoc(object):
+    client_doc_validator = jsonschema.Draft4Validator(
+        schema=json_schemas.client_schema)
+
+    @staticmethod
+    def validate(doc):
+        try:
+            ClientDoc.client_doc_validator.validate(doc)
+        except Exception as e:
+            raise freezer_api_exc.BadDataFormat(str(e).splitlines()[0])
+
+    @staticmethod
+    def create(doc, user_id):
+        if 'uuid' not in doc:
+            doc.update({
+                'uuid': uuid.uuid4().hex
+            })
+        doc = {
+            'client': doc,
+            'user_id': user_id
+        }
+        ClientDoc.validate(doc)
+        return doc

@@ -440,3 +440,50 @@ session_patch_schema = {
     },
     "additionalProperties": True
 }
+
+client_info = {
+    "client_id": {
+        "id": "client_id",
+        "pattern": client_id_regex,
+        "type": "string"
+    },
+    "hostname": {
+        "id": "hostname",
+        "pattern": fqdn_regex,
+        "type": "string"
+    },
+    "description": {
+        "id": "description",
+        "type": "string"
+    },
+    "uuid": {
+        "id": "uuid",
+        "type": "string"
+    }
+}
+
+client_schema = {
+    "id": "/",
+    "type": "object",
+    "properties": {
+        "client": {
+            "id": "client",
+            "type": "object",
+            "properties": client_info,
+            "additionalProperties": True,
+            "required": [
+                "client_id"
+            ]
+        },
+        "user_id": {
+            "id": "user_id",
+            "pattern": "^[\w-]+$",
+            "type": "string"
+        }
+    },
+    "additionalProperties": True,
+    "required": [
+        "client",
+        "user_id"
+    ]
+}
