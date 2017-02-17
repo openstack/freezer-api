@@ -156,11 +156,11 @@ class Session(resource.BaseResource):
 
     @property
     def session_tag(self):
-        return self.doc.get('session_tag', 0)
+        return int(self.doc.get('session_tag', 0))
 
     @session_tag.setter
     def session_tag(self, value):
-        self.doc['session_tag'] = value
+        self.doc['session_tag'] = int(value)
 
     def execute_action(self, action, params):
         if action == 'start':
@@ -205,11 +205,15 @@ class Session(resource.BaseResource):
         and sets the need_update member to notify that the stored
         document needs to be updated
         """
+        job_tag = int(job_tag)
+        self.session_tag = int(self.session_tag)
         now = int(time.time())
         time_since_last_start = now - self.doc.get('time_start', 0)
 
         if job_tag > self.session_tag:
-            raise freezer_api_exc.BadDataFormat('requested tag value too high')
+            raise freezer_api_exc.BadDataFormat(
+                'requested tag value too high. Session Tag: {0} '
+                'Job Tag: {1}'.format(self.session_tag, job_tag))
 
         if time_since_last_start <= self.doc.get('hold_off', 60):
             # session has been started not so long ago
