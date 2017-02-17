@@ -187,7 +187,7 @@ class SessionDoc(object):
         doc.update({
             'user_id': user_id,
             'session_id': uuid.uuid4().hex,
-            'session_tag': 0,
+            'session_tag': doc.get('session_tag', 0),
             'status': 'active',
             'last_start': '',
             'jobs': []
