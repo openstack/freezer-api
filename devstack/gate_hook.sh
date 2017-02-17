@@ -18,4 +18,7 @@ set -ex
 # Install freezer devstack integration
 export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api"
 
+export DEVSTACK_GATE_TEMPEST_REGEX="freezer_api_tempest_plugin"
+
+# Invoke default behavior.
 $BASE/new/devstack-gate/devstack-vm-gate.sh
