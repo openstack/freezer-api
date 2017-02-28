@@ -200,7 +200,7 @@ class ClientTypeManager(unittest.TestCase):
                                                     [{'match': {'some_field': 'some text'}},
                                                      {'match': {'description': 'some other text'}}]}}
                                       },
-                                      {'term': {'client_id': 'my_doc_id'}}
+                                      {'term': {'client.client_id': 'my_doc_id'}}
                                      ]}}}}}
         self.assertEqual(q, expected_q)
 
