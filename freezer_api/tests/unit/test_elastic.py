@@ -336,7 +336,7 @@ class ClientTypeManager(unittest.TestCase):
                                 },
                                 {
                                     'term': {
-                                        'client_id': 'my_doc_id'
+                                        'client.client_id': 'my_doc_id'
                                     }
                                 }
                             ]

@@ -161,7 +161,7 @@ class ClientTypeManager(TypeManager):
         search = search or {}
         base_filter = TypeManager.get_base_search_filter(user_id, search)
         if doc_id is not None:
-            base_filter.append({"term": {"client_id": doc_id}})
+            base_filter.append({"term": {"client.client_id": doc_id}})
         query_filter = {"filter": {"bool": {"must": base_filter}}}
         return {'query': {'filtered': query_filter}}
 
