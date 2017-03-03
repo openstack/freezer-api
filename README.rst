@@ -746,3 +746,15 @@ Example of a successful response: ::
     PUT    /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    adds the job to the session
 
+
+11. Backup and Restore freezer index
+====================================
+
+In order to backup freezer index in elasticsearch first we need to dump all the data: ::
+
+    freezer-db-init --prepare-backup /tmp/freezer-index-backup
+
+Restoring is acomplish by the following command: ::
+
+    freezer-db-init --restore /tmp/freezer-index-backup
+
