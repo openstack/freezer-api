@@ -1,0 +1,22 @@
+---
+prelude: >
+    Currently Freezer uses Elastic Search (ES) as a database backend, which
+    is a NoSQL database specialized for ranked query results. Elastic Search
+    adds additional complexity to an OpenStack system. Most of the OpenStack
+    components use a relational database management system (DBMS like MySQL or
+    PostgreSQL) which is more common. It is more familiar how to
+    maintain, troubleshoot and develop on top of relational databases.
+    Also relational databases unlike ES database allow to perform rolling
+    upgrades.
+
+    Since Freezer related data turned out to be relational, it would be more
+    convenient to use it trough the oslo.db pattern library. Using it, the
+    database mapping would be more uniform to other OpenStack projects.
+    It would be less challenging for new developers to contribute.
+features:
+  - |
+    Added support of oslo.db storage backend
+upgrade:
+  - |
+    oslo.db storage can be upgraded/downgraded using freezer-manage db sync
+    command.
