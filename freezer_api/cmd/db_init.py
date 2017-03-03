@@ -18,12 +18,16 @@ limitations under the License.
 
 from __future__ import print_function
 import argparse
+import ast
 import json
 import os
 import re
 from six.moves import configparser
 from six.moves import input
 import sys
+
+import elasticsearch
+from elasticsearch import helpers
 
 import requests
 
@@ -206,6 +210,52 @@ class ElastichsearchEngine(object):
             elif selection.upper() == 'N':
                 return False
 
+    def prepare_backup(self, save_to, doc_type=''):
+        """Download data from an index in elasticsearch
+        for posterior backup.
+
+        Backup freezer's index in elasticsearch is done by
+        pulling out of the data from the index.
+
+        We decided to go this way in this iteration to avoid
+        being intrusive in the ES configuration due that not all
+        of the clusters have available the path.repo setting that is
+        required to create snapshots.
+        """
+        query = {"query": {"match_all": {}}}
+
+        es_client = elasticsearch.Elasticsearch(hosts=self.es_url)
+
+        scan = helpers.scan(client=es_client, query=query,
+                            scroll="10m", index=self.es_index,
+                            doc_type=doc_type, timeout="10m")
+
+        with open(save_to, 'w') as b:
+            for doc in scan:
+                b.write('{0}{1}'.format(doc, '\n'))
+
+        print('Please backup this file {0}'.format(save_to))
+
+    def restore(self, from_file):
+        """Restore an index to elasticsearch.
+
+        Restoring data will consists in a bulk insert of data
+        to the index. For that, a clean index is required.
+        :return:
+        """
+        def read_stream():
+            with open(from_file, 'r') as b:
+                for line in b.readlines():
+                    if not line:
+                        break
+                    yield ast.literal_eval(line)
+
+        es_client = elasticsearch.Elasticsearch(hosts=self.es_url)
+
+        helpers.bulk(client=es_client, actions=read_stream(), chunk_size=1024)
+
+        print('Index {0} restored.'.format(self.es_index))
+
 
 def get_args(mapping_choices):
     arg_parser = argparse.ArgumentParser()
@@ -255,6 +305,15 @@ def get_args(mapping_choices):
              '(default {0} when not specified here nor in config file)'
              .format(DEFAULT_REPLICAS),
         dest='replicas', default=False)
+
+    arg_parser.add_argument(
+        '-s', '--prepare-backup', action='store',
+        help='Save an index to a file post-processing',
+        dest='prepare_backup', default=False)
+    arg_parser.add_argument(
+        '-f', '--restore', action='store',
+        help='Directly restore an index from a file',
+        dest='restore', default=False)
     return arg_parser.parse_args()
 
 
@@ -365,8 +424,21 @@ def main():
     es_manager = ElastichsearchEngine(es_url=elasticsearch_url,
                                       es_index=elasticsearch_index,
                                       args=args)
+
+    if args.prepare_backup:
+        print("Preparing backup to {0}".format(args.prepare_backup))
+        es_manager.prepare_backup(args.prepare_backup)
+        return es_manager.exit_code
+
+    if args.restore:
+        print("Restoring from file {0}".format(args.restore))
+        es_manager.put_mappings(mappings)
+        es_manager.set_number_of_replicas(number_of_replicas)
+        es_manager.restore(args.restore)
+        return es_manager.exit_code
+
     if args.verbose:
-        print("  db url: {0}".format(elasticsearch_url))
+        print("db url: {0}".format(elasticsearch_url))
         print("db index: {0}".format(elasticsearch_index))
 
     if args.select_mapping:

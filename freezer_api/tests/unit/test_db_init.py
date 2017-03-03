@@ -330,6 +330,8 @@ class TestDbInit(unittest.TestCase):
         self.mock_args.select_mapping = ''
         self.mock_args.erase = False
         self.mock_args.replicas = 9
+        self.mock_args.restore = False
+        self.mock_args.prepare_backup = False
 
     @patch('freezer_api.cmd.db_init.argparse.ArgumentParser')
     def test_get_args_calls_add_argument(self, mock_ArgumentParser):
