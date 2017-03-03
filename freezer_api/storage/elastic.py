@@ -167,6 +167,37 @@ class ClientTypeManager(TypeManager):
         query_filter = {"filter": {"bool": {"must": base_filter}}}
         return {'query': {'filtered': query_filter}}
 
+    @staticmethod
+    def get_search_query_for_deletion(user_id, doc_id, search=None):
+        search = search or {}
+        base_filter = TypeManager.get_base_search_filter(user_id, search)
+        if doc_id is not None:
+            base_filter.append({"term": {"uuid": doc_id}})
+        query_filter = {"filter": {"bool": {"must": base_filter}}}
+        return {'query': {'filtered': query_filter}}
+
+    def delete(self, user_id, doc_id):
+        query_dsl = self.get_search_query_for_deletion(user_id, doc_id)
+        try:
+            results = es_helpers.scan(self.es, index=self.index,
+                                      doc_type=self.doc_type, query=query_dsl)
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message=_i18n._('Scan operation failed: %s') % e)
+        id = None
+        for res in results:
+            id = res.get('_source')['uuid']
+            if not doc_id == id:
+                continue
+            try:
+                self.es.delete(index=self.index, doc_type=self.doc_type,
+                               id=res.get('_id'))
+                self.es.indices.refresh(index=self.index)
+            except Exception as e:
+                raise freezer_api_exc.StorageEngineError(
+                    message=_i18n._('Delete operation failed: %s') % e)
+        return id
+
 
 class JobTypeManager(TypeManager):
     def __init__(self, es, doc_type, index='freezer'):
