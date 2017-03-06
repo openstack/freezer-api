@@ -91,7 +91,7 @@ schedule_properties = {
     "schedule_interval": {
         "id": "schedule_interval",
         "type": "string",
-        "pattern": "^(continuous|(\d+ +(weeks|weeks|days|"
+        "pattern": "^(continuous|(\d+ +(weeks|days|"
                    "hours|minutes|seconds)))$"
     },
     "schedule_start_date": {
