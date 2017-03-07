@@ -25,11 +25,11 @@ from oslo_config import cfg
 from oslo_log import log
 from paste import deploy
 from paste import httpserver
+from paste import urlmap
 
 from freezer_api.api.common import middleware
 from freezer_api.api.common import utils
 from freezer_api.api import v1
-from freezer_api.api import versions
 from freezer_api.common import _i18n
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
@@ -58,8 +58,7 @@ def configure_app(app, db=None):
         app.add_error_handler(exception_class, exception_class.handle)
 
     endpoint_catalog = [
-        ('/v1', v1.public_endpoints(db)),
-        ('/', [('', versions.Resource())])
+        ('', v1.public_endpoints(db))
     ]
     for version_path, endpoints in endpoint_catalog:
         for route, resource in endpoints:
@@ -113,6 +112,13 @@ def build_app_v1():
 
     app = configure_app(app)
     return app
+
+
+def root_app_factory(loader, global_conf, **local_conf):
+    """Allows freezer to launch multiple applications at a time.
+    It will allow freezer to manage multiple versions.
+    """
+    return urlmap.urlmap_factory(loader, global_conf, **local_conf)
 
 
 def main():
