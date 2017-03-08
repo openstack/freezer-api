@@ -16,7 +16,7 @@ job data structure, so that any job belonging to the same session will start at 
 Session Data Structure
 ----------------------
 
-.. code-block:: json
+.. code-block:: none
 
   session =
   {
@@ -55,7 +55,7 @@ Session actions
 When the freezer scheduler running on a node wants to start a session,
 it sends a POST request to the following endpoint:
 
-.. code-block::  json
+.. code-block::  none
 
     POST   /v1/sessions/{sessions_id}/action
 
@@ -64,7 +64,7 @@ The body of the request bears the action and parameters
 Session START action
 --------------------
 
-.. code-block:: json
+.. code-block:: none
 
     {
         "start": {
@@ -75,7 +75,7 @@ Session START action
 
 Example of a successful response
 
-.. code-block:: json
+.. code-block:: none
 
     {
         'result': 'success',
@@ -85,7 +85,7 @@ Example of a successful response
 Session STOP action
 -------------------
 
-.. code-block:: json
+.. code-block:: none
 
     {
         "end": {

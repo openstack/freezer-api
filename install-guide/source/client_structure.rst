@@ -7,7 +7,7 @@ Identifies a freezer client for the purpose of sending action
 
 client_info document contains information relevant for client identification
 
-.. code-block:: json
+.. code-block:: none
 
     client_info:
     {
@@ -20,7 +20,7 @@ client_info document contains information relevant for client identification
 
 client_type document embeds the client_info and adds user_id
 
-.. code-block:: json
+.. code-block:: none
 
     client_type :
     {

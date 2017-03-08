@@ -113,7 +113,7 @@ examples running using uwsgi
 example running freezer-api with apache2
 ----------------------------------------
 
-.. code-block:: apache
+.. code-block:: none
 
     # sudo vi /etc/apache2/sites-enabled/freezer-api.conf
 

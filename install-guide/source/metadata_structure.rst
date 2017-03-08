@@ -6,7 +6,7 @@ Backup metadata structure
 .. note::
    sizes are in MB
 
-.. code-block::  json
+.. code-block::  none
 
     backup_metadata:=
     {
@@ -37,7 +37,7 @@ Backup metadata structure
 The api wraps backup_metadata dictionary with some additional information.
 It stores and returns the information provided in this form
 
-.. code-block:: json
+.. code-block:: none
 
     {
       "backup_id": string         # backup UUID

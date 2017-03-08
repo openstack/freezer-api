@@ -16,7 +16,7 @@ of your local.conf file:
 
 where
 
-.. code-block:: json
+.. code-block:: none
 
     <GITURL> is the URL of a freezer-api repository
     [GITREF] is an optional git ref (branch/ref/tag).  The default is master.
