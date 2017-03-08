@@ -28,10 +28,17 @@ sys.path.insert(0, os.path.abspath('./'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 
+import openstackdocstheme
+
 extensions = [
     'os_api_ref',
-    'oslosphinx',
 ]
+
+html_theme = 'openstackdocs'
+html_theme_path = [openstackdocstheme.get_html_theme_path()]
+html_theme_options = {
+    "sidebar_mode": "toc",
+}
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -85,6 +92,15 @@ show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+# Config logABug feature
+# source tree
+giturl = (
+    u'https://git.openstack.org/cgit/openstack/freezer-api/tree/api-ref/source')
+# html_context allows us to pass arbitrary values into the html template
+html_context = {'bug_tag': 'api-ref',
+                'giturl': giturl,
+                'bug_project': 'freezer'}
 
 # -- Options for man page output ----------------------------------------------
 
