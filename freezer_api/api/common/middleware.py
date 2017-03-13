@@ -72,21 +72,6 @@ class Middleware(object):
             return e
 
 
-# @todo this should be removed and oslo.middleware should be used instead
-class HealthApp(Middleware):
-    """
-    Simple WSGI app to support HAProxy polling.
-    If the requested url matches the configured path it replies
-    with a 200 otherwise passes the request to the inner app
-    """
-
-    def __call__(self, environ, start_response):
-        if environ.get('PATH_INFO') == '/v1/health':
-            start_response('200 OK', [])
-            return []
-        return self.app(environ, start_response)
-
-
 class HookableMiddlewareMixin(object):
     """Provides methods to extract before and after hooks from WSGI Middleware
 
