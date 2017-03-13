@@ -3,7 +3,7 @@
 Jobs
 ====
 
-A job describes a single action to be executed by a freezer client, for example a backup, or a restore.
+A job describes a single action or set of actions to be executed sequentially by a freezer client, for example a backup, or a restore.
 It contains the necessary information as if they were provided on the command line.
 
 A job is stored in the api together with some metadata information such as:
