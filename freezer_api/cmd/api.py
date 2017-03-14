@@ -82,7 +82,6 @@ def build_app_v0():
     before_hooks = utils.before_hooks() + [
         middleware.RequireJSON().as_before_hook()]
     after_hooks = [middleware.JSONTranslator().as_after_hook()]
-
     # The signature of falcon.API() differs between versions, suppress pylint:
     # pylint: disable=unexpected-keyword-arg
     app = falcon.API(before=before_hooks, after=after_hooks)

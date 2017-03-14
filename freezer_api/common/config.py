@@ -54,7 +54,7 @@ def api_common_opts():
 
 def parse_args(args=[]):
     CONF.register_cli_opts(api_common_opts())
-    driver.register_elk_opts()
+    driver.register_storage_opts()
     # register paste configuration
     paste_grp = cfg.OptGroup('paste_deploy',
                              'Paste Configuration')
@@ -116,8 +116,9 @@ def find_paste_config():
 def list_opts():
     _OPTS = {
         None: api_common_opts(),
-        'storage': driver.get_elk_opts(),
         'paste_deploy': paste_deploy,
         AUTH_GROUP: AUTH_OPTS
     }
+    # update the current list of opts with db backend drivers opts
+    _OPTS.update(driver.get_storage_opts())
     return _OPTS.items()

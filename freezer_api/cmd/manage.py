@@ -94,9 +94,7 @@ def parse_config(mapping_choices):
                    )
 
     ]
-    opt_group = cfg.OptGroup(name='storage', title='Freezer Storage Engine')
-    CONF.register_group(opt_group)
-    CONF.register_opts(driver.get_elk_opts(), group=opt_group)
+    driver.register_storage_opts()
     CONF.register_cli_opts(DB_INIT)
     log.register_options(CONF)
     default_config_files = cfg.find_config_files('freezer', 'freezer-api')
@@ -118,9 +116,18 @@ class ElasticSearchManager(object):
 
     def __init__(self, mappings):
         self.mappings = mappings.copy()
-        self.index = CONF.storage.index or DEFAULT_INDEX
+
+        grp = cfg.OptGroup(CONF.storage.backend)
+        CONF.register_group(grp)
+        backend_opts = driver._get_elastic_opts(backend=CONF.storage.backend)
+
+        CONF.register_opts(backend_opts[CONF.storage.backend],
+                           group=CONF.storage.backend)
+
+        self.conf = CONF.get(CONF.storage.backend)
+        self.index = self.conf.index or DEFAULT_INDEX
         # initialize elk
-        opts = dict(CONF.storage.items())
+        opts = dict(self.conf.items())
         self.elk = elasticsearch.Elasticsearch(**opts)
         # check if the cluster is up or not !
         if not self.elk.ping():
@@ -206,7 +213,7 @@ class ElasticSearchManager(object):
         if not self._check_index_exists(index=self.index):
             body = {
                 'number_of_replicas':
-                    CONF.storage.number_of_replicas or DEFAULT_REPLICAS
+                    self.conf.number_of_replicas or DEFAULT_REPLICAS
             }
             return self.elk.indices.create(index=self.index, body=body)
 
@@ -303,7 +310,7 @@ class ElasticSearchManager(object):
         """
         body = {
             'number_of_replicas':
-                CONF.storage.number_of_replicas or DEFAULT_REPLICAS
+                self.conf.number_of_replicas or DEFAULT_REPLICAS
         }
         return self.elk.indices.put_settings(body=body, index=self.index)
 
@@ -327,6 +334,7 @@ def main():
     mappings = db_mappings.get_mappings()
     parse_config(mapping_choices=mappings.keys())
     config.setup_logging()
+
     if not CONF.db:
         CONF.print_help()
         sys.exit(0)
