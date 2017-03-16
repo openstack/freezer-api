@@ -115,10 +115,10 @@ function configure_freezer_api {
     sudo chown -R $USER $FREEZER_API_CONF_DIR
 
     #set elasticsearch configuration
-    iniset $FREEZER_API_CONF 'storage' db elasticsearch
-    iniset $FREEZER_API_CONF 'storage' index freezer
-    iniset $FREEZER_API_CONF 'storage' number_of_replicas 0
-    iniset $FREEZER_API_CONF 'storage' hosts http://$SERVICE_HOST:9200
+    iniset $FREEZER_API_CONF 'storage' backend elasticsearch
+    iniset $FREEZER_API_CONF 'elasticsearch' index freezer
+    iniset $FREEZER_API_CONF 'elasticsearch' number_of_replicas 0
+    iniset $FREEZER_API_CONF 'elasticsearch' hosts http://$SERVICE_HOST:9200
 
     # set keystone configuration
     iniset $FREEZER_API_CONF 'keystone_authtoken' auth_protocol $KEYSTONE_AUTH_PROTOCOL

@@ -15,88 +15,59 @@ limitations under the License.
 
 """
 
-import logging
-import os
-
-from oslo_config import cfg
-
-from freezer_api.common import _i18n
 from freezer_api.storage import elastic
 
+from oslo_config import cfg
+from oslo_log import log
+from oslo_utils import importutils
+
+
 CONF = cfg.CONF
+LOG = log.getLogger(__name__)
 
 
-def get_elk_opts():
-    storage_opts = [
-        cfg.StrOpt('db',
-                   default='elasticsearch',
-                   help='specify the storage db to use '
-                        '(default: elasticsearch)'),
-        # use of 'endpoint' parameter name is deprecated, please use 'hosts'
-        cfg.StrOpt('endpoint',
-                   default='',
-                   help='specify the storage hosts (deprecated, use "hosts"'),
-        cfg.StrOpt('hosts',
-                   default='http://localhost:9200',
-                   help='specify the storage hosts'),
-        cfg.StrOpt('index',
-                   default='freezer',
-                   help='specify the name of the elasticsearch index'),
-        cfg.IntOpt('timeout',
-                   default=60,
-                   help='specify the connection timeout'),
-        cfg.IntOpt('retries',
-                   default=20,
-                   help='number of retries to allow before raising and error'),
-        cfg.BoolOpt('use_ssl',
-                    default=False,
-                    help='explicitly turn on SSL'),
-        cfg.BoolOpt('verify_certs',
-                    default=False,
-                    help='turn on SSL certs verification'),
-        cfg.StrOpt('ca_certs',
-                   help='path to CA certs on disk'),
-        cfg.IntOpt('number_of_replicas',
-                   default=0,
-                   help='Number of replicas for elk cluster. Default is 0. '
-                        'Use 0 for no replicas. This should be set to (number '
-                        'of node in the ES cluter -1).')
-    ]
-    return storage_opts
+# storage backend options to be registered
+_OPTS = [
+    cfg.StrOpt("backend",
+               help="Databse backend section name. This section "
+                    "will be loaded by the proper driver to connect to "
+                    "the database."
+               ),
+    cfg.StrOpt('driver',
+               default='freezer_api.storage.elastic.ElasticSearchEngine',
+               help="Database driver to be used."
+               )
+]
 
 
-def register_elk_opts():
+def register_storage_opts():
+    """Register storage configuration options"""
     opt_group = cfg.OptGroup(name='storage',
                              title='Freezer Storage Engine')
     CONF.register_group(opt_group)
-    CONF.register_opts(get_elk_opts(), opt_group)
-
-
-def get_options():
-    if CONF.storage.ca_certs:
-        if not os.path.isfile(CONF.storage.ca_certs):
-            raise Exception('ElasticSearch configuration error: '
-                            'CA_certs file not found ({0})'
-                            .format(CONF.storage.ca_certs))
-
-    hosts = CONF.storage.endpoint or CONF.storage.hosts
-    if not hosts:
-        raise Exception('Elasticsearch configuration error: no host specified')
-
-    opts = dict(CONF.storage)
-    opts.pop('endpoint')
-    opts['hosts'] = hosts.split(',')
-    return opts
+    CONF.register_opts(_OPTS, group=opt_group)
 
 
 def get_db():
-    opts = get_options()
-    db_engine = opts.pop('db')
-    if db_engine == 'elasticsearch':
-        logging.debug(
-            _i18n._LI('ElasticSearch config options: %s') % str(opts))
-        db = elastic.ElasticSearchEngine(**opts)
-    else:
-        raise Exception(
-            _i18n._('Database Engine %s not supported') % db_engine)
-    return db
+    """Automatically loads the database driver to be used."""
+    storage = CONF.get('storage')
+    driver_instance = importutils.import_object(
+        storage['driver'],
+        backend=storage['backend']
+    )
+    return driver_instance
+
+
+def get_storage_opts():
+    """Returns a dict that contains list of options for db backend"""
+    opts = {"storage": _OPTS}
+    opts.update(_get_elastic_opts())
+    return opts
+
+
+def _get_elastic_opts(backend=None):
+    """Return Opts for elasticsearch driver"""
+    if not backend:
+        backend = "elasticsearch"
+    es = elastic.ElasticSearchEngine(backend=backend)
+    return {backend: es.get_opts()}

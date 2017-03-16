@@ -17,10 +17,17 @@ limitations under the License.
 
 import elasticsearch
 import logging
+import os
 
 from freezer_api.common import _i18n
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import utils
+
+from oslo_config import cfg
+from oslo_log import log
+
+CONF = cfg.CONF
+LOG = log.getLogger(__name__)
 
 
 class TypeManager(object):
@@ -272,7 +279,69 @@ class SessionTypeManager(TypeManager):
 
 
 class ElasticSearchEngine(object):
-    def __init__(self, index='freezer', **kwargs):
+
+    _OPTS = [
+        cfg.StrOpt('hosts',
+                   default='http://localhost:9200',
+                   deprecated_name='endpoint',
+                   help='specify the storage hosts'),
+        cfg.StrOpt('index',
+                   default='freezer',
+                   help='specify the name of the elasticsearch index'),
+        cfg.IntOpt('timeout',
+                   default=60,
+                   help='specify the connection timeout'),
+        cfg.IntOpt('retries',
+                   default=20,
+                   help='number of retries to allow before raising and error'),
+        cfg.BoolOpt('use_ssl',
+                    default=False,
+                    help='explicitly turn on SSL'),
+        cfg.BoolOpt('verify_certs',
+                    default=False,
+                    help='turn on SSL certs verification'),
+        cfg.StrOpt('ca_certs',
+                   help='path to CA certs on disk'),
+        cfg.IntOpt('number_of_replicas',
+                   default=0,
+                   help='Number of replicas for elk cluster. Default is 0. '
+                        'Use 0 for no replicas. This should be set to (number '
+                        'of node in the ES cluter -1).')
+    ]
+
+    def __init__(self, backend):
+        """backend: name of the section in the config file to load
+        elasticsearch opts
+        """
+        self.index = None
+        self.es = None
+        self.backup_manager = None
+        self.client_manager = None
+        self.job_manager = None
+        self.action_manager = None
+        self.session_manager = None
+        # register elasticsearch opts
+        CONF.register_opts(self._OPTS, group=backend)
+        self.conf = dict(CONF.get(backend))
+        self.conf['hosts'] = self.conf['hosts'].split(',')
+        self.backend = backend
+        self._validate_opts()
+        self.init(**self.conf)
+
+    def _validate_opts(self):
+        if not 'hosts' or 'endpoint' in self.conf.keys():
+            raise ValueError("Couldn't find hosts in {0} section".format(
+                self.backend)
+            )
+        if self.conf.get('ca_certs'):
+            if not os.path.isfile(self.conf.get('ca_certs')):
+                raise Exception("File not found: ca_certs file ({0}) not "
+                                "found".format(self.conf.get('ca_certs')))
+
+    def get_opts(self):
+        return self._OPTS
+
+    def init(self, index='freezer', **kwargs):
         self.index = index
         self.es = elasticsearch.Elasticsearch(**kwargs)
         logging.info(_i18n._LI('Storage backend: Elasticsearch '

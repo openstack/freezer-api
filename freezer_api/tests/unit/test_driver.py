@@ -16,56 +16,59 @@ limitations under the License.
 
 """
 
-import unittest
-
 import mock
 from mock import patch
 
 from freezer_api.storage import driver
+from freezer_api.tests.unit import common
 
 
-class TestStorageDriver(unittest.TestCase):
-    @patch('freezer_api.storage.driver.logging')
-    def test_get_db_raises_when_db_not_supported(self, mock_logging):
+class TestStorageDriver(common.FreezerBaseTestCase):
+    @patch('freezer_api.storage.driver.LOG')
+    def test_get_db_raises_when_db_not_supported(self, mock_LOG):
         mock_CONF = mock.Mock()
         mock_CONF.storage.db = 'nodb'
         driver.CONF = mock_CONF
         self.assertRaises(Exception, driver.get_db)
 
     @patch('freezer_api.storage.driver.elastic')
-    @patch('freezer_api.storage.driver.logging')
-    def test_get_db_elastic(self, mock_logging, mock_elastic):
-        driver.register_elk_opts()
+    @patch('freezer_api.storage.driver.LOG')
+    @patch('freezer_api.storage.driver.get_db')
+    def test_get_db_elastic(self, mock_LOG, mock_elastic, mock_get_db):
+        mock_get_db.return_value = object()
+        driver.register_storage_opts()
         driver.get_db()
         self.assertTrue(mock_elastic.ElasticSearchEngine)
 
     @patch('freezer_api.storage.driver.elastic')
-    @patch('freezer_api.storage.driver.logging')
+    @patch('freezer_api.storage.driver.LOG')
     def test_get_db_elastic_raises_Exception_when_cert_file_not_found(
-            self, mock_logging, mock_elastic):
+            self, mock_LOG, mock_elastic):
         mock_CONF = mock.Mock()
-        mock_CONF.storage.db = 'elasticsearch'
-        mock_CONF.storage.hosts = 'es_server'
-        mock_CONF.storage.verify_certs = 'False'
-        mock_CONF.storage.ca_certs = 'not_existant'
-        mock_CONF.storage.use_ssl = False
-        mock_CONF.storage.timeout = 43
-        mock_CONF.storage.retries = 37
+        mock_CONF.storage.backend = 'elasticsearch'
+        mock_CONF.storage.driver = 'freezer_api.storage.elastic.' \
+                                   'ElasticSearchEngine'
+        mock_CONF.elasticsearch.hosts = 'es_server'
+        mock_CONF.elasticsearch.verify_certs = 'False'
+        mock_CONF.elasticsearch.ca_certs = 'not_existant'
+        mock_CONF.elasticsearch.use_ssl = False
+        mock_CONF.elasticsearch.timeout = 43
+        mock_CONF.elasticsearch.retries = 37
         driver.CONF = mock_CONF
         self.assertRaises(Exception, driver.get_db)
 
     @patch('freezer_api.storage.driver.elastic')
-    @patch('freezer_api.storage.driver.logging')
+    @patch('freezer_api.storage.driver.LOG')
     def test_get_db_elastic_raises_Exception_when_hosts_not_defined(
-            self, mock_logging, mock_elastic):
+            self, mock_LOG, mock_elastic):
         mock_CONF = mock.Mock()
-        mock_CONF.storage.db = 'elasticsearch'
-        mock_CONF.storage.hosts = ''
-        mock_CONF.storage.endpoint = ''
-        mock_CONF.storage.verify_certs = 'False'
-        mock_CONF.storage.ca_certs = ''
-        mock_CONF.storage.use_ssl = False
-        mock_CONF.storage.timeout = 43
-        mock_CONF.storage.retries = 37
+        mock_CONF.storage.backend = 'elasticsearch'
+        mock_CONF.elasticsearch.hosts = ''
+        mock_CONF.elasticsearch.endpoint = ''
+        mock_CONF.elasticsearch.verify_certs = 'False'
+        mock_CONF.elasticsearch.ca_certs = ''
+        mock_CONF.elasticsearch.use_ssl = False
+        mock_CONF.elasticsearch.timeout = 43
+        mock_CONF.elasticsearch.retries = 37
         driver.CONF = mock_CONF
         self.assertRaises(Exception, driver.get_db)

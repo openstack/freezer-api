@@ -35,5 +35,5 @@
     "clients:get_all": "",
     "clients:create": "",
     "clients:get": "",
-    "clients:delete": "",
+    "clients:delete": ""
 }
