@@ -344,8 +344,8 @@ class ElasticSearchEngine(object):
     def init(self, index='freezer', **kwargs):
         self.index = index
         self.es = elasticsearch.Elasticsearch(**kwargs)
-        logging.info(_i18n._LI('Storage backend: Elasticsearch '
-                               'at %s') % kwargs['hosts'])
+        logging.info('Storage backend: Elasticsearch '
+                     'at %s' % kwargs['hosts'])
         self.backup_manager = BackupTypeManager(self.es, 'backups')
         self.client_manager = ClientTypeManager(self.es, 'clients')
         self.job_manager = JobTypeManager(self.es, 'jobs')
@@ -393,7 +393,7 @@ class ElasticSearchEngine(object):
                 message=_i18n._(
                     'Client already registered with ID %s') % client_id)
         self.client_manager.insert(client_doc)
-        logging.info(_i18n._LI('Client registered, client_id: %s') % client_id)
+        logging.info('Client registered, client_id: %s' % client_id)
         return client_id
 
     def delete_client(self, user_id, client_id):
@@ -413,7 +413,7 @@ class ElasticSearchEngine(object):
         jobdoc = utils.JobDoc.create(doc, user_id)
         job_id = jobdoc['job_id']
         self.job_manager.insert(jobdoc, job_id)
-        logging.info(_i18n._LI('Job registered, job id: %s') % job_id)
+        logging.info('Job registered, job id: %s' % job_id)
         return job_id
 
     def delete_job(self, user_id, job_id):
@@ -426,7 +426,7 @@ class ElasticSearchEngine(object):
         assert (self.job_manager.get(user_id, job_id))
 
         version = self.job_manager.update(job_id, valid_patch)
-        logging.info(_i18n._LI('Job %(id)s updated to version %(version)s') %
+        logging.info('Job %(id)s updated to version %(version)s' %
                      {'id': job_id, 'version': version})
         return version
 
@@ -442,10 +442,10 @@ class ElasticSearchEngine(object):
 
         (created, version) = self.job_manager.insert(valid_doc, job_id)
         if created:
-            logging.info(_i18n._LI('Job %s created') % job_id)
+            logging.info('Job %s created' % job_id)
         else:
             logging.info(
-                _i18n._LI('Job %(id)s replaced with version %(version)s') %
+                'Job %(id)s replaced with version %(version)s' %
                 {'id': job_id, 'version': version})
         return version
 
@@ -463,7 +463,7 @@ class ElasticSearchEngine(object):
         actiondoc = utils.ActionDoc.create(doc, user_id)
         action_id = actiondoc['action_id']
         self.action_manager.insert(actiondoc, action_id)
-        logging.info(_i18n._LI('Action registered, action id: %s') % action_id)
+        logging.info('Action registered, action id: %s' % action_id)
         return action_id
 
     def delete_action(self, user_id, action_id):
@@ -477,7 +477,7 @@ class ElasticSearchEngine(object):
 
         version = self.action_manager.update(action_id, valid_patch)
         logging.info(
-            _i18n._LI('Action %(id)s updated to version %(version)s') %
+            'Action %(id)s updated to version %(version)s' %
             {'id': action_id, 'version': version})
         return version
 
@@ -493,10 +493,10 @@ class ElasticSearchEngine(object):
 
         (created, version) = self.action_manager.insert(valid_doc, action_id)
         if created:
-            logging.info(_i18n._LI('Action %s created') % action_id)
+            logging.info('Action %s created' % action_id)
         else:
             logging.info(
-                _i18n._LI('Action %(id)s replaced with version %(version)s')
+                'Action %(id)s replaced with version %(version)s'
                 % {'id': action_id, 'version': version})
         return version
 
@@ -515,7 +515,7 @@ class ElasticSearchEngine(object):
         session_id = session_doc['session_id']
         self.session_manager.insert(session_doc, session_id)
         logging.info(
-            _i18n._LI('Session registered, session id: %s') % session_id)
+            'Session registered, session id: %s' % session_id)
         return session_id
 
     def delete_session(self, user_id, session_id):
@@ -529,7 +529,7 @@ class ElasticSearchEngine(object):
 
         version = self.session_manager.update(session_id, valid_patch)
         logging.info(
-            _i18n._LI('Session %(id)s updated to version %(version)s') %
+            'Session %(id)s updated to version %(version)s' %
             {'id': session_id, 'version': version})
         return version
 
@@ -545,9 +545,9 @@ class ElasticSearchEngine(object):
 
         (created, version) = self.session_manager.insert(valid_doc, session_id)
         if created:
-            logging.info(_i18n._LI('Session %s created') % session_id)
+            logging.info('Session %s created' % session_id)
         else:
             logging.info(
-                _i18n._LI('Session %(id)s replaced with version %(version)s')
+                'Session %(id)s replaced with version %(version)s'
                 % {'id': session_id, 'version': version})
         return version
