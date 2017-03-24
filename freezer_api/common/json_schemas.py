@@ -218,6 +218,11 @@ job_schema = {
             "pattern": "^[\w-]+$",
             "type": "string"
         },
+        "project_id": {
+            "id": "project_id",
+            "pattern": "^[\w-]+$",
+            "type": "string"
+        },
         "description": {
             "id": "description",
             "type": "string"
@@ -309,6 +314,11 @@ job_patch_schema = {
             "pattern": "^[\w-]+$",
             "type": "string"
         },
+        "project_id": {
+            "id": "project_id",
+            "pattern": "^[\w-]+$",
+            "type": "string"
+        },
         "description": {
             "id": "description",
             "type": "string"
@@ -336,6 +346,11 @@ additional_action_properties = {
         "pattern": "^[\w-]+$",
         "type": "string"
     },
+    "project_id": {
+        "id": "project_id",
+        "pattern": "^[\w-]+$",
+        "type": "string"
+    }
 }
 
 
@@ -384,6 +399,11 @@ session_schema = {
             "pattern": "^[\w-]+$",
             "type": "string"
         },
+        "project_id": {
+            "id": "project_id",
+            "pattern": "^[\w-]+$",
+            "type": "string"
+        },
         "session_tag": {
             "id": "session_tag",
             "type": "integer"
@@ -422,6 +442,11 @@ session_patch_schema = {
         },
         "user_id": {
             "id": "user_id",
+            "pattern": "^[\w-]+$",
+            "type": "string"
+        },
+        "project_id": {
+            "id": "project_id",
             "pattern": "^[\w-]+$",
             "type": "string"
         },
@@ -477,6 +502,11 @@ client_schema = {
         },
         "user_id": {
             "id": "user_id",
+            "pattern": "^[\w-]+$",
+            "type": "string"
+        },
+        "project_id": {
+            "id": "project_id",
             "pattern": "^[\w-]+$",
             "type": "string"
         }

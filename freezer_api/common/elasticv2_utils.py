@@ -28,7 +28,8 @@ class BackupMetadataDoc(object):
     Wraps a backup_metadata dict and adds some utility methods,
     and fields
     """
-    def __init__(self, user_id='', user_name='', data={}):
+    def __init__(self, project_id='', user_id='', user_name='', data={}):
+        self.project_id = project_id
         self.user_id = user_id
         self.user_name = user_name
         self.backup_id = uuid.uuid4().hex
@@ -36,6 +37,7 @@ class BackupMetadataDoc(object):
 
     def is_valid(self):
         try:
+            assert (self.project_id is not '')
             assert (self.backup_id is not '')
             assert (self.user_id is not '')
             assert (self.data['container'] is not '')
@@ -48,6 +50,7 @@ class BackupMetadataDoc(object):
     def serialize(self):
         return {'backup_id': self.backup_id,
                 'user_id': self.user_id,
+                'project_id': self.project_id,
                 'user_name': self.user_name,
                 'backup_metadata': self.data}
 
@@ -81,7 +84,7 @@ class JobDoc(object):
         return doc
 
     @staticmethod
-    def create(doc, user_id):
+    def create(doc, project_id, user_id):
         job_schedule = doc.get('job_schedule', {})
         job_schedule.update({
             'time_created': int(time.time()),
@@ -90,6 +93,7 @@ class JobDoc(object):
         })
         doc.update({
             'user_id': user_id,
+            'project_id': project_id,
             'job_id': uuid.uuid4().hex,
             'job_schedule': job_schedule
         })
@@ -97,10 +101,11 @@ class JobDoc(object):
         return doc
 
     @staticmethod
-    def update(doc, user_id, job_id):
+    def update(doc, project_id, user_id, job_id):
         doc.update({
             'user_id': user_id,
-            'job_id': job_id
+            'job_id': job_id,
+            'project_id': project_id
         })
         JobDoc.validate(doc)
         return doc
@@ -135,19 +140,21 @@ class ActionDoc(object):
         return doc
 
     @staticmethod
-    def create(doc, user_id):
+    def create(doc, user_id, project_id):
         action_id = doc.get('action_id', uuid.uuid4().hex)
         doc.update({
             'user_id': user_id,
+            'project_id': project_id,
             'action_id': action_id,
         })
         ActionDoc.validate(doc)
         return doc
 
     @staticmethod
-    def update(doc, user_id, action_id):
+    def update(doc, user_id, action_id, project_id):
         doc.update({
             'user_id': user_id,
+            'project_id': project_id,
             'action_id': action_id,
         })
         ActionDoc.validate(doc)
@@ -183,9 +190,10 @@ class SessionDoc(object):
         return doc
 
     @staticmethod
-    def create(doc, user_id, hold_off=30):
+    def create(doc, user_id, hold_off=30, project_id=None):
         doc.update({
             'user_id': user_id,
+            'project_id': project_id,
             'session_id': uuid.uuid4().hex,
             'session_tag': doc.get('session_tag', 0),
             'status': 'active',
@@ -197,9 +205,10 @@ class SessionDoc(object):
         return doc
 
     @staticmethod
-    def update(doc, user_id, session_id):
+    def update(doc, user_id, session_id, project_id):
         doc.update({
             'user_id': user_id,
+            'project_id': project_id,
             'session_id': session_id,
         })
         SessionDoc.validate(doc)
@@ -218,14 +227,15 @@ class ClientDoc(object):
             raise freezer_api_exc.BadDataFormat(str(e).splitlines()[0])
 
     @staticmethod
-    def create(doc, user_id):
+    def create(doc, project_id, user_id):
         if 'uuid' not in doc:
             doc.update({
                 'uuid': uuid.uuid4().hex
             })
         doc = {
             'client': doc,
-            'user_id': user_id
+            'user_id': user_id,
+            'project_id': project_id
         }
         ClientDoc.validate(doc)
         return doc

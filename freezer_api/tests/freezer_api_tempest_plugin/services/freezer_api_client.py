@@ -40,6 +40,11 @@ class FreezerApiClient(rest_client.RestClient):
         resp, response_body = self.get('/v1')
         return resp, response_body
 
+    def get_version_v2(self):
+
+        resp, response_body = self.get('/v2')
+        return resp, response_body
+
     def get_backups(self, backup_id=None, **params):
 
         if backup_id is None:

@@ -41,6 +41,10 @@ clients_mapping = {
             "index": "not_analyzed",
             "type": "string"
         },
+        "project_id": {
+            "index": "not_analyzed",
+            "type": "string"
+        },
         "uuid": {
             "index": "not_analyzed",
             "type": "string"
@@ -217,6 +221,10 @@ backups_mapping = {
         "job_id": {
             "index": "not_analyzed",
             "type": "string"
+        },
+        "project_id": {
+            "index": "not_analyzed",
+            "type": "string"
         }
     }
 }
@@ -236,6 +244,10 @@ jobs_mapping = {
                     "type": "string"
                 },
                 "user_id": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                },
+                "project_id": {
                     "index": "not_analyzed",
                     "type": "string"
                 },
@@ -398,6 +410,10 @@ jobs_mapping = {
             "type": "long"
         },
         "user_id": {
+            "index": "not_analyzed",
+            "type": "string"
+        },
+        "project_id": {
             "index": "not_analyzed",
             "type": "string"
         }
