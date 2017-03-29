@@ -18,7 +18,6 @@ limitations under the License.
 import uuid
 
 import falcon
-import six
 
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
@@ -165,7 +164,7 @@ class JobsEvent(resource.BaseResource):
         doc = self.json_body(req)
 
         try:
-            event, params = next(six.iteritems(doc))
+            event, params = next(iter(doc.items()))
         except Exception:
             raise freezer_api_exc.BadDataFormat("Bad event request format")
 
@@ -289,7 +288,7 @@ class Job(object):
     def expand_default_properties(self):
         action_defaults = self.doc.pop("action_defaults")
         if isinstance(action_defaults, dict):
-            for key, val in six.iteritems(action_defaults):
+            for key, val in action_defaults.items():
                 for action in self.doc.get("job_actions"):
                     if action["freezer_action"].get(key) is None:
                         action["freezer_action"][key] = val

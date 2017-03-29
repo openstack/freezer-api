@@ -18,7 +18,6 @@ limitations under the License.
 import time
 
 import falcon
-import six
 
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
@@ -125,7 +124,7 @@ class SessionsAction(resource.BaseResource):
         doc = self.json_body(req)
 
         try:
-            action, params = next(six.iteritems(doc))
+            action, params = next(iter(doc.items()))
         except Exception:
             raise freezer_api_exc.BadDataFormat("Bad action request format")
 
