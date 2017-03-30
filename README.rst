@@ -558,7 +558,7 @@ example restore freezer_action
       "action": "restore"
       "restore-abs-path": "/home/tylerdurden/project_mayhem"
       "container" : "my_backup_container"
-      "backup-name": "project_mayhem_backup"
+      "backup_name": "project_mayhem_backup"
       "restore-from-host": "another_host"
       "max_cpu_priority": true
     }

@@ -353,7 +353,8 @@ action_schema = {
     "additionalProperties": True,
     "required": [
         "action_id",
-        "user_id"
+        "user_id",
+        "freezer_action"
     ]
 }
 
