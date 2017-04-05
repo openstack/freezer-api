@@ -401,7 +401,8 @@ session_schema = {
     "required": [
         "session_id",
         "session_tag",
-        "user_id"
+        "user_id",
+        "schedule"
     ]
 }
 
