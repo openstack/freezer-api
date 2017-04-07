@@ -51,10 +51,11 @@ def parse_config(mapping_choices):
                           title='DB Options',
                           handler=add_db_opts
                           ),
-        cfg.StrOpt('host',
-                   default='127.0.0.1',
-                   dest='host',
-                   help='The DB host address[:port], default "127.0.0.1"'),
+        cfg.HostAddressOpt('host',
+                           default='127.0.0.1',
+                           dest='host',
+                           help='The DB host address[:port], '
+                                'default "127.0.0.1"'),
         cfg.PortOpt('port',
                     default=9200,
                     dest='port',
