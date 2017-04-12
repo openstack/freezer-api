@@ -15,21 +15,21 @@ limitations under the License.
 
 """
 
-from freezer_api.api.v1 import actions
-from freezer_api.api.v1 import backups
-from freezer_api.api.v1 import clients
-from freezer_api.api.v1 import homedoc
-from freezer_api.api.v1 import jobs
-from freezer_api.api.v1 import sessions
+from freezer_api.api.v2 import actions
+from freezer_api.api.v2 import backups
+from freezer_api.api.v2 import clients
+from freezer_api.api.v2 import homedoc
+from freezer_api.api.v2 import jobs
+from freezer_api.api.v2 import sessions
 
 
 VERSION = {
-    'id': 'v1',
-    'status': 'CURRENT',
-    'updated': '2015-03-23T13:45:00',
+    'id': 'v2',
+    'status': 'DEVELOPMENT',
+    'updated': '2017-03-28T16:23:00',
     'links': [
         {
-            'href': '{0}v1/',
+            'href': '{0}v2/',
             'rel': 'self'
         }
     ]
@@ -41,43 +41,43 @@ def public_endpoints(storage_driver):
         ('/',
          homedoc.Resource()),
 
-        ('/backups',
+        ('/{project_id}/backups',
          backups.BackupsCollectionResource(storage_driver)),
 
-        ('/backups/{backup_id}',
+        ('/{project_id}/backups/{backup_id}',
          backups.BackupsResource(storage_driver)),
 
-        ('/clients',
+        ('/{project_id}/clients',
          clients.ClientsCollectionResource(storage_driver)),
 
-        ('/clients/{client_id}',
+        ('/{project_id}/clients/{client_id}',
          clients.ClientsResource(storage_driver)),
 
-        ('/jobs',
+        ('/{project_id}/jobs',
          jobs.JobsCollectionResource(storage_driver)),
 
-        ('/jobs/{job_id}',
+        ('/{project_id}/jobs/{job_id}',
          jobs.JobsResource(storage_driver)),
 
-        ('/jobs/{job_id}/event',
+        ('/{project_id}/jobs/{job_id}/event',
          jobs.JobsEvent(storage_driver)),
 
-        ('/actions',
+        ('/{project_id}/actions',
          actions.ActionsCollectionResource(storage_driver)),
 
-        ('/actions/{action_id}',
+        ('/{project_id}/actions/{action_id}',
          actions.ActionsResource(storage_driver)),
 
-        ('/sessions',
+        ('/{project_id}/sessions',
          sessions.SessionsCollectionResource(storage_driver)),
 
-        ('/sessions/{session_id}',
+        ('/{project_id}/sessions/{session_id}',
          sessions.SessionsResource(storage_driver)),
 
-        ('/sessions/{session_id}/action',
+        ('/{project_id}/sessions/{session_id}/action',
          sessions.SessionsAction(storage_driver)),
 
-        ('/sessions/{session_id}/jobs/{job_id}',
+        ('/{project_id}/sessions/{session_id}/jobs/{job_id}',
          sessions.SessionsJob(storage_driver)),
 
     ]

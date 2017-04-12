@@ -1,0 +1,35 @@
+---
+prelude: >
+    Currently freezer-api v1 doesn't fully support multi-tenancy. In previous
+    releases, we implemented oslo.policy to support multi-tenancy, but we need
+    to add a new parameter to freezer-api which is the project_id. We need to
+    modify the structure of freezer-api url so it accepts project_id parameter.
+    Example of the old structure::
+    http://host_ip_address:9090/v1/jobs
+
+    Example of the new structure::
+    http://host_ip_address:9090/v2/project_id/jobs
+
+features:
+  - |
+    Added Freezer-api v2 which changes the structure of freezer-api urls to
+    accept the newly added parameter, project_id.
+
+    Fully support role based multi-tenancy with api v2.
+
+
+issues:
+  - |
+    It might break the backward compatibility.
+
+upgrade:
+  - |
+    List upgrade notes here, or remove this section.  All of the list items in
+    this section are combined when the release notes are rendered, so the text
+    needs to be worded so that it does not depend on any information only
+    available in another section, such as the prelude. This may mean repeating
+    some details.
+deprecations:
+  - |
+    Freezer api v1 will be deprecated with Pike release. It will be supported
+    for another release, then will be removed completely.

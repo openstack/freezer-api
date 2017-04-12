@@ -48,13 +48,16 @@ def register_storage_opts():
     CONF.register_opts(_OPTS, group=opt_group)
 
 
-def get_db():
+def get_db(driver=None):
     """Automatically loads the database driver to be used."""
     storage = CONF.get('storage')
+    if not driver:
+        driver = storage['driver']
     driver_instance = importutils.import_object(
-        storage['driver'],
+        driver,
         backend=storage['backend']
     )
+
     return driver_instance
 
 

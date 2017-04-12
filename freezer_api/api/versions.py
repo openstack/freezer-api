@@ -22,12 +22,15 @@ from oslo_log import log
 
 from freezer_api.api.common import middleware
 from freezer_api.api import v1
+from freezer_api.api import v2
 
 
 LOG = log.getLogger(__name__)
+
 VERSIONS = {
     'versions': [
-        v1.VERSION
+        v1.VERSION,
+        v2.VERSION
     ]
 }
 
@@ -46,11 +49,17 @@ def api_versions(conf=None):
 
 class Resource(object):
 
-    def __init__(self):
-        self.versions = json.dumps(VERSIONS, ensure_ascii=False)
+    def _build_versions(self, host_url):
+        updated_versions = {'versions': []}
+        for version in VERSIONS['versions']:
+            version['links'][0]['href'] = version['links'][0]['href'].format(
+                host_url
+            )
+            updated_versions['versions'].append(version)
+        return json.dumps(updated_versions, ensure_ascii=False)
 
     def on_get(self, req, resp):
-        resp.data = self.versions
+        resp.data = self._build_versions(req.url)
 
         resp.status = falcon.HTTP_300
 

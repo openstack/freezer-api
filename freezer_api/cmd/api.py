@@ -25,11 +25,11 @@ from oslo_config import cfg
 from oslo_log import log
 from paste import deploy
 from paste import httpserver
-from paste import urlmap
 
 from freezer_api.api.common import middleware
 from freezer_api.api.common import utils
 from freezer_api.api import v1
+from freezer_api.api import v2
 from freezer_api.common import _i18n
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
@@ -49,7 +49,9 @@ def configure_app(app, db=None):
     :return:
     """
     if not db:
-        db = driver.get_db()
+        db = driver.get_db(
+            driver='freezer_api.storage.elastic.ElasticSearchEngine'
+        )
 
     # setup freezer policy
     policy.setup_policy(CONF)
@@ -113,11 +115,36 @@ def build_app_v1():
     return app
 
 
-def root_app_factory(loader, global_conf, **local_conf):
-    """Allows freezer to launch multiple applications at a time.
-    It will allow freezer to manage multiple versions.
+def build_app_v2():
+    """Building routes and forming the root freezer-api app
+    This uses the 'middleware' named argument to specify middleware for falcon
+    instead of the 'before' and 'after' hooks that were removed after 0.3.0
+    (both approaches were available for versions 0.2.0 - 0.3.0)
+    :return: falcon WSGI app
     """
-    return urlmap.urlmap_factory(loader, global_conf, **local_conf)
+    # injecting FreezerContext & hooks
+    middleware_list = [utils.FuncMiddleware(hook) for hook in
+                       utils.before_hooks()]
+    middleware_list.append(middleware.RequireJSON())
+    middleware_list.append(middleware.JSONTranslator())
+
+    app = falcon.API(middleware=middleware_list)
+    db = driver.get_db()
+
+    # setup freezer policy
+    policy.setup_policy(CONF)
+
+    for exception_class in freezer_api_exc.exception_handlers_catalog:
+        app.add_error_handler(exception_class, exception_class.handle)
+
+    endpoint_catalog = [
+        ('', v2.public_endpoints(db))
+    ]
+    for version_path, endpoints in endpoint_catalog:
+        for route, resource in endpoints:
+            app.add_route(version_path + route, resource)
+
+    return app
 
 
 def main():
