@@ -320,10 +320,9 @@ class SessionTypeManagerV2(TypeManagerV2):
 class ElasticSearchEngineV2(object):
 
     _OPTS = [
-        cfg.StrOpt('hosts',
-                   default='http://localhost:9200',
-                   deprecated_name='endpoint',
-                   help='specify the storage hosts'),
+        cfg.ListOpt('hosts',
+                    default=['http://127.0.0.1:9200'],
+                    help='specify the storage hosts'),
         cfg.StrOpt('index',
                    default='freezer',
                    help='specify the name of the elasticsearch index'),
@@ -362,7 +361,6 @@ class ElasticSearchEngineV2(object):
         # register elasticsearch opts
         CONF.register_opts(self._OPTS, group=backend)
         self.conf = dict(CONF.get(backend))
-        self.conf['hosts'] = self.conf['hosts'].split(',')
         self.backend = backend
         self._validate_opts()
         self.init(**self.conf)

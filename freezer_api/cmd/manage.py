@@ -30,7 +30,6 @@ from freezer_api.storage import driver
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
-DEFAULT_ES_SERVER_PORT = 9200
 DEFAULT_INDEX = 'freezer'
 DEFAULT_REPLICAS = 0
 
@@ -51,17 +50,9 @@ def parse_config(mapping_choices):
                           title='DB Options',
                           handler=add_db_opts
                           ),
-        cfg.HostAddressOpt('host',
-                           default='127.0.0.1',
-                           dest='host',
-                           help='The DB host address[:port], '
-                                'default "127.0.0.1"'),
-        cfg.PortOpt('port',
-                    default=9200,
-                    dest='port',
-                    help='The DB server port (default: {0})'.
-                    format(DEFAULT_ES_SERVER_PORT)
-                    ),
+        cfg.ListOpt('hosts',
+                    default=['http://127.0.0.1:9200'],
+                    help='specify the storage hosts'),
         cfg.StrOpt('mapping',
                    dest='select_mapping',
                    default='',
