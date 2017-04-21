@@ -54,28 +54,20 @@ set +o xtrace
 
 function is_freezer_api_enabled {
     [[ ,${ENABLED_SERVICES} =~ ,"freezer-api" ]] && return 0
+    return 1
 }
 
 
 # executed during: clean
 function cleanup_freezer_api {
+    disable_apache_site freezer-api
     sudo rm -f $(apache_site_config_for freezer-api)
     ${TOP_DIR}/pkg/elasticsearch.sh uninstall
-}
-
-# add openjdk-7 repo support for xenial
-function add_jdk7_rep {
-
-    sudo add-apt-repository -y ppa:openjdk-r/ppa
-    apt_get_update
 }
 
 # executed during: stack install
 function install_freezer_api {
 
-    if is_ubuntu; then
-        add_jdk7_rep
-    fi
     git_clone $FREEZER_API_REPO $FREEZER_API_DIR $FREEZER_API_BRANCH
 
     ${TOP_DIR}/pkg/elasticsearch.sh download
@@ -156,7 +148,7 @@ function init_freezer_api {
 # executed during: stack extra
 function start_freezer_api {
     if [[ "${FREEZER_API_SERVER_TYPE}" == "uwsgi" ]]; then
-        run_process freezer-api "uwsgi --http :$FREEZER_API_PORT --need-app --master --module freezer_api.cmd.api:application"
+        run_process freezer-api "uwsgi --http :$FREEZER_API_PORT --need-app --master --module freezer_api.cmd.wsgi:application"
         sleep 1
     elif [[ "${FREEZER_API_SERVER_TYPE}" == "apache2" ]]; then
         enable_apache_site freezer-api
