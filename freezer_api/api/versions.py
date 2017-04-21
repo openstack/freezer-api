@@ -17,6 +17,7 @@ limitations under the License.
 
 import falcon
 import json
+from oslo_config import cfg
 from oslo_log import log
 
 
@@ -24,13 +25,13 @@ from freezer_api.api.common import middleware
 from freezer_api.api import v1
 from freezer_api.api import v2
 
-
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 VERSIONS = {
     'versions': [
-        v1.VERSION,
-        v2.VERSION
+        v2.VERSION,
+        v1.VERSION
     ]
 }
 
@@ -50,12 +51,14 @@ def api_versions(conf=None):
 class Resource(object):
 
     def _build_versions(self, host_url):
+        allowed_versions = {'v1': CONF.enable_v1_api, 'v2': CONF.enable_v2_api}
+
         updated_versions = {'versions': []}
         for version in VERSIONS['versions']:
-            version['links'][0]['href'] = version['links'][0]['href'].format(
-                host_url
-            )
-            updated_versions['versions'].append(version)
+            if allowed_versions[version['id']]:
+                version['links'][0]['href'] = \
+                    version['links'][0]['href'].format(host_url)
+                updated_versions['versions'].append(version)
         return json.dumps(updated_versions, ensure_ascii=False)
 
     def on_get(self, req, resp):

@@ -17,6 +17,7 @@ limitations under the License.
 import sys
 
 import falcon
+from oslo_config import cfg
 from paste import deploy
 from paste import urlmap
 import pkg_resources
@@ -24,6 +25,7 @@ import pkg_resources
 from freezer_api.cmd import api
 from freezer_api.common import config
 
+CONF = cfg.CONF
 # Define the minimum version of falcon at which we can use the "new" invocation
 # style for middleware (aka v1), i.e. the "middleware" named argument for
 # falcon.API.
@@ -34,6 +36,10 @@ def root_app_factory(loader, global_conf, **local_conf):
     """Allows freezer to launch multiple applications at a time.
     It will allow freezer to manage multiple versions.
     """
+    if not CONF.enable_v1_api and '/v1' in local_conf:
+        del local_conf['/v1']
+    if not CONF.enable_v2_api and '/v2' in local_conf:
+        del local_conf['/v2']
     return urlmap.urlmap_factory(loader, global_conf, **local_conf)
 
 
