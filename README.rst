@@ -2,8 +2,8 @@
 Team and repository tags
 ========================
 
-.. image:: http://governance.openstack.org/badges/freezer-api.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
+.. image:: https://governance.openstack.org/badges/freezer-api.svg
+    :target: https://governance.openstack.org/reference/tags/index.html
 
 .. Change things from this point on
 
@@ -210,7 +210,7 @@ For example to make use of port 19090 use
 
     export FREEZER_API_PORT=19090
 
-For more information, see `openstack_devstack_plugins_install <http://docs.openstack.org/developer/devstack/plugins.html>`_
+For more information, see `openstack_devstack_plugins_install <https://docs.openstack.org/developer/devstack/plugins.html>`_
 
 Concepts and definitions
 ===========================
