@@ -69,18 +69,23 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
     @test.attr(type="gate")
     def test_api_actions_post(self):
 
-        action = {'actions': 'backup',
-                  'mode': 'fs',
-                  'src_file': '/dev/null',
-                  'backup_name': 'test freezer api actions',
-                  'container': 'test_freezer_api_actions_container',
-                  'max_backup_level': 1,
-                  'always_backup_level': 0,
-                  'no_incremental': True,
-                  'encrypt_pass_file': '/dev/null',
-                  'log_file': '/dev/null',
-                  'hostname': False,
-                  'max_cpu_priority': False}
+        action = {
+            'freezer_action':
+                {
+                    'actions': 'backup',
+                    'mode': 'fs',
+                    'src_file': '/dev/null',
+                    'backup_name': 'test freezer api actions',
+                    'container': 'test_freezer_api_actions_container',
+                    'max_backup_level': 1,
+                    'always_backup_level': 0,
+                    'no_incremental': True,
+                    'encrypt_pass_file': '/dev/null',
+                    'log_file': '/dev/null',
+                    'hostname': False,
+                    'max_cpu_priority': False
+                }
+        }
 
         # Create the action with POST
         resp, response_body = self.freezer_api_client.post_actions(action)
@@ -94,67 +99,69 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
         self.assertEqual(200, resp.status)
 
         resp_body_json = json.loads(response_body)
+        freezer_action_json = resp_body_json['freezer_action']
 
-        self.assertIn('backup_name', resp_body_json)
-        backup_name = resp_body_json['backup_name']
+        self.assertIn('backup_name', freezer_action_json)
+        backup_name = freezer_action_json['backup_name']
         self.assertEqual('test freezer api actions', backup_name)
 
-        self.assertIn('container', resp_body_json)
-        container = resp_body_json['container']
+        self.assertIn('container', freezer_action_json)
+        container = freezer_action_json['container']
         self.assertEqual('test_freezer_api_actions_container', container)
 
-        self.assertIn('no_incremental', resp_body_json)
-        no_incremental = resp_body_json['no_incremental']
+        self.assertIn('no_incremental', freezer_action_json)
+        no_incremental = freezer_action_json['no_incremental']
         self.assertEqual(True, no_incremental)
 
-        self.assertIn('max_backup_level', resp_body_json)
-        max_backup_level = resp_body_json['max_backup_level']
+        self.assertIn('max_backup_level', freezer_action_json)
+        max_backup_level = freezer_action_json['max_backup_level']
         self.assertEqual(1, max_backup_level)
 
-        self.assertIn('hostname', response_body)
-        hostname = resp_body_json['hostname']
+        self.assertIn('hostname', freezer_action_json)
+        hostname = freezer_action_json['hostname']
         self.assertEqual(False, hostname)
 
-        self.assertIn('_version', resp_body_json)
+        self.assertIn('_version', response_body)
         _version = resp_body_json['_version']
         self.assertEqual(1, _version)
 
-        self.assertIn('actions', resp_body_json)
-        actions = resp_body_json['actions']
+        self.assertIn('actions', freezer_action_json)
+        actions = freezer_action_json['actions']
         self.assertEqual('backup', actions)
 
-        self.assertIn('src_file', resp_body_json)
-        src_file = resp_body_json['src_file']
+        self.assertIn('src_file', freezer_action_json)
+        src_file = freezer_action_json['src_file']
         self.assertEqual('/dev/null', src_file)
 
-        self.assertIn('always_backup_level', resp_body_json)
-        always_backup_level = resp_body_json['always_backup_level']
+        self.assertIn('always_backup_level', freezer_action_json)
+        always_backup_level = freezer_action_json['always_backup_level']
         self.assertEqual(0, always_backup_level)
 
-        self.assertIn('mode', resp_body_json)
-        mode = resp_body_json['mode']
+        self.assertIn('mode', freezer_action_json)
+        mode = freezer_action_json['mode']
         self.assertEqual('fs', mode)
 
-        self.assertIn('encrypt_pass_file', resp_body_json)
-        encrypt_pass_file = resp_body_json['encrypt_pass_file']
+        self.assertIn('encrypt_pass_file', freezer_action_json)
+        encrypt_pass_file = freezer_action_json['encrypt_pass_file']
         self.assertEqual('/dev/null', encrypt_pass_file)
 
-        self.assertIn('max_cpu_priority', resp_body_json)
-        max_cpu_priority = resp_body_json['max_cpu_priority']
+        self.assertIn('max_cpu_priority', freezer_action_json)
+        max_cpu_priority = freezer_action_json['max_cpu_priority']
         self.assertEqual(False, max_cpu_priority)
 
-        self.assertIn('user_id', resp_body_json)
+        self.assertIn('user_id', response_body)
 
-        self.assertIn('log_file', resp_body_json)
-        log_file = resp_body_json['log_file']
+        self.assertIn('log_file', freezer_action_json)
+        log_file = freezer_action_json['log_file']
         self.assertEqual('/dev/null', log_file)
 
-        self.assertIn('action_id', resp_body_json)
+        self.assertIn('action_id', response_body)
         action_id_in_resp_body = resp_body_json['action_id']
         self.assertEqual(action_id, action_id_in_resp_body)
 
         # Update the action backup_name with POST
-        action['backup_name'] = 'test freezer api actions update with post'
+        action['freezer_action']['backup_name'] = \
+            'test freezer api actions update with post'
 
         resp, response_body = self.freezer_api_client.post_actions(
             action, action_id)
@@ -172,14 +179,16 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
         self.assertEqual(200, resp.status)
 
         resp_body_json = json.loads(response_body)
+        freezer_action_json = resp_body_json['freezer_action']
 
-        self.assertIn('backup_name', resp_body_json)
-        backup_name = resp_body_json['backup_name']
+        self.assertIn('backup_name', freezer_action_json)
+        backup_name = freezer_action_json['backup_name']
         self.assertEqual('test freezer api actions update with post',
                          backup_name)
 
         # Update the action backup_name with PATCH
-        action['backup_name'] = 'test freezer api actions update with patch'
+        action['freezer_action']['backup_name'] = \
+            'test freezer api actions update with patch'
 
         resp, response_body = self.freezer_api_client.patch_actions(
             action, action_id)
@@ -197,9 +206,10 @@ class TestFreezerApiActions(base.BaseFreezerApiTest):
         self.assertEqual(200, resp.status)
 
         resp_body_json = json.loads(response_body)
+        freezer_action_json = resp_body_json['freezer_action']
 
-        self.assertIn('backup_name', resp_body_json)
-        backup_name = resp_body_json['backup_name']
+        self.assertIn('backup_name', freezer_action_json)
+        backup_name = freezer_action_json['backup_name']
         self.assertEqual('test freezer api actions update with patch',
                          backup_name)
 
