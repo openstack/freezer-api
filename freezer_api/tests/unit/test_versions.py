@@ -17,7 +17,6 @@ limitations under the License.
 """
 
 import json
-import unittest
 
 import falcon
 import mock
@@ -25,16 +24,19 @@ import mock
 from freezer_api.api import v1
 from freezer_api.api import v2
 from freezer_api.api import versions
+from freezer_api.tests.unit import common
 
 
-class TestVersionResource(unittest.TestCase):
+class TestVersionResource(common.FreezerBaseTestCase):
 
     def setUp(self):
+        super(TestVersionResource, self).setUp()
         self.resource = versions.Resource()
         self.req = mock.Mock()
+        self.req.url = "{0}"
 
     def test_on_get_return_versions(self):
         self.resource.on_get(self.req, self.req)
         self.assertEqual(self.req.status, falcon.HTTP_300)
-        expected_result = json.dumps({'versions': [v1.VERSION, v2.VERSION]})
+        expected_result = json.dumps({'versions': [v2.VERSION, v1.VERSION]})
         self.assertEqual(self.req.data, expected_result)

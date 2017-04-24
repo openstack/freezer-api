@@ -35,7 +35,7 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
 
         resp_body_json = json.loads(response_body)
         self.assertIn('versions', resp_body_json)
-        current_version = resp_body_json['versions'][0]
+        current_version = resp_body_json['versions'][1]
         self.assertEqual(len(current_version), 4)
         self.assertIn('id', current_version)
         self.assertEqual(current_version['id'], 'v1')

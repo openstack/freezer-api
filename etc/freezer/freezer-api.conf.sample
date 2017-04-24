@@ -12,6 +12,37 @@
 # Maximum value: 65535
 #bind_port = 9090
 
+# Deploy the v1 OpenStack Freezer API.
+# When this option is set to ``True``, Freezer-api service will respond to
+# requests on registered endpoints conforming to the v1 OpenStack Freezer API.
+# NOTES:
+#     * Multi-tenancy is not supported under this api version.
+#     * Everything is user based.
+#     * Freezer api v1 doesn't support Oslo.db.
+#     * Use elasticsearch db with v1 api version
+# Possible values:
+#     * True
+#     * False
+# Related options:
+#     * enable_v2_api
+#                      (boolean value)
+#enable_v1_api = true
+
+# Deploy the v2 OpenStack Freezer API.
+# When this option is set to ``True``, Freezer-api service will respond to
+# requests on registered endpoints conforming to the v2 OpenStack Freezer api.
+#     NOTES:
+#         * Multi-tenancy is supported under this api version.
+#         * Freezer api v2 supports Oslo.db.
+#         * Recommended to use oslo.db with api v2
+#     Possible values:
+#         * True
+#         * False
+#     Related options:
+#         * enable_v1_api
+#                          (boolean value)
+#enable_v2_api = true
+
 #
 # From oslo.log
 #
@@ -20,12 +51,6 @@
 # INFO level. (boolean value)
 # Note: This option can be changed without restarting.
 #debug = false
-
-# DEPRECATED: If set to false, the logging level will be set to WARNING instead
-# of the default INFO level. (boolean value)
-# This option is deprecated for removal.
-# Its value may be silently ignored in the future.
-#verbose = true
 
 # The name of a logging configuration file. This file is appended to any
 # existing logging configuration files. For details about logging configuration
@@ -64,6 +89,12 @@
 # changed later to honor RFC5424. This option is ignored if log_config_append
 # is set. (boolean value)
 #use_syslog = false
+
+# Enable journald for logging. If running in a systemd environment you may wish
+# to enable journal support. Doing so will use the journal native protocol
+# which includes structured metadata in addition to log messages.This option is
+# ignored if log_config_append is set. (boolean value)
+#use_journal = false
 
 # Syslog facility to receive log lines. This option is ignored if
 # log_config_append is set. (string value)
@@ -186,9 +217,8 @@
 # From freezer-api
 #
 
-# specify the storage hosts (string value)
-# Deprecated group/name - [elasticsearch]/endpoint
-#hosts = http://localhost:9200
+# specify the storage hosts (list value)
+#hosts = http://127.0.0.1:9200
 
 # specify the name of the elasticsearch index (string value)
 #index = freezer
