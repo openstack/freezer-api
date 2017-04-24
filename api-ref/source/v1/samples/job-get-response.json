@@ -1,0 +1,41 @@
+{
+        "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+        "description": "Test-0001",
+        "_version": 83,
+        "job_schedule":
+        {
+            "schedule_interval": "2 minutes",
+            "status": "scheduled",
+            "time_started": 1493119341,
+            "time_created": 1493051865,
+            "time_ended": 1493119342,
+            "result": "success",
+            "current_pid": 10058,
+            "event": ""
+        },
+        "client_id": "752d8bd43d654e7a840bbfda77ce41af_szaher",
+        "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+        "job_actions":
+        [
+            {
+                "freezer_action":
+                {
+                    "backup_name": "test0001_backup",
+                    "container": "/tmp/test0001_container",
+                    "no_incremental": true,
+                    "path_to_backup": "/etc/",
+                    "storage": "local",
+                    "log_file": "/home/saad/job0001.log",
+                    "snapshot": false,
+                    "action": "backup",
+                    "remove_older_than": 365,
+                    "project_id": "752d8bd43d654e7a840bbfda77ce41af"
+                },
+                "max_retries": 5,
+                "max_retries_interval": 6,
+                "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+                "action_id": "280d51d041ce4d4da8a386e96263f759"
+            }
+        ],
+        "job_id": "0ae284d514eb47dd84154748b5056749"
+}

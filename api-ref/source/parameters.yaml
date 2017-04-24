@@ -1,8 +1,0 @@
-###############################  Response  ####################################
-
-versions:
-  type: list
-  in: body
-  required: True
-  description: |
-    A list of supported major API versions.

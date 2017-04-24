@@ -14,13 +14,16 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-==========================
-Backup and DR Service APIs
-==========================
+:tocdepth: 3
 
-.. toctree::
-   :maxdepth: 2
+===============================
+Backup Service API v1 (CURRENT)
+===============================
 
-   versions/index
-   v1/index
-   v2/index
+.. rest_expand_all::
+
+.. include:: backups-v1.inc
+.. include:: jobs-v1.inc
+.. include:: clients-v1.inc
+.. include:: actions-v1.inc
+.. include:: sessions-v1.inc

@@ -1,0 +1,40 @@
+###############################  Response  ####################################
+
+limit:
+  description: |
+    Requests a page size of items. Returns a number of items up to a limit
+    value. Use the ``limit`` parameter to make an initial limited request and
+    use the ID of the last-seen item from the response as the ``marker``
+    parameter value in a subsequent limited request.
+  in: query
+  required: false
+  type: integer
+
+marker:
+  description: |
+    The ID of the last-seen item. Use the ``limit`` parameter to make an
+    initial limited request and use the ID of the last-seen item from the
+    response as the ``marker`` parameter value in a subsequent limited request.
+  in: query
+  required: false
+  type: string
+
+project_id_path:
+  type: string
+  in: query
+  description: |
+    The UUID of the project. A project was also known as
+    a tenant.
+
+backups:
+  type: list
+  in: body
+  description: |
+    A list of backups
+
+versions:
+  type: list
+  in: body
+  required: True
+  description: |
+    A list of supported major API versions.

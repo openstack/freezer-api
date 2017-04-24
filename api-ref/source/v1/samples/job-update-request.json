@@ -1,0 +1,27 @@
+{
+    "description": "Test-0001",
+    "job_schedule": {
+        "schedule_interval": "5 minutes",
+        "status": "scheduled",
+        "event": "stop"
+    },
+    "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+    "job_actions": [
+        {
+            "max_retries": 10,
+            "max_retries_interval": 10,
+            "freezer_action": {
+                "backup_name": "test0001_backup",
+                "container": "/tmp/xyzxyzxyz",
+                "storage": "local",
+                "no_incremental": true,
+                "path_to_backup": "/etc/",
+                "log_file": "/home/saad/job0001.log",
+                "snapshot": false,
+                "action": "backup",
+                "remove_older_than": 365,
+                "project_id": "752d8bd43d654e7a840bbfda77ce41af"
+            }
+        }
+]
+}

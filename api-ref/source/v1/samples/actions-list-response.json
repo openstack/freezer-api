@@ -1,0 +1,42 @@
+{
+        "actions":
+        [
+            {
+                "freezer_action":
+                {
+                    "backup_name": "test0001_backup",
+                    "container": "test0001_container",
+                    "no_incremental": true,
+                    "path_to_backup": "/etc/",
+                    "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+                    "snapshot": true,
+                    "action": "backup",
+                    "remove_older_than": 365,
+                    "log_file": "/home/saad/job0001.log"
+                },
+                "max_retries": 5,
+                "max_retries_interval": 6,
+                "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+                "action_id": "061f7657350a4bddbfabf8d2a25dad96"
+            },
+            {
+                "freezer_action":
+                {
+                    "backup_name": "test0001_backup",
+                    "container": "/tmp/test0001_container",
+                    "no_incremental": true,
+                    "path_to_backup": "/etc/",
+                    "storage": "local",
+                    "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+                    "snapshot": false,
+                    "action": "backup",
+                    "remove_older_than": 365,
+                    "log_file": "/home/saad/job0001.log"
+                },
+                "max_retries": 5,
+                "max_retries_interval": 6,
+                "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+                "action_id": "317f8bc1fbbe49819d1b60f4b4387e63"
+            }
+        ]
+}
