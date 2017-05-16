@@ -63,6 +63,7 @@ function cleanup_freezer_api {
     disable_apache_site freezer-api
     sudo rm -f $(apache_site_config_for freezer-api)
     ${TOP_DIR}/pkg/elasticsearch.sh uninstall
+    sudo rm -rf $FREEZER_API_AUTH_CACHE_DIR $FREEZER_API_CONF_DIR
 }
 
 # executed during: stack install
@@ -115,15 +116,16 @@ function configure_freezer_api {
     iniset $FREEZER_API_CONF 'elasticsearch' number_of_replicas 0
     iniset $FREEZER_API_CONF 'elasticsearch' hosts http://$SERVICE_HOST:9200
 
+    # create freezer_api_cache_dir
+    sudo mkdir -p $FREEZER_API_AUTH_CACHE_DIR/api
+    sudo chown $STACK_USER $FREEZER_API_AUTH_CACHE_DIR/api
+    rm -f $FREEZER_API_AUTH_CACHE_DIR/api/*
+    sudo mkdir -p $FREEZER_API_AUTH_CACHE_DIR/registry
+    sudo chown $STACK_USER $FREEZER_API_AUTH_CACHE_DIR/registry
+    rm -f $FREEZER_API_AUTH_CACHE_DIR/registry/*
+
     # set keystone configuration
-    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_protocol $KEYSTONE_AUTH_PROTOCOL
-    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_host $KEYSTONE_AUTH_HOST
-    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_port $KEYSTONE_AUTH_PORT
-    iniset $FREEZER_API_CONF 'keystone_authtoken' admin_user freezer
-    iniset $FREEZER_API_CONF 'keystone_authtoken' admin_password $SERVICE_PASSWORD
-    iniset $FREEZER_API_CONF 'keystone_authtoken' admin_tenant_name $SERVICE_TENANT_NAME
-    iniset $FREEZER_API_CONF 'keystone_authtoken' auth_uri $KEYSTONE_AUTH_URI_V3
-    iniset $FREEZER_API_CONF 'keystone_authtoken' identity_uri $KEYSTONE_AUTH_URI
+    configure_auth_token_middleware $FREEZER_API_CONF freezer $FREEZER_API_AUTH_CACHE_DIR/api
 
     if [[ "${FREEZER_API_SERVER_TYPE}" == "apache2" ]]; then
         echo_summary "Configuring Freezer API wsgi app in Apache"
