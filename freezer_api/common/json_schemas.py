@@ -72,7 +72,7 @@ schedule_properties = {
     "status": {
         "id": "status",
         "type": "string",
-        "enum": ["completed", "stop", "scheduled",
+        "enum": ["", "completed", "stop", "scheduled",
                  "running", "aborting", "removed"]
     },
     "result": {
