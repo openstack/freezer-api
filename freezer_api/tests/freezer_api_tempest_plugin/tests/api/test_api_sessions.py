@@ -14,8 +14,8 @@
 
 import json
 
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
@@ -29,7 +29,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
     def resource_cleanup(cls):
         super(TestFreezerApiSessions, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_sessions(self):
 
         resp, response_body = self.freezer_api_client.get_sessions()
@@ -40,7 +40,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
         sessions = response_body_json['sessions']
         self.assertEqual([], sessions)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_sessions_get_limit(self):
         # limits > 0 should return successfully
         for valid_limit in [2, 1]:
@@ -54,7 +54,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_sessions,
                               limit=bad_limit)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_sessions_get_offset(self):
         # offsets >= 0 should return 200
         for valid_offset in [1, 0]:
@@ -68,7 +68,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_sessions,
                               offset=bad_offset)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_sessions_post(self):
 
         session = {

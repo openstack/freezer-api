@@ -14,7 +14,7 @@
 
 import json
 
-from tempest import test
+from tempest.lib import decorators
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
@@ -28,7 +28,7 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
     def resource_cleanup(cls):
         super(TestFreezerApiVersion, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_version(self):
         resp, response_body = self.freezer_api_client.get_version()
         self.assertEqual(300, resp.status)
@@ -52,7 +52,7 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
         self.assertEqual('CURRENT', status)
         self.assertIn('updated', current_version)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_version_v1(self):
         resp, response_body = self.freezer_api_client.get_version_v1()
         self.assertEqual(200, resp.status)
@@ -79,7 +79,7 @@ class TestFreezerApiVersion(base.BaseFreezerApiTest):
         formats = hints['formats']
         self.assertIn('application/json', formats)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_version_v2(self):
         resp, response_body = self.freezer_api_client.get_version_v2()
         self.assertEqual(200, resp.status)

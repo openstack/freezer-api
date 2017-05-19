@@ -15,8 +15,8 @@
 import json
 import time
 
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
@@ -30,7 +30,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
     def resource_cleanup(cls):
         super(TestFreezerApiClients, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_clients(self):
 
         resp, response_body = self.freezer_api_client.get_clients()
@@ -41,7 +41,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
         clients = response_body_json['clients']
         self.assertEqual([], clients)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_clients_get_limit(self):
         # limits > 0 should return successfully
         for valid_limit in [2, 1]:
@@ -54,7 +54,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_clients,
                               limit=bad_limit)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_clients_get_offset(self):
         # offsets >= 0 should return 200
         for valid_offset in [1, 0]:
@@ -68,7 +68,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_clients,
                               offset=bad_offset)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_clients_post(self):
         client = {'client_id': 'test-client-id',
                   'hostname': 'test-host-name',

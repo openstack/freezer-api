@@ -15,7 +15,7 @@
 import json
 
 import tempest
-from tempest import test
+from tempest.lib import decorators
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
@@ -23,7 +23,7 @@ from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 class TestFreezerApiBackups(base.BaseFreezerApiTest):
     credentials = ['primary', 'alt']
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_list(self):
         for i in range(1, 4):
             self._create_temporary_backup(
@@ -41,7 +41,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         for i in range(1, 4):
             self.assertIn("test_freezer_backups_" + str(i), backup_names)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_list_other_users_backups(self):
         # Test if it is not possible to list backups
         # from a different user
@@ -54,14 +54,14 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertEqual(200, resp.status)
         self.assertEqual([], response_body['backups'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_list_empty(self):
         resp, response_body = self.freezer_api_client.get_backups()
         self.assertEqual(200, resp.status)
 
         self.assertEqual([], response_body['backups'])
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_list_limit(self):
         for i in range(1, 9):
             self._create_temporary_backup(
@@ -80,7 +80,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_actions,
                               limit=bad_limit)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_list_offset(self):
         for i in range(1, 9):
             self._create_temporary_backup(
@@ -112,7 +112,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertRaises(tempest.lib.exceptions.BadRequest,
                           self.freezer_api_client.get_backups, offset=-2)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_list_limit_offset(self):
         """ Test pagination by grabbing the backups in two steps and
         comparing to the list of all backups.
@@ -140,7 +140,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
                          len(first_5_backups + second_3_backups))
         self.assertEqual(all_backups, first_5_backups + second_3_backups)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_post(self):
         metadata = self._build_metadata("test_freezer_backups")
         backup_id = self._create_temporary_backup(metadata)
@@ -155,7 +155,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertEqual(200, resp.status)
         self.assertEqual(expected, response_body)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_post_without_content_type(self):
         """ Test the backup endpoint without content-type=application/json.
 
@@ -173,7 +173,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
 
         self.assertEqual(resp.status, 201)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_post_incomplete(self):
         metadata = self._build_metadata("test_freezer_backups")
         del (metadata['container'])
@@ -181,7 +181,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertRaises(tempest.lib.exceptions.BadRequest,
                           self.freezer_api_client.post_backups, metadata)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_post_minimal(self):
         metadata = {
             "curr_backup_level": 0,
@@ -202,7 +202,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         self.assertEqual(200, resp.status)
         self.assertEqual(expected, response_body)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_delete(self):
         metadata = self._build_metadata("test_freezer_backups")
         backup_id = self._create_temporary_backup(metadata)
@@ -212,7 +212,7 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         resp, response_body = self.freezer_api_client.get_backups()
         self.assertEqual(0, len(response_body['backups']))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_backups_delete_other_users_backups(self):
         metadata = self._build_metadata("test_freezer_backups")
         backup_id = self._create_temporary_backup(metadata)

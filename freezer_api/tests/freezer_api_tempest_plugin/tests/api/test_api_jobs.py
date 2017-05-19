@@ -14,8 +14,8 @@
 
 import json
 
+from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from freezer_api.tests.freezer_api_tempest_plugin.tests.api import base
 
@@ -65,7 +65,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
     def resource_cleanup(cls):
         super(TestFreezerApiJobs, cls).resource_cleanup()
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_jobs(self):
 
         resp, response_body = self.freezer_api_client.get_jobs()
@@ -76,7 +76,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         jobs = response_body_json['jobs']
         self.assertEqual([], jobs)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_jobs_get_limit(self):
         # limits > 0 should return successfully
         for valid_limit in [2, 1]:
@@ -89,7 +89,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_jobs,
                               limit=bad_limit)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_jobs_get_offset(self):
         # offsets >= 0 should return 200
         for valid_offset in [1, 0]:
@@ -102,7 +102,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
                               self.freezer_api_client.get_jobs,
                               offset=bad_offset)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_jobs_post(self):
 
         # Create the job with POST
@@ -121,7 +121,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
             job_id)
         self.assertEqual(204, resp.status)
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_jobs_with_invalid_client_project_id_fail(self):
         """Ensure that a job submitted with a bad client_id project id fails"""
         fake_bad_job = fake_job
@@ -132,7 +132,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
                           lambda: self.freezer_api_client.post_jobs(
                               fake_bad_job))
 
-    @test.attr(type="gate")
+    @decorators.attr(type="gate")
     def test_api_jobs_with_invalid_client_host_fail(self):
         """Ensure that a job submitted with a bad client_id hostname fails"""
         fake_bad_job = fake_job
