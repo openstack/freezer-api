@@ -427,10 +427,7 @@ class FakeReqResp(object):
 
 class FreezerBaseTestCase(testtools.TestCase):
     def setUp(self):
-        try:
-            super(FreezerBaseTestCase, self).setUp()
-        except Exception:
-            super().setUp()
+        super(FreezerBaseTestCase, self).setUp()
 
         self._config_fixture = self.useFixture(cfg_fixture.Config())
         config.parse_args(args=[])
