@@ -30,4 +30,4 @@ class BaseFreezerApiTest(test.BaseTestCase):
     @classmethod
     def setup_clients(cls):
         super(BaseFreezerApiTest, cls).setup_clients()
-        cls.freezer_api_client = cls.os.freezer_api_client
+        cls.freezer_api_client = cls.os_primary.freezer_api_client
