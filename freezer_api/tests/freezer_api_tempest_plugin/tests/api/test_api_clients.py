@@ -39,7 +39,7 @@ class TestFreezerApiClients(base.BaseFreezerApiTest):
         response_body_json = json.loads(response_body)
         self.assertIn('clients', response_body_json)
         clients = response_body_json['clients']
-        self.assertEqual([], clients)
+        self.assertEmpty(clients)
 
     @decorators.attr(type="gate")
     def test_api_clients_get_limit(self):

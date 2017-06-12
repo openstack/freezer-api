@@ -52,14 +52,14 @@ class TestFreezerApiBackups(base.BaseFreezerApiTest):
         resp, response_body = self.os_alt.freezer_api_client.get_backups()
 
         self.assertEqual(200, resp.status)
-        self.assertEqual([], response_body['backups'])
+        self.assertEmpty(response_body['backups'])
 
     @decorators.attr(type="gate")
     def test_api_backups_list_empty(self):
         resp, response_body = self.freezer_api_client.get_backups()
         self.assertEqual(200, resp.status)
 
-        self.assertEqual([], response_body['backups'])
+        self.assertEmpty(response_body['backups'])
 
     @decorators.attr(type="gate")
     def test_api_backups_list_limit(self):

@@ -74,7 +74,7 @@ class TestFreezerApiJobs(base.BaseFreezerApiTest):
         response_body_json = json.loads(response_body)
         self.assertIn('jobs', response_body_json)
         jobs = response_body_json['jobs']
-        self.assertEqual([], jobs)
+        self.assertEmpty(jobs)
 
     @decorators.attr(type="gate")
     def test_api_jobs_get_limit(self):

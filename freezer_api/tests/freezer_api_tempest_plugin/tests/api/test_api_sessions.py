@@ -38,7 +38,7 @@ class TestFreezerApiSessions(base.BaseFreezerApiTest):
         response_body_json = json.loads(response_body)
         self.assertIn('sessions', response_body_json)
         sessions = response_body_json['sessions']
-        self.assertEqual([], sessions)
+        self.assertEmpty(sessions)
 
     @decorators.attr(type="gate")
     def test_api_sessions_get_limit(self):
