@@ -271,6 +271,8 @@ class Job(object):
     def start(self, params=None):
         if self.job_schedule.get('event') != 'start':
             self.job_schedule['event'] = 'start'
+            self.job_schedule['status'] = ''
+            self.job_schedule['result'] = ''
             self.need_update = True
             return 'success'
         return 'start already requested'
