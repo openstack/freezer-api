@@ -210,7 +210,7 @@ For example to make use of port 19090 use
 
     export FREEZER_API_PORT=19090
 
-For more information, see `openstack_devstack_plugins_install <https://docs.openstack.org/developer/devstack/plugins.html>`_
+For more information, see `openstack_devstack_plugins_install <https://docs.openstack.org/devstack/latest/plugins.html>`_
 
 Concepts and definitions
 ===========================
