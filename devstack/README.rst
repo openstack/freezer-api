@@ -30,4 +30,4 @@ For example to make use of port 19090 use:
 export FREEZER_API_PORT=19090
 
 For more information, see:
- https://docs.openstack.org/developer/devstack/plugins.html
+ https://docs.openstack.org/devstack/latest/plugins.html
