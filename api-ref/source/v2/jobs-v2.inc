@@ -3,8 +3,8 @@ Jobs (jobs)
 ===========
 
 Jobs allow users to schedule and execute backup jobs on one node or more. Jobs
- are stored through the api in the database. Every job contains set of actions
-  that carry out the backup job.
+are stored through the api in the database. Every job contains set of actions
+that carry out the backup job.
 
 List jobs
 =========
