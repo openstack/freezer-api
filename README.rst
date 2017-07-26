@@ -232,7 +232,7 @@ API registration
 .. code-block::
 
     # openstack user create --domain default --password-prompt freezer
-    # openstack role add --project service --user freezer admin
+    # openstack role add --project services --user freezer admin
 
     # openstack service create --name freezer --description "Freezer Backup Service" backup
 
