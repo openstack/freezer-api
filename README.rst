@@ -53,14 +53,23 @@ edit config file
 setup/configure the db
 ----------------------
 
-The currently supported db is Elasticsearch. In case you are using a dedicated instance
-of the server, you'll need to start it. Depending on the OS flavor it might be a:
+The currently supported db is Elasticsearch.
+
+In case you are using a dedicated instance of the server, you'll need to
+install Elasticsearch and start it.
+Depending on the OS flavor it might be different.
+
+Below you can find an example for Ubuntu Xenial.
+
+First of all JRE and Elasticsearch should be installed:
 
 .. code-block::
 
-  # service elasticsearch start
+  # apt install openjdk-8-jre
+  # wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.1/elasticsearch-2.3.1.deb
+  # dpkg -i elasticsearch-2.3.1.deb
 
-or, on systemd
+and started:
 
 .. code-block::
 
@@ -84,7 +93,7 @@ freezer-manage has the following options:
   # freezer-manage db sync
 
 * To update the db mappings using the following command. Update means that you
-  might have some mappings and you want to update it with a more recent ones 
+  might have some mappings and you want to update it with a more recent ones
   ::
 
   # freezer-manage db update
@@ -175,13 +184,13 @@ To configure the Freezer API with DevStack, you will need to enable the
 freezer-api plugin by adding one line to the [[local|localrc]] section
 of your local.conf file:
 
-.. code-block:: 
+.. code-block::
 
     enable_plugin freezer-api <GITURL> [GITREF]
 
 where
 
-.. code-block:: 
+.. code-block::
 
     <GITURL> is the URL of a freezer-api repository
     [GITREF] is an optional git ref (branch/ref/tag).  The default is master.
@@ -198,7 +207,7 @@ Plugin Options
 The plugin makes use of apache2 by default.
 To use the *uwsgi* server set the following environment variable
 
-.. code-block:: 
+.. code-block::
 
     export FREEZER_API_SERVER_TYPE=uwsgi
 
@@ -247,7 +256,7 @@ API routes
 General
 -------
 
-.. code-block:: 
+.. code-block::
 
     GET /       List API version
     GET /v1     JSON Home document, see http://tools.ietf.org/html/draft-nottingham-json-home-03
@@ -322,7 +331,7 @@ Freezer sessions management
 Backup metadata structure
 ============================
 
-.. note:: 
+.. note::
    sizes are in MB
 
 .. code-block::
@@ -356,7 +365,7 @@ Backup metadata structure
 The api wraps backup_metadata dictionary with some additional information.
 It stores and returns the information provided in this form
 
-.. code-block:: 
+.. code-block::
 
     {
       "backup_id": string         #  container_hostname_backupname_timestamp_level
@@ -413,7 +422,7 @@ job_id, user_id, client_id, status, scheduling information etc
 
 Scheduling information enables future/recurrent execution of jobs
 
-.. code-block:: 
+.. code-block::
 
     +---------------------+
     | Job                 |
