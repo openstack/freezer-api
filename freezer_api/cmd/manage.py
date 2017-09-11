@@ -21,6 +21,7 @@ import sys
 import elasticsearch
 from oslo_config import cfg
 from oslo_log import log
+import six
 
 from freezer_api import __version__ as FREEZER_API_VERSION
 from freezer_api.common import config
@@ -315,7 +316,7 @@ class ElasticSearchManager(object):
         if CONF.yes:
             return CONF.yes
         while True:
-            ans = raw_input(message)
+            ans = six.input(message)
             if ans.lower() == 'y':
                 return True
             elif ans.lower() == 'n':
