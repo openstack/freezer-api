@@ -1,8 +1,4 @@
 {
-    "context_is_admin": "role:admin",
-    "admin_or_owner": "is_admin:True or project_id:%(project_id)s",
-    "default": "rule:admin_or_owner",
-
     "jobs:get_all": "",
     "jobs:create": "",
     "jobs:get": "",

@@ -19,6 +19,7 @@ import functools
 from oslo_policy import policy
 
 from freezer_api.common import exceptions
+from freezer_api.common import policies
 
 ENFORCER = None
 
@@ -26,7 +27,10 @@ ENFORCER = None
 def setup_policy(conf):
     global ENFORCER
 
-    ENFORCER = policy.Enforcer(conf)
+    if not ENFORCER:
+        ENFORCER = policy.Enforcer(conf)
+        ENFORCER.register_defaults(policies.list_rules())
+        ENFORCER.load_rules()
 
 
 def enforce(rule):
