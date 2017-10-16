@@ -19,7 +19,6 @@ limitations under the License.
 import copy
 import io
 import os
-import shutil
 
 import fixtures
 from oslo_config import cfg
@@ -27,7 +26,6 @@ from oslo_config import fixture as cfg_fixture
 import testtools
 
 from freezer_api.common import config
-from freezer_api.common import exceptions
 from freezer_api import policy
 
 CONF = cfg.CONF
@@ -435,26 +433,8 @@ class FreezerBaseTestCase(testtools.TestCase):
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
         os.makedirs(self.conf_dir)
-        self.configure_policy()
-        policy.ENFORCER = FakePolicyEnforcer()
-
-    def configure_policy(self):
-        src_policy_file = 'etc/freezer/policy.json'
-        # copy policy file to test config dir
-        shutil.copy(src_policy_file, self.conf_dir)
-        policy_file = os.path.join(self.conf_dir, 'policy.json')
-        self._config_fixture.config(policy_file=policy_file,
-                                    group='oslo_policy')
-
-
-class FakePolicyEnforcer(object):
-    def __init__(self, *args, **kwargs):
-        self.rules = {}
-
-    def enforce(self, rule, action, ctxt, do_raise=True,
-                exc=exceptions.AccessForbidden):
-        if self.rules.get(rule) is False:
-            raise exceptions.AccessForbidden()
+        policy.ENFORCER = None
+        policy.setup_policy(CONF)
 
 
 class FakeContext(object):
@@ -468,6 +448,3 @@ class FakeContext(object):
 def get_req_items(name):
     req_info = {'freezer.context': FakeContext()}
     return req_info[name]
-
-
-policy.ENFORCER = FakePolicyEnforcer()

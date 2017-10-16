@@ -1,0 +1,14 @@
+---
+features:
+  - |
+    Freezer now support policy in code, which means if users didn't modify
+    any of policy rules, they can remove or comment out all of rules in
+    policy file or even not deploy it at all. Because from now, Freezer
+    keeps all default policies under `freezer-api/common/policies` module.
+    Users can still modify/generate `policy.yaml` file which will override
+    policy rules in code if those rules show in `policy.yaml` file.
+other:
+  - |
+    Default `policy.json` file is now removed as Freezer now generate the
+    default policies in code. Please be aware that when using that file in your
+    environment.

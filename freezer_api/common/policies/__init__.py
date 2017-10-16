@@ -20,6 +20,7 @@ import itertools
 from freezer_api.common.policies import action
 from freezer_api.common.policies import backup
 from freezer_api.common.policies import base
+from freezer_api.common.policies import client
 from freezer_api.common.policies import job
 from freezer_api.common.policies import session
 
@@ -29,6 +30,7 @@ def list_rules():
         action.list_rules(),
         backup.list_rules(),
         base.list_rules(),
+        client.list_rules(),
         job.list_rules(),
         session.list_rules()
     )
