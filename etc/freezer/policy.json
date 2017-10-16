@@ -1,9 +1,4 @@
 {
-    "backups:get_all": "",
-    "backups:create": "",
-    "backups:get": "",
-    "backups:delete": "",
-
     "clients:get_all": "",
     "clients:create": "",
     "clients:get": "",
