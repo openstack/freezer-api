@@ -100,7 +100,7 @@ class ActionsResource(resource.BaseResource):
 
     @policy.enforce('actions:replace')
     def on_post(self, req, resp, project_id, action_id):
-        # PUT /v1/actions/{job_id}     creates/replaces the specified action
+        # PUT /v1/actions/{action_id}    creates/replaces the specified action
         user_id = req.get_header('X-User-ID') or ''
         doc = self.json_body(req)
         new_version = self.db.replace_action(project_id=project_id,

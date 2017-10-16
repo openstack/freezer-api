@@ -1,11 +1,4 @@
 {
-    "actions:get_all": "",
-    "actions:create": "",
-    "actions:get": "",
-    "actions:delete": "",
-    "actions:update": "",
-    "actions:replace": "",
-
     "sessions:get_all": "",
     "sessions:create": "",
     "sessions:get": "",

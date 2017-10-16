@@ -17,12 +17,14 @@
 
 import itertools
 
+from freezer_api.common.policies import action
 from freezer_api.common.policies import base
 from freezer_api.common.policies import job
 
 
 def list_rules():
     return itertools.chain(
+        action.list_rules(),
         base.list_rules(),
         job.list_rules()
     )
