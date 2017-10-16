@@ -1,14 +1,4 @@
 {
-    "sessions:get_all": "",
-    "sessions:create": "",
-    "sessions:get": "",
-    "sessions:delete": "",
-    "sessions:update": "",
-    "sessions:replace": "",
-    "sessions:action:create": "",
-    "sessions:job:add": "",
-    "sessions:job:remove": "",
-
     "backups:get_all": "",
     "backups:create": "",
     "backups:get": "",
