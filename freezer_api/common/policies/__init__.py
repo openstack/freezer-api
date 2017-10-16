@@ -18,9 +18,11 @@
 import itertools
 
 from freezer_api.common.policies import base
+from freezer_api.common.policies import job
 
 
 def list_rules():
     return itertools.chain(
-        base.list_rules()
+        base.list_rules(),
+        job.list_rules()
     )

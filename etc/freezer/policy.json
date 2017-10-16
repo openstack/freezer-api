@@ -1,11 +1,4 @@
 {
-    "jobs:get_all": "",
-    "jobs:create": "",
-    "jobs:get": "",
-    "jobs:delete": "",
-    "jobs:update": "",
-    "jobs:event:create": "",
-
     "actions:get_all": "",
     "actions:create": "",
     "actions:get": "",

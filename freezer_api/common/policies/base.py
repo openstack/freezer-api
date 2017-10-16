@@ -17,6 +17,7 @@
 
 from oslo_policy import policy
 
+UNPROTECTED = ''
 
 rules = [
     policy.RuleDefault(
