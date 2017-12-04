@@ -15,19 +15,20 @@ limitations under the License.
 
 """
 
-import unittest
 
 import falcon
 from mock import patch
 
 from freezer_api import service
+from freezer_api.tests.unit import common
 
 
-class TestService(unittest.TestCase):
+class TestService(common.FreezerBaseTestCase):
     def setUp(self):
         self.falcon_versions_hooks = ['0.1.6', '0.1.7', '0.1.8', '0.1.9',
                                       '0.1.10']
         self.falcon_versions_middleware = ['0.2.0', '0.3.0', '1.0.0']
+        super(TestService, self).setUp()
 
     @patch('freezer_api.cmd.api.v1')
     @patch('freezer_api.cmd.api.driver')
