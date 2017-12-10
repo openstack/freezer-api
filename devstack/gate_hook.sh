@@ -18,7 +18,7 @@
 # Install freezer devstack integration
 #export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api"
 
-export DEVSTACK_GATE_TEMPEST_REGEX="freezer_api_tempest_plugin"
+export DEVSTACK_GATE_TEMPEST_REGEX="freezer_tempest_plugin.tests.freezer_api"
 
 export PROJECTS="openstack/python-freezerclient $PROJECTS"
 
