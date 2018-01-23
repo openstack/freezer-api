@@ -44,6 +44,3 @@ FREEZERCLIENT_BRANCH=${FREEZERCLIENT_BRANCH:-master}
 FREEZER_API_BIN_DIR=$(get_python_exec_prefix)
 
 enable_service freezer-api
-
-# Tell Tempest this project is present
-TEMPEST_SERVICES+=,freezer-api
