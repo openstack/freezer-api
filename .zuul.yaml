@@ -1,5 +1,4 @@
 - project:
-    name: openstack/freezer-api
     check:
       jobs:
         - freezer-api-ubuntu-xenial:
