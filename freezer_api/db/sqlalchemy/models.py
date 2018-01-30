@@ -36,7 +36,7 @@ class FreezerBase(models.TimestampMixin,
 
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, default=False)
-    metadata = None
+    backup_metadata = None
 
     @staticmethod
     def delete_values():
@@ -128,7 +128,7 @@ class ActionReport(BASE, FreezerBase):
     project_id = Column(String(36), nullable=False)
     result = Column(String(255))
     time_elapsed = Column(String(255))
-    metadata = Column(Text)
+    backup_metadata = Column(Text)
     report_date = Column(TIMESTAMP)
     log = Column(BLOB)
     action = relationship(Action, backref='action_reports',
@@ -172,3 +172,24 @@ class JobAttachment(BASE, FreezerBase):
                            primaryjoin='and_('
                            'JobAttachment.session_id == Session.id,'
                            'JobAttachment.deleted == False)')
+
+
+def register_models(engine):
+    _models = (Client, Action, Job, Session,
+               ActionAttachment, ActionReport, JobAttachment)
+    for _model in _models:
+        _model.metadata.create_all(engine)
+
+
+def unregister_models(engine):
+    _models = (Client, Action, Job, Session,
+               ActionAttachment, ActionReport, JobAttachment)
+    for _model in _models:
+        _model.metadata.drop_all(engine)
+
+
+def get_tables(engine):
+    from sqlalchemy import MetaData
+    _meta = MetaData()
+    _meta.reflect(engine)
+    return _meta.tables.keys()

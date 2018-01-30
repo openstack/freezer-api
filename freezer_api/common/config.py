@@ -22,7 +22,6 @@ from oslo_log import log
 from oslo_policy import policy
 
 from freezer_api import __version__ as FREEZER_API_VERSION
-from freezer_api.storage import driver
 
 CONF = cfg.CONF
 
@@ -32,6 +31,19 @@ paste_deploy = [
     cfg.StrOpt('config_file', default='freezer-paste.ini',
                help='Name of the paste configuration file that defines '
                     'the available pipelines.'),
+]
+
+_DB_DRIVERS = [
+    cfg.StrOpt("backend",
+               help="Database backend section name. This section will "
+                    "be loaded by the proper driver to connect to "
+                    "the database."
+               ),
+    cfg.StrOpt('driver',
+               # default='freezer_api.storage.elastic.ElasticSearchEngine',
+               default='elasticsearch',
+               help="Database driver to be used."
+               )
 ]
 
 
@@ -83,9 +95,19 @@ requests on registered endpoints conforming to the v2 OpenStack Freezer api.
     return _COMMON
 
 
+def register_db_drivers_opt():
+    """Register storage configuration options"""
+    # storage backend options to be registered
+
+    opt_group = cfg.OptGroup(name='storage',
+                             title='Freezer Database drivers')
+    CONF.register_group(opt_group)
+    CONF.register_opts(_DB_DRIVERS, group=opt_group)
+
+
 def parse_args(args=[]):
     CONF.register_cli_opts(api_common_opts())
-    driver.register_storage_opts()
+    register_db_drivers_opt()
     # register paste configuration
     paste_grp = cfg.OptGroup('paste_deploy',
                              'Paste Configuration')
@@ -151,5 +173,5 @@ def list_opts():
         AUTH_GROUP: AUTH_OPTS
     }
     # update the current list of opts with db backend drivers opts
-    _OPTS.update(driver.get_storage_opts())
+    _OPTS.update({"storage": _DB_DRIVERS})
     return _OPTS.items()

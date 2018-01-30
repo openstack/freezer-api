@@ -21,6 +21,9 @@ import jsonschema
 
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import json_schemas
+from oslo_log import log
+
+LOG = log.getLogger(__name__)
 
 
 class BackupMetadataDoc(object):
@@ -169,6 +172,7 @@ class SessionDoc(object):
 
     @staticmethod
     def validate(doc):
+        LOG.debug("Debugging Session validate: {0}".format(doc))
         try:
             SessionDoc.session_doc_validator.validate(doc)
         except Exception as e:
@@ -190,7 +194,7 @@ class SessionDoc(object):
         return doc
 
     @staticmethod
-    def create(doc, user_id, hold_off=30, project_id=None):
+    def create(doc, user_id, project_id, hold_off=30):
         doc.update({
             'user_id': user_id,
             'project_id': project_id,

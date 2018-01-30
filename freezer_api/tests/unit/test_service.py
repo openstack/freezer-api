@@ -31,7 +31,7 @@ class TestService(common.FreezerBaseTestCase):
         super(TestService, self).setUp()
 
     @patch('freezer_api.cmd.api.v1')
-    @patch('freezer_api.cmd.api.driver')
+    @patch('freezer_api.cmd.api.manager')
     @patch('freezer_api.cmd.api.falcon')
     def test_on_old_falcon_builds_v0(self, mock_falcon, mock_driver, mock_v1):
         """Test that falcon versions that should use old middleware syntax do so
@@ -63,7 +63,7 @@ class TestService(common.FreezerBaseTestCase):
                 self.assertNotIn('middleware', named_args)
 
     @patch('freezer_api.cmd.api.v1')
-    @patch('freezer_api.cmd.api.driver')
+    @patch('freezer_api.cmd.api.manager')
     @patch('freezer_api.cmd.api.falcon')
     def test_on_new_falcon_builds_v1(self, mock_falcon, mock_driver, mock_v1):
         """Test that falcon versions that should use new middleware syntax do so
@@ -97,7 +97,7 @@ class TestService(common.FreezerBaseTestCase):
                 self.assertIn('middleware', named_args)
 
     @patch('freezer_api.cmd.api.v2')
-    @patch('freezer_api.cmd.api.driver')
+    @patch('freezer_api.cmd.api.manager')
     @patch('freezer_api.cmd.api.falcon')
     def test_on_old_falcon_builds_v2(self, mock_falcon, mock_driver, mock_v2):
         """Test that falcon versions that should use old middleware syntax do so

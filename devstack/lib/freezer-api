@@ -112,6 +112,8 @@ function configure_freezer_api {
 
     #set elasticsearch configuration
     iniset $FREEZER_API_CONF 'storage' backend elasticsearch
+    iniset $FREEZER_API_CONF 'storage' driver elasticsearch
+
     iniset $FREEZER_API_CONF 'elasticsearch' index freezer
     iniset $FREEZER_API_CONF 'elasticsearch' number_of_replicas 0
     iniset $FREEZER_API_CONF 'elasticsearch' hosts http://$SERVICE_HOST:9200
