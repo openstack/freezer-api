@@ -1,12 +1,15 @@
 - project:
     check:
       jobs:
-        - freezer-api-ubuntu-xenial:
-            voting: true
+        - freezer-api-ubuntu-xenial
         - freezer-api-centos-7:
             voting: false
-        - freezer-api-opensuse-423:
-            voting: false
+    gate:
+      jobs:
+        - freezer-api-ubuntu-xenial
+    experimental:
+      jobs:
+        - freezer-api-opensuse-423
 
 - job:
     name: freezer-api-ubuntu-xenial
