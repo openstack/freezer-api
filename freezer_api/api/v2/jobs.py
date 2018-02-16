@@ -174,7 +174,7 @@ class JobsEvent(resource.BaseResource):
         doc = self.json_body(req)
 
         try:
-            event, params = next(doc.items())
+            event, params = next(iter(doc.items()))
         except Exception:
             raise freezer_api_exc.BadDataFormat("Bad event request format")
 

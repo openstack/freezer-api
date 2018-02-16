@@ -34,7 +34,7 @@ _OPTS = [
                     "the database."
                ),
     cfg.StrOpt('driver',
-               default='freezer_api.storage.elastic.ElasticSearchEngine',
+               default='freezer_api.storage.elasticv2.ElasticSearchEngineV2',
                help="Database driver to be used."
                )
 ]
