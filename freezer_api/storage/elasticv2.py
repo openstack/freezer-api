@@ -421,7 +421,9 @@ class ElasticSearchEngineV2(object):
         return backup_id
 
     def delete_backup(self, project_id, user_id, backup_id):
-        return self.backup_manager.delete(project_id, user_id, backup_id)
+        return self.backup_manager.delete(project_id=project_id,
+                                          doc_id=backup_id,
+                                          user_id=user_id)
 
     def get_client(self, project_id, user_id, client_id=None,
                    offset=0, limit=10, search=None):
@@ -594,7 +596,9 @@ class ElasticSearchEngineV2(object):
                                            limit=limit)
 
     def add_session(self, user_id, doc, project_id):
-        session_doc = utils.SessionDoc.create(doc, user_id, project_id)
+        session_doc = utils.SessionDoc.create(doc=doc,
+                                              user_id=user_id,
+                                              project_id=project_id)
         session_id = session_doc['session_id']
         self.session_manager.insert(session_doc, session_id)
         logging.info('Session registered, session id: {0}'.format(session_id))
