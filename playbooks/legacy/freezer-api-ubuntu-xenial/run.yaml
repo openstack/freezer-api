@@ -64,6 +64,11 @@
           cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
           ./safe-devstack-vm-gate-wrap.sh
 
+          function post_test_hook {
+              bash -xe $BASE/new/freezer-api/devstack/gate_hook.sh
+          }
+          export -f post_test_hook
+
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
       environment: '{{ zuul | zuul_legacy_vars }}'

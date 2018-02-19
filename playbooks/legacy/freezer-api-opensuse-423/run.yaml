@@ -51,7 +51,7 @@
           export PROJECTS="openstack/freezer-web-ui $PROJECTS"
           export PROJECTS="openstack/freezer $PROJECTS"
           export PROJECTS="openstack/python-freezerclient $PROJECTS"
-           export PROJECTS="openstack/freezer-tempest-plugin $PROJECTS"
+          export PROJECTS="openstack/freezer-tempest-plugin $PROJECTS"
           # tempest config
           export DEVSTACK_GATE_TEMPEST=1
           export DEVSTACK_GATE_TEMPEST_REGEX="freezer_tempest_plugin.tests.freezer_api"
@@ -63,6 +63,11 @@
 
           cp devstack-gate/devstack-vm-gate-wrap.sh ./safe-devstack-vm-gate-wrap.sh
           ./safe-devstack-vm-gate-wrap.sh
+
+          function post_test_hook {
+              bash -xe $BASE/new/freezer-api/devstack/gate_hook.sh
+          }
+          export -f post_test_hook
 
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'

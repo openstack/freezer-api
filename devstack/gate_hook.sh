@@ -18,9 +18,16 @@
 # Install freezer devstack integration
 #export DEVSTACK_LOCAL_CONFIG="enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api"
 
-export DEVSTACK_GATE_TEMPEST_REGEX="freezer_tempest_plugin.tests.freezer_api"
+# export DEVSTACK_GATE_TEMPEST_REGEX="freezer_tempest_plugin.tests.freezer_api"
 
-export PROJECTS="openstack/python-freezerclient $PROJECTS"
+# export PROJECTS="openstack/python-freezerclient $PROJECTS"
 
 # Invoke default behavior.
 # $BASE/new/devstack-gate/devstack-vm-gate.sh
+echo "Start of Post gate Hook"
+
+# Link the log file so it will be collected by the CI system
+if [ -n "$BASE" ] && [ -d "$BASE/logs" ]; then
+  sudo ln -sf $FREEZER_API_LOG_DIR/freezer-api.log $BASE/logs/freezer-api-post.log
+  sudo ln -sf /home/tempest/.freezer/freezer.log $BASE/logs/freezer.log
+fi
