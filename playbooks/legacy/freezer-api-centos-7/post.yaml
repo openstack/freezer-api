@@ -78,3 +78,15 @@
           - --include=*/
           - --exclude=*
           - --prune-empty-dirs
+
+    - name: Copy freezer-api.log to logs
+      synchronize:
+        src: '/opt/stack/new/logs/freezer-api.log'
+        dest: '{{ zuul.executor.log_root }}/freezer_api.log'
+        mode: pull
+        copy_links: true
+        verify_host: true
+        rsync_opts:
+          - --include=*
+
+
