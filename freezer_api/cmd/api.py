@@ -33,8 +33,8 @@ from freezer_api.api import v2
 from freezer_api.common import _i18n
 from freezer_api.common import config
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.db import manager
 from freezer_api import policy
-from freezer_api.storage import driver
 
 
 CONF = cfg.CONF
@@ -48,10 +48,9 @@ def configure_app(app, db=None):
     :param db: Database engine (ElasticSearch)
     :return:
     """
-    if not db:
-        db = driver.get_db(
-            driver='freezer_api.storage.elastic.ElasticSearchEngine'
-        )
+    db_driver = manager.get_db_driver(CONF.storage.driver,
+                                      backend=CONF.storage.backend)
+    db = db_driver.get_api()
 
     # setup freezer policy
     policy.setup_policy(CONF)
@@ -129,7 +128,9 @@ def build_app_v2():
     middleware_list.append(middleware.JSONTranslator())
 
     app = falcon.API(middleware=middleware_list)
-    db = driver.get_db()
+    db_driver = manager.get_db_driver(CONF.storage.driver,
+                                      backend=CONF.storage.backend)
+    db = db_driver.get_api()
 
     # setup freezer policy
     policy.setup_policy(CONF)

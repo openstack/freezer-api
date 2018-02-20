@@ -11,6 +11,7 @@ coverage.xml
 *.sw?
 .tox
 *.egg
+*.eggs/*
 *.egg-info
 *.py[co]
 .DS_Store

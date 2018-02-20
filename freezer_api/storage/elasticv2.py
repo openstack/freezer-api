@@ -319,34 +319,6 @@ class SessionTypeManagerV2(TypeManagerV2):
 
 class ElasticSearchEngineV2(object):
 
-    _OPTS = [
-        cfg.ListOpt('hosts',
-                    default=['http://127.0.0.1:9200'],
-                    help='specify the storage hosts'),
-        cfg.StrOpt('index',
-                   default='freezer',
-                   help='specify the name of the elasticsearch index'),
-        cfg.IntOpt('timeout',
-                   default=60,
-                   help='specify the connection timeout'),
-        cfg.IntOpt('retries',
-                   default=20,
-                   help='number of retries to allow before raising and error'),
-        cfg.BoolOpt('use_ssl',
-                    default=False,
-                    help='explicitly turn on SSL'),
-        cfg.BoolOpt('verify_certs',
-                    default=False,
-                    help='turn on SSL certs verification'),
-        cfg.StrOpt('ca_certs',
-                   help='path to CA certs on disk'),
-        cfg.IntOpt('number_of_replicas',
-                   default=0,
-                   help='Number of replicas for elk cluster. Default is 0. '
-                        'Use 0 for no replicas. This should be set to (number '
-                        'of node in the ES cluter -1).')
-    ]
-
     def __init__(self, backend):
         """backend: name of the section in the config file to load
         elasticsearch opts
@@ -358,8 +330,6 @@ class ElasticSearchEngineV2(object):
         self.job_manager = None
         self.action_manager = None
         self.session_manager = None
-        # register elasticsearch opts
-        CONF.register_opts(self._OPTS, group=backend)
         self.conf = dict(CONF.get(backend))
         self.backend = backend
         self._validate_opts()
