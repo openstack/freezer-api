@@ -21,7 +21,6 @@ import json
 import falcon
 import mock
 
-from freezer_api.api import v1
 from freezer_api.api import v2
 from freezer_api.api import versions
 from freezer_api.tests.unit import common
@@ -38,5 +37,5 @@ class TestVersionResource(common.FreezerBaseTestCase):
     def test_on_get_return_versions(self):
         self.resource.on_get(self.req, self.req)
         self.assertEqual(self.req.status, falcon.HTTP_300)
-        expected_result = json.dumps({'versions': [v2.VERSION, v1.VERSION]})
+        expected_result = json.dumps({'versions': [v2.VERSION]})
         self.assertEqual(self.req.data, expected_result)

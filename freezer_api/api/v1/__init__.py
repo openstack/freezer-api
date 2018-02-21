@@ -25,8 +25,8 @@ from freezer_api.api.v1 import sessions
 
 VERSION = {
     'id': 'v1',
-    'status': 'CURRENT',
-    'updated': '2015-03-23T13:45:00',
+    'status': 'DEPRECATED',
+    'updated': '2018-02-21T13:30:00',
     'links': [
         {
             'href': '{0}v1/',

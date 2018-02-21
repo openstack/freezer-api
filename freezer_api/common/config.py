@@ -60,7 +60,7 @@ def api_common_opts():
                     help='Port number to listen on. Default is 9090'
                     ),
         cfg.BoolOpt('enable_v1_api',
-                    default=True,
+                    default=False,
                     help="""Deploy the v1 OpenStack Freezer API.
 When this option is set to ``True``, Freezer-api service will respond to
 requests on registered endpoints conforming to the v1 OpenStack Freezer API.

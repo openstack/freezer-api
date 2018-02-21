@@ -1,0 +1,29 @@
+---
+prelude: >
+    Currently freezer-api supports only elasticsearch as database engine.
+    Elasticsearch is adding complexity in deploying and running freezer, the
+    need and planning to move to sqlalchemy has been a moving target since Pike.
+
+    Now freezer-api should be able to support sqlalchemy, it's still under
+    development, so not fully supported yet. There is work in progress to unify
+    the database api so freezer can support more than one database driver at
+    the same time.
+
+features:
+  - |
+    Freezer support for sqlalchemy in development.
+    freezer-manage fully supports sqlalchemy database now!
+
+issues:
+  - |
+    No Backward compitibility support!
+    sqlalchemy will be only supported for freezer api version 2
+
+critical:
+  - |
+    Freezer api version 1 is broken and won't be supported!
+
+fixes:
+  - |
+    Fixed remove mappings in freezer-manage as elasticsearch removed this
+    feature, so now we have to delete the index not individual mappings!

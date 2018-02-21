@@ -1,0 +1,33 @@
+---
+prelude: >
+    Currently freezer-api v1 is the default api version to be used in different
+    freezer components. Freezer-api v1 doesn't support multi-tenancy and will
+    be a blocker to support sqlalchemy. Freezer-api v2 was already implement and
+    was being use as `experimental`.
+    Freezer api v1 will be disabled by default in gate jobs
+
+features:
+  - |
+    Fixed some minor bugs in freezer-api v2.
+    Set freezer-api version 2 to stable and use it as the current version.
+    The default behaviour of freezer now is to support multi-tenancy!
+    All tempest tests are running against freezer api v2
+
+issues:
+  - |
+    No Backward compitibility support!
+
+deprecations:
+  - |
+    Freezer api version 1 is deprecated and will be out of support end of Rocky
+    release, to be removed in future releases!.
+
+critical:
+  - |
+    All Freezer mappings needs to be upgraded to reflect project_id.
+    Now smooth upgrade facility is provided!
+
+fixes:
+  - |
+    Delete Backups using freezer-api v2
+
