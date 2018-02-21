@@ -88,5 +88,3 @@
         verify_host: true
         rsync_opts:
           - --include=*
-
-
