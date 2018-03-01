@@ -29,7 +29,7 @@ LOG = log.getLogger(__name__)
 # storage backend options to be registered
 _OPTS = [
     cfg.StrOpt("backend",
-               help="Databse backend section name. This section "
+               help="Database backend section name. This section "
                     "will be loaded by the proper driver to connect to "
                     "the database."
                ),
