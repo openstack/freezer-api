@@ -39,7 +39,7 @@ def add_db_opts(subparser):
     parser.add_argument(
         'options',
         choices=['sync', 'update', 'remove', 'show', 'update-settings'],
-        help='Create/update/delete freezer-api mappings in elk'
+        help='Create/update/delete freezer-api mappings in DB backend.'
     )
 
 
