@@ -43,8 +43,8 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'actions': []}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_get_return_correct_list(self):
         self.mock_db.search_action.return_value = [common.get_fake_action_0(),
@@ -53,8 +53,8 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
                                        common.get_fake_action_1()]}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_post_raises_when_missing_body(self):
         self.mock_db.add_action.return_value = common.fake_action_0[
@@ -68,8 +68,8 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         self.mock_db.add_action.return_value = 'pjiofrdslaikfunr'
         expected_result = {'action_id': 'pjiofrdslaikfunr'}
         self.resource.on_post(self.mock_req, self.mock_req)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
 
 class TestActionsResource(common.FreezerBaseTestCase):
@@ -94,23 +94,23 @@ class TestActionsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_action_0['action_id'])
         self.assertIsNone(self.mock_req.body)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
         self.mock_db.get_action.return_value = common.get_fake_action_0()
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_action_0['action_id'])
         result = self.mock_req.body
-        self.assertEqual(result, common.get_fake_action_0())
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(common.get_fake_action_0(), result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_delete_removes_proper_data(self):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_action_0['action_id'])
         result = self.mock_req.body
         expected_result = {'action_id': common.fake_action_0['action_id']}
-        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(falcon.HTTP_204, self.mock_req.status)
+        self.assertEqual(expected_result, result)
 
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)
@@ -130,9 +130,9 @@ class TestActionsResource(common.FreezerBaseTestCase):
             user_id=common.fake_action_0['user_id'],
             action_id=common.fake_action_0['action_id'],
             patch_doc=patch_doc)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
+        self.assertEqual(expected_result, result)
 
     def test_on_post_ok(self):
         new_version = random.randint(0, 99)
@@ -144,8 +144,8 @@ class TestActionsResource(common.FreezerBaseTestCase):
 
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_action_0['action_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     def test_on_post_raises_when_db_replace_action_raises(self):
         self.mock_db.replace_action.side_effect = exceptions.AccessForbidden(

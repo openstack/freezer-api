@@ -64,13 +64,13 @@ class TypeManager(unittest.TestCase):
                 }
             }
         ]
-        self.assertEqual(q, expected_q)
+        self.assertEqual(expected_q, q)
 
     def test_get_ok(self):
         self.mock_es.get.return_value = common.fake_job_0_elasticsearch_found
         res = self.type_manager.get(user_id=common.fake_job_0_user_id,
                                     doc_id=common.fake_job_0_job_id)
-        self.assertEqual(res, common.fake_job_0)
+        self.assertEqual(common.fake_job_0, res)
 
     def test_get_raise_DocumentNotFound_when_doc_not_found(self):
         self.mock_es.get.side_effect = elasticsearch.TransportError(
@@ -130,7 +130,7 @@ class TypeManager(unittest.TestCase):
                                                doc_type='base_doc_type',
                                                size=19, from_=7,
                                                body=expected_q)
-        self.assertEqual(res, [common.fake_data_0_backup_metadata])
+        self.assertEqual([common.fake_data_0_backup_metadata], res)
 
     def test_search_raise_StorageEngineError_when_search_raises(self):
         self.mock_es.search.side_effect = Exception('regular test failure')
@@ -142,7 +142,7 @@ class TypeManager(unittest.TestCase):
         self.mock_es.index.return_value = {'created': True, '_version': 15}
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         res = self.type_manager.insert(doc=test_doc)
-        self.assertEqual(res, (True, 15))
+        self.assertEqual((True, 15), res)
         self.mock_es.index.assert_called_with(index='freezer',
                                               doc_type='base_doc_type',
                                               body=test_doc, id=None)
@@ -215,8 +215,9 @@ class TypeManager(unittest.TestCase):
         }]}}
         self.mock_es.search.return_value = ret_data
         res = self.type_manager.delete(user_id='my_user_id', doc_id=doc_id)
-        self.assertEqual(res, 'cicciopassamilolio',
-                         'invalid res {0}'.format(res))
+        self.assertEqual(
+            'cicciopassamilolio', res, 'invalid res {0}'.format(res)
+        )
 
 
 class TestBackupManager(unittest.TestCase):
@@ -288,7 +289,7 @@ class TestBackupManager(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(q, expected_q)
+        self.assertEqual(expected_q, q)
 
 
 class ClientTypeManager(unittest.TestCase):
@@ -345,7 +346,7 @@ class ClientTypeManager(unittest.TestCase):
                 }
             }
         }
-        self.assertEqual(q, expected_q)
+        self.assertEqual(expected_q, q)
 
 
 class JobTypeManager(unittest.TestCase):
@@ -395,7 +396,7 @@ class JobTypeManager(unittest.TestCase):
                                 }
                                 }
                             ]}}}}}
-        self.assertEqual(q, expected_q)
+        self.assertEqual(expected_q, q)
 
     def test_update_ok(self):
         self.mock_es.update.return_value = {
@@ -406,7 +407,7 @@ class JobTypeManager(unittest.TestCase):
         }
         res = self.job_manager.update(job_id=common.fake_job_0_job_id,
                                       job_update_doc={'status': 'sleepy'})
-        self.assertEqual(res, 3)
+        self.assertEqual(3, res)
         self.mock_es.update.assert_called_with(
             index=self.job_manager.index,
             doc_type=self.job_manager.doc_type,
@@ -484,7 +485,7 @@ class ActionTypeManager(unittest.TestCase):
                                     }
                                 }
                             ]}}}}}
-        self.assertEqual(q, expected_q)
+        self.assertEqual(expected_q, q)
 
     def test_update_ok(self):
         self.mock_es.update.return_value = {
@@ -496,7 +497,7 @@ class ActionTypeManager(unittest.TestCase):
         res = self.action_manager.update(action_id='poiuuiop7890',
                                          action_update_doc={
                                              'status': 'sleepy'})
-        self.assertEqual(res, 3)
+        self.assertEqual(3, res)
         self.mock_es.update.assert_called_with(
             index=self.action_manager.index,
             doc_type=self.action_manager.doc_type,
@@ -578,7 +579,7 @@ class SessionTypeManager(unittest.TestCase):
                                     }
                                 }
                             ]}}}}}
-        self.assertEqual(q, expected_q)
+        self.assertEqual(expected_q, q)
 
     def test_update_ok(self):
         self.mock_es.update.return_value = {
@@ -590,7 +591,7 @@ class SessionTypeManager(unittest.TestCase):
         res = self.session_manager.update(session_id='poiuuiop7890',
                                           session_update_doc={
                                               'status': 'sleepy'})
-        self.assertEqual(res, 3)
+        self.assertEqual(3, res)
         self.mock_es.update.assert_called_with(
             index=self.session_manager.index,
             doc_type=self.session_manager.doc_type,
@@ -639,7 +640,7 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         res = self.eng.get_backup(user_id=common.fake_data_0_user_id,
                                   backup_id=common.fake_data_0_backup_id)
 
-        self.assertEqual(res, common.fake_data_0_wrapped_backup_metadata)
+        self.assertEqual(common.fake_data_0_wrapped_backup_metadata, res)
         self.eng.backup_manager.get.assert_called_with(
             common.fake_data_0_wrapped_backup_metadata['user_id'],
             common.fake_data_0_wrapped_backup_metadata['backup_id']
@@ -654,8 +655,12 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         res = self.eng.search_backup(user_id=common.fake_data_0_user_id,
                                      offset=3, limit=7,
                                      search=my_search)
-        self.assertEqual(res, [common.fake_data_0_wrapped_backup_metadata,
-                               common.fake_data_1_wrapped_backup_metadata])
+        self.assertEqual(
+            [
+                common.fake_data_0_wrapped_backup_metadata,
+                common.fake_data_1_wrapped_backup_metadata
+            ], res
+        )
         self.eng.backup_manager.search.assert_called_with(
             common.fake_data_0_wrapped_backup_metadata['user_id'],
             search=my_search,
@@ -668,7 +673,7 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         res = self.eng.search_backup(user_id=common.fake_data_0_user_id,
                                      offset=3, limit=7,
                                      search=my_search)
-        self.assertEqual(res, [])
+        self.assertEqual([], res)
         self.eng.backup_manager.search.assert_called_with(
             common.fake_data_0_wrapped_backup_metadata['user_id'],
             search=my_search,
@@ -713,7 +718,7 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
         )
         res = self.eng.delete_backup(user_id=common.fake_data_0_user_id,
                                      backup_id=common.fake_data_0_backup_id)
-        self.assertEqual(res, common.fake_data_0_backup_id)
+        self.assertEqual(common.fake_data_0_backup_id, res)
 
     def test_delete_backup_raises_when_es_delete_raises(self):
         self.eng.backup_manager.delete.side_effect = (
@@ -745,7 +750,7 @@ class TestElasticSearchEngine_client(unittest.TestCase):
             client_id=common.fake_client_info_0['client_id'],
             offset=6, limit=15,
             search=my_search)
-        self.assertEqual(res, [common.fake_client_entry_0])
+        self.assertEqual([common.fake_client_entry_0], res)
         self.eng.client_manager.search.assert_called_with(
             common.fake_client_entry_0['user_id'],
             common.fake_client_info_0['client_id'],
@@ -761,8 +766,11 @@ class TestElasticSearchEngine_client(unittest.TestCase):
             user_id=common.fake_client_entry_0['user_id'],
             offset=6, limit=15,
             search=my_search)
-        self.assertEqual(res, [common.fake_client_entry_0,
-                               common.fake_client_entry_1])
+        self.assertEqual(
+            [
+                common.fake_client_entry_0,
+                common.fake_client_entry_1
+            ], res)
         self.eng.client_manager.search.assert_called_with(
             common.fake_client_entry_0['user_id'],
             None,
@@ -777,7 +785,7 @@ class TestElasticSearchEngine_client(unittest.TestCase):
             user_id=common.fake_client_entry_0['user_id'],
             offset=6, limit=15,
             search=my_search)
-        self.assertEqual(res, [])
+        self.assertEqual([], res)
         self.eng.client_manager.search.assert_called_with(
             common.fake_client_entry_0['user_id'],
             None,
@@ -802,7 +810,7 @@ class TestElasticSearchEngine_client(unittest.TestCase):
         self.eng.client_manager.search.return_value = []
         res = self.eng.add_client(user_id=common.fake_data_0_user_id,
                                   doc=common.fake_client_info_0)
-        self.assertEqual(res, common.fake_client_info_0['client_id'])
+        self.assertEqual(common.fake_client_info_0['client_id'], res)
         self.eng.client_manager.search.assert_called_with(
             common.fake_data_0_user_id,
             common.fake_client_info_0['client_id'])
@@ -823,7 +831,7 @@ class TestElasticSearchEngine_client(unittest.TestCase):
         res = self.eng.delete_client(user_id=common.fake_data_0_user_id,
                                      client_id=common.fake_client_info_0[
                                          'client_id'])
-        self.assertEqual(res, common.fake_client_info_0['client_id'])
+        self.assertEqual(common.fake_client_info_0['client_id'], res)
 
     def test_delete_client_raises_when_es_delete_raises(self):
         self.eng.client_manager.delete.side_effect = (
@@ -849,7 +857,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         self.eng.job_manager.get.return_value = common.get_fake_job_0()
         res = self.eng.get_job(user_id=common.fake_client_entry_0['user_id'],
                                job_id=common.fake_client_info_0['client_id'])
-        self.assertEqual(res, common.fake_job_0)
+        self.assertEqual(common.fake_job_0, res)
         self.eng.job_manager.get.assert_called_with(
             common.fake_client_entry_0['user_id'],
             common.fake_client_info_0['client_id'])
@@ -871,7 +879,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         res = self.eng.search_job(user_id=common.fake_job_0['user_id'],
                                   offset=6, limit=15,
                                   search=my_search)
-        self.assertEqual(res, [common.fake_job_0, common.fake_job_0])
+        self.assertEqual([common.fake_job_0, common.fake_job_0], res)
         self.eng.job_manager.search.assert_called_with(
             common.fake_job_0['user_id'],
             search=my_search,
@@ -884,7 +892,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         res = self.eng.search_job(user_id=common.fake_job_0['user_id'],
                                   offset=6, limit=15,
                                   search=my_search)
-        self.assertEqual(res, [])
+        self.assertEqual([], res)
         self.eng.job_manager.search.assert_called_with(
             common.fake_job_0['user_id'],
             search=my_search,
@@ -896,7 +904,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         self.eng.job_manager.insert.return_value = (True, 1)
         res = self.eng.add_job(user_id=common.fake_job_0_user_id,
                                doc=common.get_fake_job_0())
-        self.assertEqual(res, common.fake_job_0_job_id)
+        self.assertEqual(common.fake_job_0_job_id, res)
         self.eng.job_manager.insert.assert_called_with(
             common.fake_job_0, common.fake_job_0_job_id
         )
@@ -915,7 +923,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         self.eng.job_manager.delete.return_value = common.fake_job_0['job_id']
         res = self.eng.delete_job(user_id=common.fake_job_0_user_id,
                                   job_id=common.fake_job_0_job_id)
-        self.assertEqual(res, common.fake_job_0_job_id)
+        self.assertEqual(common.fake_job_0_job_id, res)
 
     def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
             self):
@@ -953,7 +961,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         res = self.eng.update_job(user_id=common.fake_job_0_user_id,
                                   job_id=common.fake_job_0_job_id,
                                   patch_doc=patch)
-        self.assertEqual(res, 11)
+        self.assertEqual(11, res)
 
     def test_replace_job_raises_AccessForbidden_when_job_manager_raises(
             self):
@@ -972,7 +980,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         res = self.eng.replace_job(user_id=common.fake_job_0_user_id,
                                    job_id=common.fake_job_0_job_id,
                                    doc=common.get_fake_job_0())
-        self.assertEqual(res, 1)
+        self.assertEqual(1, res)
 
     def test_replace_job_returns_version_1_when_doc_is_overwritten(self):
         self.eng.job_manager.get.return_value = common.get_fake_job_0()
@@ -980,7 +988,7 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         res = self.eng.replace_job(user_id=common.fake_job_0_user_id,
                                    job_id=common.fake_job_0_job_id,
                                    doc=common.get_fake_job_0())
-        self.assertEqual(res, 3)
+        self.assertEqual(3, res)
 
 
 class TestElasticSearchEngine_action(unittest.TestCase):
@@ -997,7 +1005,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
         self.eng.action_manager.get.return_value = common.get_fake_action_0()
         res = self.eng.get_action(user_id=common.fake_action_0['user_id'],
                                   action_id=common.fake_action_0['action_id'])
-        self.assertEqual(res, common.fake_action_0)
+        self.assertEqual(common.fake_action_0, res)
         self.eng.action_manager.get.assert_called_with(
             common.fake_action_0['user_id'],
             common.fake_action_0['action_id'])
@@ -1019,7 +1027,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
         res = self.eng.search_action(user_id=common.fake_action_0['user_id'],
                                      offset=6, limit=15,
                                      search=my_search)
-        self.assertEqual(res, [common.fake_action_0, common.fake_action_0])
+        self.assertEqual([common.fake_action_0, common.fake_action_0], res)
         self.eng.action_manager.search.assert_called_with(
             common.fake_action_0['user_id'],
             search=my_search,
@@ -1032,7 +1040,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
         res = self.eng.search_action(user_id=common.fake_action_0['user_id'],
                                      offset=6, limit=15,
                                      search=my_search)
-        self.assertEqual(res, [])
+        self.assertEqual([], res)
         self.eng.action_manager.search.assert_called_with(
             common.fake_action_0['user_id'],
             search=my_search,
@@ -1044,7 +1052,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
         self.eng.action_manager.insert.return_value = (True, 1)
         res = self.eng.add_action(user_id=common.fake_action_0['user_id'],
                                   doc=common.get_fake_action_0())
-        self.assertEqual(res, common.fake_action_0['action_id'])
+        self.assertEqual(common.fake_action_0['action_id'], res)
         self.eng.action_manager.insert.assert_called_with(
             common.fake_action_0, common.fake_action_0['action_id']
         )
@@ -1065,7 +1073,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
         res = self.eng.delete_action(user_id=common.fake_action_0['action_id'],
                                      action_id=common.fake_action_0[
                                          'action_id'])
-        self.assertEqual(res, common.fake_action_0['action_id'])
+        self.assertEqual(common.fake_action_0['action_id'], res)
 
     def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
             self):
@@ -1106,7 +1114,7 @@ class TestElasticSearchEngine_action(unittest.TestCase):
                                      action_id=common.fake_action_0[
                                          'action_id'],
                                      patch_doc=patch)
-        self.assertEqual(res, 11)
+        self.assertEqual(11, res)
 
     def test_replace_action_raises_AccessForbidden_when_action_manager_raises(
             self):
@@ -1155,7 +1163,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         res = self.eng.get_session(user_id=common.fake_session_0['user_id'],
                                    session_id=common.fake_session_0[
                                        'session_id'])
-        self.assertEqual(res, common.fake_session_0)
+        self.assertEqual(common.fake_session_0, res)
         self.eng.session_manager.get.assert_called_with(
             common.fake_session_0['user_id'],
             common.fake_session_0['session_id'])
@@ -1178,7 +1186,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         res = self.eng.search_session(user_id=common.fake_session_0['user_id'],
                                       offset=6, limit=15,
                                       search=my_search)
-        self.assertEqual(res, [common.fake_session_0, common.fake_session_0])
+        self.assertEqual([common.fake_session_0, common.fake_session_0], res)
         self.eng.session_manager.search.assert_called_with(
             common.fake_session_0['user_id'],
             search=my_search,
@@ -1191,7 +1199,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         res = self.eng.search_session(user_id=common.fake_session_0['user_id'],
                                       offset=6, limit=15,
                                       search=my_search)
-        self.assertEqual(res, [])
+        self.assertEqual([], res)
         self.eng.session_manager.search.assert_called_with(
             common.fake_session_0['user_id'],
             search=my_search,
@@ -1203,7 +1211,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         self.eng.session_manager.insert.return_value = (True, 1)
         res = self.eng.add_session(user_id=common.fake_session_0['user_id'],
                                    doc=common.get_fake_session_0())
-        self.assertEqual(res, common.fake_session_0['session_id'])
+        self.assertEqual(common.fake_session_0['session_id'], res)
         self.eng.session_manager.insert.assert_called_with(
             common.fake_session_0,
             common.fake_session_0['session_id'])
@@ -1224,7 +1232,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         res = self.eng.delete_session(
             user_id=common.fake_session_0['session_id'],
             session_id=common.fake_session_0['session_id'])
-        self.assertEqual(res, common.fake_session_0['session_id'])
+        self.assertEqual(common.fake_session_0['session_id'], res)
 
     def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
             self):
@@ -1265,7 +1273,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
             user_id=common.fake_session_0['session_id'],
             session_id=common.fake_session_0['session_id'],
             patch_doc=patch)
-        self.assertEqual(res, 11)
+        self.assertEqual(11, res)
 
     def test_replace_session_raises_AccessForbidden_when_session_manager_raise(
             self):
@@ -1285,7 +1293,7 @@ class TestElasticSearchEngine_session(unittest.TestCase):
             user_id=common.fake_session_0['session_id'],
             session_id=common.fake_session_0['session_id'],
             doc=common.get_fake_session_0())
-        self.assertEqual(res, 1)
+        self.assertEqual(1, res)
 
     def test_replace_session_returns_version_1_when_doc_is_overwritten(self):
         self.eng.session_manager.get.return_value = common.get_fake_session_0()
@@ -1294,4 +1302,4 @@ class TestElasticSearchEngine_session(unittest.TestCase):
             user_id=common.fake_session_0['session_id'],
             session_id=common.fake_session_0['session_id'],
             doc=common.get_fake_session_0())
-        self.assertEqual(res, 3)
+        self.assertEqual(3, res)

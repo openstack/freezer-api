@@ -36,6 +36,6 @@ class TestVersionResource(common.FreezerBaseTestCase):
 
     def test_on_get_return_versions(self):
         self.resource.on_get(self.req, self.req)
-        self.assertEqual(self.req.status, falcon.HTTP_300)
+        self.assertEqual(falcon.HTTP_300, self.req.status)
         expected_result = json.dumps({'versions': [v2.VERSION]})
-        self.assertEqual(self.req.data, expected_result)
+        self.assertEqual(expected_result, self.req.data)

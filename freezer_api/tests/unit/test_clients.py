@@ -38,8 +38,8 @@ class TestClientsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'clients': []}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_get_return_correct_list(self):
         self.mock_db.get_client.return_value = [common.fake_client_entry_0,
@@ -48,8 +48,8 @@ class TestClientsCollectionResource(common.FreezerBaseTestCase):
                                        common.fake_client_entry_1]}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_post_raises_when_missing_body(self):
         self.mock_db.add_client.return_value = common.fake_client_info_0[
@@ -63,8 +63,8 @@ class TestClientsCollectionResource(common.FreezerBaseTestCase):
             'client_id']
         expected_result = {'client_id': common.fake_client_info_0['client_id']}
         self.resource.on_post(self.mock_req, self.mock_req)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
 
 class TestClientsResource(common.FreezerBaseTestCase):
@@ -89,7 +89,7 @@ class TestClientsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_client_info_0['client_id'])
         self.assertIsNone(self.mock_req.body)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
         self.mock_db.get_client.return_value = [common.fake_client_entry_0]
@@ -97,13 +97,13 @@ class TestClientsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_client_info_0['client_id'])
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_delete_removes_proper_data(self):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_client_info_0['client_id'])
         result = self.mock_req.body
         expected_result = {'client_id': common.fake_client_info_0['client_id']}
-        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(falcon.HTTP_204, self.mock_req.status)
+        self.assertEqual(expected_result, result)

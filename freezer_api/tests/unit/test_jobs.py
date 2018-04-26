@@ -37,7 +37,7 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
     def test_get_action_returns_found_action(self):
         self.mock_db.get_action.return_value = 'awesome_result'
         result = self.resource.get_action('user-id', 'action-id')
-        self.assertEqual(result, 'awesome_result')
+        self.assertEqual('awesome_result', result)
 
     def test_get_action_returns_none_when_action_not_found(self):
         self.mock_db.get_action.side_effect = exceptions.DocumentNotFound(
@@ -147,8 +147,8 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'jobs': []}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_get_return_correct_list(self):
         self.mock_db.search_job.return_value = [common.get_fake_job_0(),
@@ -157,8 +157,8 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             'jobs': [common.get_fake_job_0(), common.get_fake_job_1()]}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_post_inserts_correct_data(self):
         job = common.get_fake_job_0()
@@ -166,8 +166,8 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.mock_db.add_job.return_value = 'pjiofrdslaikfunr'
         expected_result = {'job_id': 'pjiofrdslaikfunr'}
         self.resource.on_post(self.mock_req, self.mock_req)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
 
 class TestJobsResource(common.FreezerBaseTestCase):
@@ -190,23 +190,23 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_job_0_job_id)
         self.assertIsNone(self.mock_req.body)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
         self.mock_db.get_job.return_value = common.get_fake_job_0()
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_job_0_job_id)
         result = self.mock_req.body
-        self.assertEqual(result, common.get_fake_job_0())
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(common.get_fake_job_0(), result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_delete_removes_proper_data(self):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_job_0_job_id)
         result = self.mock_req.body
         expected_result = {'job_id': common.fake_job_0_job_id}
-        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(falcon.HTTP_204, self.mock_req.status)
+        self.assertEqual(expected_result, result)
 
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)
@@ -224,9 +224,9 @@ class TestJobsResource(common.FreezerBaseTestCase):
             user_id=common.fake_job_0_user_id,
             job_id=common.fake_job_0_job_id,
             patch_doc=patch_doc)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
+        self.assertEqual(expected_result, result)
 
     def test_on_post_ok(self):
         new_version = random.randint(0, 99)
@@ -238,8 +238,8 @@ class TestJobsResource(common.FreezerBaseTestCase):
 
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_job_0_job_id)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     def test_on_post_raises_when_db_replace_job_raises(self):
         self.mock_db.replace_job.side_effect = exceptions.AccessForbidden(
@@ -288,8 +288,8 @@ class TestJobsEvent(common.FreezerBaseTestCase):
         self.mock_json_body.return_value = event
         expected_result = {'result': 'success'}
         self.resource.on_post(self.mock_req, self.mock_req, 'my_job_id')
-        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_202, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
 
 class TestJobs(common.FreezerBaseTestCase):
@@ -304,8 +304,8 @@ class TestJobs(common.FreezerBaseTestCase):
             job_schedule['event'] = event
         job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.start()
-        self.assertEqual(res, response)
-        self.assertEqual(job.need_update, need_update)
+        self.assertEqual(response, res)
+        self.assertEqual(need_update, job.need_update)
 
     def _test_job_stop(self, status, event, response, need_update):
         job_schedule = {}
@@ -315,8 +315,8 @@ class TestJobs(common.FreezerBaseTestCase):
             job_schedule['event'] = event
         job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.stop()
-        self.assertEqual(res, response)
-        self.assertEqual(job.need_update, need_update)
+        self.assertEqual(response, res)
+        self.assertEqual(need_update, job.need_update)
 
     def _test_job_abort(self, status, event, response, need_update):
         job_schedule = {}
@@ -326,8 +326,8 @@ class TestJobs(common.FreezerBaseTestCase):
             job_schedule['event'] = event
         job = v1_jobs.Job({'job_schedule': job_schedule})
         res = job.abort()
-        self.assertEqual(res, response)
-        self.assertEqual(job.need_update, need_update)
+        self.assertEqual(response, res)
+        self.assertEqual(need_update, job.need_update)
 
     def test_start_scheduled_unstarted_job(self):
         self._test_job_start(status='scheduled',
@@ -567,4 +567,4 @@ class TestJobs(common.FreezerBaseTestCase):
             'job_schedule': {}
         }
         job = v1_jobs.Job(job_doc)
-        self.assertEqual(job.doc, expected_job_doc)
+        self.assertEqual(expected_job_doc, job.doc)

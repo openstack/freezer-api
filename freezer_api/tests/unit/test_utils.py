@@ -160,12 +160,12 @@ class TestJobDoc(unittest.TestCase):
         job_doc = common.get_fake_job_0()
         job_doc['job_schedule']['status'] = 'stop'
         res_doc = utils.JobDoc.create(job_doc, 'dude')
-        self.assertEqual(res_doc['job_schedule']['time_created'], 1433611337)
-        self.assertEqual(res_doc['job_schedule']['time_started'], -1)
-        self.assertEqual(res_doc['job_schedule']['time_ended'], -1)
-        self.assertEqual(res_doc['job_schedule']['status'], 'stop')
-        self.assertEqual(res_doc['user_id'], 'dude')
-        self.assertEqual(res_doc['job_id'], 'hotforteacher')
+        self.assertEqual(1433611337, res_doc['job_schedule']['time_created'])
+        self.assertEqual(-1, res_doc['job_schedule']['time_started'])
+        self.assertEqual(-1, res_doc['job_schedule']['time_ended'])
+        self.assertEqual('stop', res_doc['job_schedule']['status'])
+        self.assertEqual('dude', res_doc['user_id'])
+        self.assertEqual('hotforteacher', res_doc['job_id'])
 
     @patch('freezer_api.common.utils.uuid')
     @patch('freezer_api.common.utils.time')
@@ -229,8 +229,8 @@ class TestActionDoc(unittest.TestCase):
         action_doc = common.get_fake_action_0()
         action_doc.pop('action_id')
         res_doc = utils.ActionDoc.create(action_doc, 'dude')
-        self.assertEqual(res_doc['user_id'], 'dude')
-        self.assertEqual(res_doc['action_id'], 'hotforteacher')
+        self.assertEqual('dude', res_doc['user_id'])
+        self.assertEqual('hotforteacher', res_doc['action_id'])
 
     @patch('freezer_api.common.utils.uuid')
     def test_create_raises_BadDataFormat_when_isvalid_fails(self, mock_uuid):
@@ -290,8 +290,8 @@ class TestSessionDoc(unittest.TestCase):
         mock_uuid.hex = 'hotforteacher'
         session_doc = common.get_fake_session_0()
         res_doc = utils.SessionDoc.create(session_doc, 'dude')
-        self.assertEqual(res_doc['user_id'], 'dude')
-        self.assertEqual(res_doc['session_id'], 'hotforteacher')
+        self.assertEqual('dude', res_doc['user_id'])
+        self.assertEqual('hotforteacher', res_doc['session_id'])
 
     @patch('freezer_api.common.utils.uuid')
     def test_create_raises_BadDataFormat_when_isvalid_fails(self, mock_uuid):

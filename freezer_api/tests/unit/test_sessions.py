@@ -45,8 +45,8 @@ class TestSessionsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'sessions': []}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_get_return_correct_list(self):
         self.mock_db.search_session.return_value = [
@@ -55,8 +55,8 @@ class TestSessionsCollectionResource(common.FreezerBaseTestCase):
                                         common.get_fake_session_1()]}
         self.resource.on_get(self.mock_req, self.mock_req)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(expected_result, result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_post_raises_when_missing_body(self):
         self.mock_db.add_session.return_value = common.fake_session_0[
@@ -70,8 +70,8 @@ class TestSessionsCollectionResource(common.FreezerBaseTestCase):
         self.mock_db.add_session.return_value = 'pjiofrdslaikfunr'
         expected_result = {'session_id': 'pjiofrdslaikfunr'}
         self.resource.on_post(self.mock_req, self.mock_req)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
 
 class TestSessionsResource(common.FreezerBaseTestCase):
@@ -97,23 +97,23 @@ class TestSessionsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_session_0['session_id'])
         self.assertIsNone(self.mock_req.body)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_404)
+        self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
         self.mock_db.get_session.return_value = common.get_fake_session_0()
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_session_0['session_id'])
         result = self.mock_req.body
-        self.assertEqual(result, common.get_fake_session_0())
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(common.get_fake_session_0(), result)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_delete_removes_proper_data(self):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_session_0['session_id'])
         result = self.mock_req.body
         expected_result = {'session_id': common.fake_session_0['session_id']}
-        self.assertEqual(self.mock_req.status, falcon.HTTP_204)
-        self.assertEqual(result, expected_result)
+        self.assertEqual(falcon.HTTP_204, self.mock_req.status)
+        self.assertEqual(expected_result, result)
 
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)
@@ -131,9 +131,9 @@ class TestSessionsResource(common.FreezerBaseTestCase):
             user_id=common.fake_session_0['user_id'],
             session_id=common.fake_session_0['session_id'],
             patch_doc=patch_doc)
-        self.assertEqual(self.mock_req.status, falcon.HTTP_200)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)
         result = self.mock_req.body
-        self.assertEqual(result, expected_result)
+        self.assertEqual(expected_result, result)
 
     def test_on_post_ok(self):
         new_version = random.randint(0, 99)
@@ -145,8 +145,8 @@ class TestSessionsResource(common.FreezerBaseTestCase):
 
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_session_0['session_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_201)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     def test_on_post_raises_when_db_replace_session_raises(self):
         self.mock_db.replace_session.side_effect = exceptions.AccessForbidden(
@@ -197,8 +197,8 @@ class TestSessionsAction(common.FreezerBaseTestCase):
                            'session_tag': 6}
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_session_0['session_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_202, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     def test_on_post_start_action_raises_BadDataFormat_when_job_not_in_session(
             self):
@@ -242,8 +242,8 @@ class TestSessionsAction(common.FreezerBaseTestCase):
                            'session_tag': 5}
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_session_0['session_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_202, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     def test_on_post_end_action_raises_BadDataFormat_when_job_not_in_session(
             self):
@@ -293,8 +293,8 @@ class TestSessionsAction(common.FreezerBaseTestCase):
                            'session_tag': 5}
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_session_0['session_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_202, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     @patch('freezer_api.api.v1.sessions.time')
     def test_on_post_start_replies_holdoff_if_tag_would_increment(self,
@@ -314,8 +314,8 @@ class TestSessionsAction(common.FreezerBaseTestCase):
                            'session_tag': 5}
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_session_0['session_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_202, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
     @patch('freezer_api.api.v1.sessions.time')
     def test_on_post_start_outofholdoff_replies_outofsync_when_tag_too_low(
@@ -335,8 +335,8 @@ class TestSessionsAction(common.FreezerBaseTestCase):
                            'session_tag': 5}
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_session_0['session_id'])
-        self.assertEqual(self.mock_req.status, falcon.HTTP_202)
-        self.assertEqual(self.mock_req.body, expected_result)
+        self.assertEqual(falcon.HTTP_202, self.mock_req.status)
+        self.assertEqual(expected_result, self.mock_req.body)
 
 
 class TestSessions(common.FreezerBaseTestCase):
@@ -354,7 +354,7 @@ class TestSessions(common.FreezerBaseTestCase):
                                     'job2': {'status': 'running',
                                              'result': ''}}
         res = self.session.get_job_overall_result()
-        self.assertEqual(res, 'running')
+        self.assertEqual('running', res)
 
     def test_overall_result_fail(self):
         self.session_doc['jobs'] = {'job1': {'status': 'completed',
@@ -362,7 +362,7 @@ class TestSessions(common.FreezerBaseTestCase):
                                     'job2': {'status': 'completed',
                                              'result': 'fail'}}
         res = self.session.get_job_overall_result()
-        self.assertEqual(res, 'fail')
+        self.assertEqual('fail', res)
 
     def test_overall_result_success(self):
         self.session_doc['jobs'] = {'job1': {'status': 'completed',
@@ -370,7 +370,7 @@ class TestSessions(common.FreezerBaseTestCase):
                                     'job2': {'status': 'completed',
                                              'result': 'success'}}
         res = self.session.get_job_overall_result()
-        self.assertEqual(res, 'success')
+        self.assertEqual('success', res)
 
 
 class TestSessionsJobs(common.FreezerBaseTestCase):
