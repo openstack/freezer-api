@@ -115,9 +115,15 @@ class JobsResource(JobsBaseResource):
     def on_delete(self, req, resp, job_id):
         # DELETE /v1/jobs/{job_id}     Deletes the specified job
         user_id = req.get_header('X-User-ID')
-        self.db.delete_job(user_id=user_id, job_id=job_id)
-        resp.body = {'job_id': job_id}
-        resp.status = falcon.HTTP_204
+        obj = self.db.get_job(user_id=user_id, job_id=job_id)
+        if not obj:
+            raise freezer_api_exc.DocumentNotFound(
+                message='No Job found with ID:{0}'.
+                format(job_id))
+        else:
+            self.db.delete_job(user_id=user_id, job_id=job_id)
+            resp.body = {'job_id': job_id}
+            resp.status = falcon.HTTP_204
 
     @policy.enforce('jobs:update')
     def on_patch(self, req, resp, job_id):

@@ -78,9 +78,16 @@ class SessionsResource(resource.BaseResource):
     def on_delete(self, req, resp, session_id):
         # DELETE /v1/sessions/{session_id}     Deletes the specified session
         user_id = req.get_header('X-User-ID')
-        self.db.delete_session(user_id=user_id, session_id=session_id)
-        resp.body = {'session_id': session_id}
-        resp.status = falcon.HTTP_204
+        obj = self.db.get_session(user_id=user_id,
+                                  session_id=session_id)
+        if not obj:
+            raise freezer_api_exc.DocumentNotFound(
+                message='No session found with ID:{0}'.
+                format(session_id))
+        else:
+            self.db.delete_session(user_id=user_id, session_id=session_id)
+            resp.body = {'session_id': session_id}
+            resp.status = falcon.HTTP_204
 
     @policy.enforce('sessions:update')
     def on_patch(self, req, resp, session_id):

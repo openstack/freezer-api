@@ -76,9 +76,16 @@ class ActionsResource(resource.BaseResource):
     def on_delete(self, req, resp, action_id):
         # DELETE /v1/actions/{action_id}     Deletes the specified action
         user_id = req.get_header('X-User-ID')
-        self.db.delete_action(user_id=user_id, action_id=action_id)
-        resp.body = {'action_id': action_id}
-        resp.status = falcon.HTTP_204
+        obj = self.db.get_action(user_id=user_id,
+                                 action_id=action_id)
+        if not obj:
+            raise freezer_api_exc.DocumentNotFound(
+                message='No action found with ID:{0}'.
+                format(action_id))
+        else:
+            self.db.delete_action(user_id=user_id, action_id=action_id)
+            resp.body = {'action_id': action_id}
+            resp.status = falcon.HTTP_204
 
     @policy.enforce('actions:update')
     def on_patch(self, req, resp, action_id):

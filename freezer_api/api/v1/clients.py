@@ -76,7 +76,14 @@ class ClientsResource(resource.BaseResource):
     def on_delete(self, req, resp, client_id):
         # DELETE /v1/clients/{client_id}     Deletes the specified backup
         user_id = req.get_header('X-User-ID')
-        self.db.delete_client(
-            user_id=user_id, client_id=client_id)
-        resp.body = {'client_id': client_id}
-        resp.status = falcon.HTTP_204
+        obj = self.db.get_client(user_id=user_id,
+                                 client_id=client_id)
+        if not obj:
+            raise freezer_api_exc.DocumentNotFound(
+                message='No Client found with ID:{0}'.
+                format(client_id))
+        else:
+            self.db.delete_client(
+                user_id=user_id, client_id=client_id)
+            resp.body = {'client_id': client_id}
+            resp.status = falcon.HTTP_204
