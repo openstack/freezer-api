@@ -87,7 +87,7 @@ def main():
             if db_tables:
                 print(json.dumps(db_tables))
             else:
-                print ("No Tables/Mappings found!")
+                print("No Tables/Mappings found!")
         else:
             raise Exception('Option {0} not found !'.format(CONF.db.options))
     except Exception as e:
