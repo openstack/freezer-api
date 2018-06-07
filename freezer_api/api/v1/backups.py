@@ -76,7 +76,14 @@ class BackupsResource(resource.BaseResource):
     def on_delete(self, req, resp, backup_id):
         # DELETE /v1/backups/{backup_id}     Deletes the specified backup
         user_id = req.get_header('X-User-ID')
-        self.db.delete_backup(
-            user_id=user_id, backup_id=backup_id)
-        resp.body = {'backup_id': backup_id}
-        resp.status = falcon.HTTP_204
+        obj = self.db.get_backup(user_id=user_id,
+                                 backup_id=backup_id)
+        if not obj:
+            raise freezer_api_exc.DocumentNotFound(
+                message='No Backup found with ID:{0}'.
+                format(backup_id))
+        else:
+            self.db.delete_backup(
+                user_id=user_id, backup_id=backup_id)
+            resp.body = {'backup_id': backup_id}
+            resp.status = falcon.HTTP_204
