@@ -29,7 +29,7 @@ class TestBackupsCollectionResource(common.FreezerBaseTestCase):
         super(TestBackupsCollectionResource, self).setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
-        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = {
             'X-User-ID': common.fake_data_0_user_id}
         self.mock_req.status = falcon.HTTP_200
@@ -79,7 +79,7 @@ class TestBackupsResource(common.FreezerBaseTestCase):
         super(TestBackupsResource, self).setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
-        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = {
             'X-User-ID': common.fake_data_0_user_id}
         self.mock_req.status = falcon.HTTP_200

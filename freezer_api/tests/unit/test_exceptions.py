@@ -27,7 +27,7 @@ class TestExceptions(unittest.TestCase):
         self.ex = mock.Mock()
         self.ex.message = 'test exception'
         self.mock_req = mock.MagicMock()
-        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.context = {}
 
     def test_FreezerAPIException(self):

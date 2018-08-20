@@ -31,7 +31,7 @@ class TestSessionsCollectionResource(common.FreezerBaseTestCase):
         super(TestSessionsCollectionResource, self).setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
-        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']
         self.mock_req.status = falcon.HTTP_200
@@ -164,7 +164,7 @@ class TestSessionsAction(common.FreezerBaseTestCase):
         super(TestSessionsAction, self).setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
-        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']
         self.mock_req.status = falcon.HTTP_200
@@ -378,7 +378,7 @@ class TestSessionsJobs(common.FreezerBaseTestCase):
         super(TestSessionsJobs, self).setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
-        self.mock_req.__getitem__.side_effect = common.get_req_items
+        self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']
         self.mock_req.status = falcon.HTTP_200
