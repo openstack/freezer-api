@@ -36,7 +36,7 @@ class BaseResource(object):
             raise freezer_api_exc.BadDataFormat('Empty request body. A valid '
                                                 'JSON document is required.')
         try:
-            json_data = json.loads(raw_json, 'utf-8')
+            json_data = json.loads(raw_json, encoding='utf-8')
         except ValueError:
             raise falcon.HTTPError(falcon.HTTP_753,
                                    'Malformed JSON')
