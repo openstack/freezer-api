@@ -69,12 +69,12 @@ class JobsBaseResource(resource.BaseResource):
 
 class JobsCollectionResource(JobsBaseResource):
     """
-    Handler for endpoint: /v1/jobs
+    Handler for endpoint: /v2/{project_id}/jobs
     """
 
     @policy.enforce('jobs:get_all')
     def on_get(self, req, resp, project_id):
-        # GET /v1/jobs(?limit,offset)     Lists jobs
+        # GET /v2/{project_id}/jobs(?limit,offset)     Lists jobs
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset', min=0) or 0
         limit = req.get_param_as_int('limit', min=1) or 10
@@ -86,7 +86,7 @@ class JobsCollectionResource(JobsBaseResource):
 
     @policy.enforce('jobs:create')
     def on_post(self, req, resp, project_id):
-        # POST /v1/jobs    Creates job entry
+        # POST /v2/{project_id}/jobs    Creates job entry
         try:
             job = Job(self.json_body(req))
         except KeyError:
@@ -103,12 +103,12 @@ class JobsCollectionResource(JobsBaseResource):
 
 class JobsResource(JobsBaseResource):
     """
-    Handler for endpoint: /v1/jobs/{job_id}
+    Handler for endpoint: /v2/{project_id}/jobs/{job_id}
     """
 
     @policy.enforce('jobs:get')
     def on_get(self, req, resp, project_id, job_id):
-        # GET /v1/jobs/{job_id}     retrieves the specified job
+        # GET /v2/{project_id}/jobs/{job_id}     retrieves the specified job
         # search in body
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_job(project_id=project_id,
@@ -120,7 +120,7 @@ class JobsResource(JobsBaseResource):
 
     @policy.enforce('jobs:delete')
     def on_delete(self, req, resp, project_id, job_id):
-        # DELETE /v1/jobs/{job_id}     Deletes the specified job
+        # DELETE /v2/{project_id}/jobs/{job_id}     Deletes the specified job
         user_id = req.get_header('X-User-ID')
         self.db.delete_job(project_id=project_id,
                            user_id=user_id, job_id=job_id)
@@ -129,7 +129,7 @@ class JobsResource(JobsBaseResource):
 
     @policy.enforce('jobs:update')
     def on_patch(self, req, resp, project_id, job_id):
-        # PATCH /v1/jobs/{job_id}     updates the specified job
+        # PATCH /v2/{project_id}/jobs/{job_id}     updates the specified job
         user_id = req.get_header('X-User-ID') or ''
         job = Job(self.json_body(req))
         self.update_actions_in_job(project_id, user_id, job.doc)
@@ -141,7 +141,8 @@ class JobsResource(JobsBaseResource):
 
     @policy.enforce('jobs:create')
     def on_post(self, req, resp, project_id, job_id):
-        # PUT /v1/jobs/{job_id}     creates/replaces the specified job
+        # PUT /v2/{project_id}/jobs/{job_id}
+        # Creates/Replaces the specified job
         user_id = req.get_header('X-User-ID') or ''
         job = Job(self.json_body(req))
         self.update_actions_in_job(project_id, user_id, job.doc)
@@ -155,7 +156,7 @@ class JobsResource(JobsBaseResource):
 
 class JobsEvent(resource.BaseResource):
     """
-    Handler for endpoint: /v1/jobs/{job_id}/event
+    Handler for endpoint: /v2/{project_id}/jobs/{job_id}/event
 
     Actions are passed in the body, for example:
     {
@@ -167,7 +168,7 @@ class JobsEvent(resource.BaseResource):
 
     @policy.enforce('jobs:event:create')
     def on_post(self, req, resp, project_id, job_id):
-        # POST /v1/jobs/{job_id}/event
+        # POST /v2/{project_id}/jobs/{job_id}/event
         # requests an event on the specified job
 
         user_id = req.get_header('X-User-ID') or ''

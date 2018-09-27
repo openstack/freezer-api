@@ -24,14 +24,14 @@ from freezer_api import policy
 
 class BackupsCollectionResource(resource.BaseResource):
     """
-    Handler for endpoint: /v1/backups
+    Handler for endpoint: /v2/{project_id}/backups
     """
     def __init__(self, storage_driver):
         self.db = storage_driver
 
     @policy.enforce('backups:get_all')
     def on_get(self, req, resp, project_id):
-        # GET /v1/backups(?limit,offset)     Lists backups
+        # GET /v2/{project_id}/backups(?limit,offset)     Lists backups
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset', min=0) or 0
         limit = req.get_param_as_int('limit', min=1) or 10
@@ -43,7 +43,7 @@ class BackupsCollectionResource(resource.BaseResource):
 
     @policy.enforce('backups:create')
     def on_post(self, req, resp, project_id):
-        # POST /v1/backups    Creates backup entry
+        # POST /v2/{project_id}/backups    Creates backup entry
         doc = self.json_body(req)
         if not doc:
             raise freezer_api_exc.BadDataFormat(
@@ -60,14 +60,14 @@ class BackupsCollectionResource(resource.BaseResource):
 
 class BackupsResource(resource.BaseResource):
     """
-    Handler for endpoint: /v1/backups/{backup_id}
+    Handler for endpoint: /v2/{project_id}/backups/{backup_id}
     """
     def __init__(self, storage_driver):
         self.db = storage_driver
 
     @policy.enforce('backups:get')
     def on_get(self, req, resp, project_id, backup_id):
-        # GET /v1/backups/{backup_id}     Get backup details
+        # GET /v2/{project_id}/backups/{backup_id}     Get backup details
         user_id = req.get_header('X-User-ID')
         obj = self.db.get_backup(project_id=project_id,
                                  user_id=user_id,
@@ -79,7 +79,8 @@ class BackupsResource(resource.BaseResource):
 
     @policy.enforce('backups:delete')
     def on_delete(self, req, resp, project_id, backup_id):
-        # DELETE /v1/backups/{backup_id}     Deletes the specified backup
+        # DELETE /v2/{project_id}/backups/{backup_id}
+        # Deletes the specified backup
         user_id = req.get_header('X-User-ID')
         self.db.delete_backup(project_id=project_id,
                               user_id=user_id,
