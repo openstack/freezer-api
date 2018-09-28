@@ -282,7 +282,6 @@ function configure_uwsgi_freezer_api_app {
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi' socket  /var/run/uwsgi/freezer-api-wsgi.socket
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi'  chmod-socket 666
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi'  lazy-apps  true
-    iniset $FREEZER_API_UWSGI_CONF 'uwsgi' plugins  python
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi'  enable-threads  true
 
     # Set die-on-term & exit-on-reload so that uwsgi shuts down
