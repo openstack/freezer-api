@@ -314,7 +314,8 @@ fake_action_0 = {
     "mandatory": True,
 
     "action_id": "qwerqwerqwerrewq",
-    "user_id": "user_id-is-provided-by-keystone"
+    "user_id": "user_id-is-provided-by-keystone",
+    "project_id": "project_id-is-tecs"
 }
 
 fake_action_1 = {
@@ -332,7 +333,8 @@ fake_action_1 = {
     "mandatory": True,
 
     "action_id": "jk4lkjbn4r3k",
-    "user_id": "user_id-is-provided-by-keystone"
+    "user_id": "user_id-is-provided-by-keystone",
+    "project_id": "project_id-is-tecs"
 }
 
 
