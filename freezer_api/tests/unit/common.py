@@ -36,6 +36,7 @@ fake_data_0_user_name = 'asdffdsa'
 
 fake_data_0_wrapped_backup_metadata = {
     'backup_id': 'b740ed9ad2b646aba304ef54c21c6774',
+    'project_id': 'tecs',
     'user_id': 'qwerty1234',
     'user_name': 'asdffdsa',
     'backup_metadata': {
