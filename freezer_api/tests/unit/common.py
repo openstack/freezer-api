@@ -279,12 +279,14 @@ fake_data_1_wrapped_backup_metadata = {
 }
 
 fake_client_info_0 = {
+    "project_id": "tecs",
     "client_id": "test-tenant_5253_test-hostname_09544",
     "description": "some usefule text here",
     "config_id": "config_id_contains_uuid_of_config"
 }
 
 fake_client_info_1 = {
+    "project_id": "tecs",
     "client_id": "test-tenant_5253_test-hostname_6543",
     "description": "also some useful text here",
     "config_id": "config_id_blablawhatever"
