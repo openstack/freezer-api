@@ -175,6 +175,7 @@ fake_data_0_elasticsearch_miss = {
     "took": 1
 }
 
+fake_job_0_project_id = "tecs"
 fake_job_0_user_id = "f4db4da085f043059441565720b217c7"
 fake_job_0_job_id = "e7181e5e-2c75-43f8-92c0-c037ae5f11e4"
 
@@ -225,6 +226,7 @@ fake_job_0 = {
     "job_id": "e7181e5e-2c75-43f8-92c0-c037ae5f11e4",
     "client_id": "mytenantid_myhostname",
     "user_id": "f4db4da085f043059441565720b217c7",
+    "project_id": "tecs",
     "description": "test action 4"
 }
 
