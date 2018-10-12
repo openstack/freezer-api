@@ -134,7 +134,7 @@ class SessionsAction(resource.BaseResource):
         doc = self.json_body(req)
 
         try:
-            action, params = next(doc.items())
+            action, params = next(iter(doc.items()))
         except Exception:
             raise freezer_api_exc.BadDataFormat("Bad action request format")
 
