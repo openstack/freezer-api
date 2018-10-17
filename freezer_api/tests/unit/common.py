@@ -380,7 +380,8 @@ fake_session_0 = {
     "time_start": 123412344,
     "time_end": 432234432,
     "status": "running",
-    "user_id": "califfo"
+    "user_id": "califfo",
+    "project_id": "tecs"
 }
 
 fake_session_1 = {
@@ -405,7 +406,8 @@ fake_session_1 = {
     "time_start": 123412344,
     "time_end": 432234432,
     "status": "running",
-    "user_id": "califfo"
+    "user_id": "califfo",
+    "project_id": "tecs"
 }
 
 
