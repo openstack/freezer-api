@@ -12,11 +12,13 @@
             voting: false
         - openstack-tox-lower-constraints
         - openstack-tox-pylint
+        - freezer-tempest-basic
     gate:
       jobs:
         - freezer-api-ubuntu-xenial
         - openstack-tox-lower-constraints
         - openstack-tox-pylint
+        - freezer-tempest-basic
     experimental:
       jobs:
         - freezer-api-opensuse-423
