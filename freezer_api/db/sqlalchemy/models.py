@@ -57,7 +57,9 @@ class Client(BASE, FreezerBase):
     __tablename__ = 'clients'
     id = Column(String(255), primary_key=True)
     project_id = Column(String(36), nullable=False)
+    user_id = Column(String(64), nullable=False)
     config_id = Column(String(255), nullable=False)
+    hostname = Column(String(128))
     description = Column(String(255))
     uuid = Column(String(36), nullable=False)
 
