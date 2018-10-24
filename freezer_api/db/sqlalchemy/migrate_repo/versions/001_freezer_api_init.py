@@ -11,7 +11,8 @@
 #    under the License.
 
 from sqlalchemy import Boolean, Column, DateTime
-from sqlalchemy import MetaData, String, Table
+from sqlalchemy import Integer, MetaData, String, Table, Text
+from sqlalchemy import BLOB, TIMESTAMP
 
 CLASS_NAME = 'default'
 
@@ -34,7 +35,52 @@ def define_tables(meta):
         mysql_charset='utf8'
     )
 
-    return [clients]
+    # The field metadata is json, including :
+    # nova_inst_id, engine_name, storage, remove_older_than, restore_from_date,
+    # command, incremental, restore_abs_path, etc
+    actions = Table(
+        'actions', meta,
+        Column('created_at', DateTime(timezone=False)),
+        Column('updated_at', DateTime(timezone=False)),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('action', String(255), nullable=False),
+        Column('project_id', String(36), nullable=False),
+        Column('user_id', String(36), nullable=False),
+        Column('mode', String(255)),
+        Column('src_file', String(255)),
+        Column('backup_name', String(255)),
+        Column('container', String(255)),
+        Column('timeout', Integer),
+        Column('priority', Integer),
+        Column('max_retries_interval', Integer, default=6),
+        Column('max_retries', Integer, default=5),
+        Column('mandatory', Boolean, default=False),
+        Column('log_file', String(255)),
+        Column('backup_metadata', Text),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8'
+    )
+
+    action_reports = Table(
+        'action_reports', meta,
+        Column('created_at', DateTime(timezone=False)),
+        Column('updated_at', DateTime(timezone=False)),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('project_id', String(36), nullable=False),
+        Column('user_id', String(36), nullable=False),
+        Column('result', String(255)),
+        Column('time_elapsed', String(255)),
+        Column('report_date', TIMESTAMP),
+        Column('log', BLOB),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8'
+    )
+
+    return [clients, actions, action_reports]
 
 
 def upgrade(migrate_engine):
