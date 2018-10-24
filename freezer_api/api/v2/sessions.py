@@ -328,7 +328,8 @@ class SessionsJob(resource.BaseResource):
                                patch_doc=session_update_doc)
         # --- update job object
         session_doc = self.db.get_session(user_id=user_id,
-                                          session_id=session_id)
+                                          session_id=session_id,
+                                          project_id=project_id)
         job_update_doc = {
             'session_id': session_id,
             'session_tag': session_doc['session_tag'],
