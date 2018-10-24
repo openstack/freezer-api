@@ -16,6 +16,8 @@ limitations under the License.
 """
 
 from oslo_log import log
+from oslo_serialization import jsonutils
+from oslo_utils import encodeutils
 
 from freezer_api import context
 
@@ -43,6 +45,14 @@ def inject_context(req, resp, params):
 
 def before_hooks():
     return [inject_context]
+
+
+def json_encode(obj):
+    return encodeutils.safe_encode(jsonutils.dumps(obj), 'utf-8')
+
+
+def json_decode(binary):
+    return jsonutils.loads(binary, 'utf-8')
 
 
 class FuncMiddleware(object):
