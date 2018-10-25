@@ -20,6 +20,7 @@ from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
 
+from freezer_api.api.common import utils as json_utils
 from freezer_api.common._i18n import _
 from freezer_api.common import elasticv2_utils as utils
 from freezer_api.common import exceptions as freezer_api_exc
@@ -225,3 +226,290 @@ def delete_client(project_id, user_id, client_id):
 
     session.close()
     return client_id
+
+
+def delete_action(project_id, user_id, action_id):
+
+    session = get_db_session()
+    query = model_query(session, models.Action, project_id=project_id)
+    query = query.filter_by(user_id=user_id).filter_by(id=action_id)
+
+    result = query.all()
+    if 1 == len(result):
+        try:
+            result[0].delete(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+            LOG.info('Action delete, action_id: {0} deleted'.
+                     format(action_id))
+    else:
+            LOG.info('Action delete, action_id: {0} not found'.
+                     format(action_id))
+
+    query = model_query(session, models.ActionReport, project_id=project_id)
+    query = query.filter_by(user_id=user_id).filter_by(id=action_id)
+
+    result = query.all()
+    if 1 == len(result):
+        try:
+            result[0].delete(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+            LOG.info('ActionReport delete, action_id: {0} deleted'.
+                     format(action_id))
+    else:
+            LOG.info('ActionReport delete, action_id: {0} not found'.
+                     format(action_id))
+    session.close()
+    return action_id
+
+
+def add_action(project_id, user_id, doc):
+    action_doc = utils.ActionDoc.create(doc, user_id, project_id)
+    keyt = ['action', 'mode', 'backup_name',
+            'container', 'src_file', 'timeout',
+            'priority', 'mandatory', 'log_file']
+    freezer_action = action_doc.get('freezer_action', {})
+
+    action_id = action_doc.get('action_id')
+    existing = get_action(project_id=project_id, user_id=user_id,
+                          action_id=action_id)
+    if existing:
+        raise freezer_api_exc.DocumentExists(
+            message='Action already registered with ID'
+                    ' {0}'.format(action_id))
+
+    action = models.Action()
+
+    actionvalue = {}
+    actionreportvalue = {}
+    actionvalue['project_id'] = project_id
+    actionvalue['id'] = action_id
+    actionvalue['user_id'] = user_id
+    actionvalue['max_retries'] = action_doc.get('max_retries', 5)
+    actionvalue['max_retries_interval'] = action_doc.\
+        get('max_retries_interval', 6)
+
+    for key in freezer_action.keys():
+        if key in keyt:
+            actionvalue[key] = freezer_action.get(key)
+
+    actionreportvalue['result'] = freezer_action.get('result', None)
+    actionreportvalue['time_elapsed'] = freezer_action.\
+        get('time_elapsed', None)
+    actionreportvalue['report_date'] = freezer_action.\
+        get('report_date', None)
+    actionvalue['backup_metadata'] = json_utils.json_encode(freezer_action)
+
+    action.update(actionvalue)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            action.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    LOG.info('Action registered, action_id: {0}'.format(action_id))
+
+    actionReport = models.ActionReport()
+
+    actionreportvalue['project_id'] = project_id
+    actionreportvalue['id'] = action_id
+    actionreportvalue['user_id'] = user_id
+
+    actionReport.update(actionreportvalue)
+
+    with session.begin():
+        try:
+            actionReport.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    LOG.info('Action Reports registered, action_id: {0}'.
+             format(action_id))
+    session.close()
+    return action_id
+
+
+def get_action(project_id, user_id, action_id):
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Action, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=action_id)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+    values = {}
+    if 1 == len(result):
+        values['project_id'] = result[0].get('project_id')
+        values['action_id'] = result[0].get('id')
+        values['user_id'] = result[0].get('user_id')
+        values['max_retries'] = result[0].get('max_retries')
+        values['max_retries_interval'] = result[0].\
+            get('max_retries_interval')
+        values['freezer_action'] = json_utils.\
+            json_decode(result[0].get('backup_metadata'))
+        values['freezer_action']['backup_name'] = result[0].\
+            get('backup_name')
+        values['freezer_action']['action'] = result[0].get('action')
+        values['freezer_action']['mode'] = result[0].get('mode')
+        values['freezer_action']['container'] = result[0].\
+            get('container')
+        values['freezer_action']['timeout'] = result[0].get('timeout')
+        values['freezer_action']['priority'] = result[0].get('priority')
+        values['freezer_action']['src_file'] = result[0].get('src_file')
+        values['freezer_action']['log_file'] = result[0].get('log_file')
+    return values
+
+
+def search_action(project_id, user_id, offset=0, limit=10, search=None):
+    search = search or {}
+    actions = []
+
+    session = get_db_session()
+    query = model_query(session, models.Action, project_id=project_id)
+    query = query.filter_by(user_id=user_id)
+
+    result = query.all()
+
+    for action in result:
+        actionmap = {}
+        actionmap['project_id'] = project_id
+        actionmap['user_id'] = user_id
+        actionmap['timeout'] = action.timeout
+        actionmap['max_retries_interval'] = action.max_retries_interval
+        actionmap['max_retries'] = action.max_retries
+        actionmap['action_id'] = action.id
+        actionmap['mandatory'] = action.mandatory
+
+        actionmap['freezer_action'] = json_utils.\
+            json_decode(action.get('backup_metadata'))
+        actionmap['freezer_action']['backup_name'] = action.\
+            get('backup_name')
+        actionmap['freezer_action']['mode'] = action.get('mode')
+        actionmap['freezer_action']['action'] = action.get('action')
+        actionmap['freezer_action']['container'] = action.\
+            get('container')
+        actionmap['freezer_action']['timeout'] = action.get('timeout')
+        actionmap['freezer_action']['priority'] = action.get('priority')
+        actionmap['freezer_action']['src_file'] = action.get('src_file')
+        actionmap['freezer_action']['log_file'] = action.get('log_file')
+
+        actions.append(actionmap)
+
+    session.close()
+    return actions
+
+
+def update_action(user_id, action_id, patch_doc, project_id):
+    # changes in user_id or action_id are not allowed
+    valid_patch = utils.ActionDoc.create_patch(patch_doc)
+    keyt = ['action', 'mode', 'backup_name', 'container',
+            'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
+
+    values = {}
+
+    freezer_action = valid_patch.get('freezer_action', {})
+
+    values['project_id'] = project_id
+    values['id'] = action_id
+    values['user_id'] = user_id
+
+    values['max_retries'] = valid_patch.get('max_retries', None)
+    values['max_retries_interval'] = valid_patch.\
+        get('max_retries_interval', None)
+
+    for key in freezer_action.keys():
+        if key in keyt:
+            values[key] = freezer_action.get(key)
+
+    values['backup_metadata'] = json_utils.json_encode(freezer_action)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Action, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=action_id)
+            result = query.update(values)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if not result:
+        raise freezer_api_exc.DocumentNotFound(
+            message='Action not registered with ID'
+                    ' {0}'.format(action_id))
+    else:
+        LOG.info('action updated, action_id: {0}'.format(action_id))
+        return action_id
+
+
+def replace_action(user_id, action_id, doc, project_id):
+
+    valid_doc = utils.ActionDoc.update(doc, user_id, action_id, project_id)
+    values = {}
+    keyt = ['action', 'mode', 'backup_name', 'container',
+            'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
+    bCreate = False
+
+    freezer_action = valid_doc.get('freezer_action', {})
+
+    values['project_id'] = project_id
+    values['id'] = action_id
+    values['user_id'] = user_id
+
+    values['max_retries'] = valid_doc.get('max_retries', None)
+    values['max_retries_interval'] = valid_doc.\
+        get('max_retries_interval', None)
+
+    for key in freezer_action.keys():
+        if key in keyt:
+            values[key] = freezer_action.get(key)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Action, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=action_id)
+            result = query.update(values)
+            if not result:
+                bCreate = True
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if bCreate:
+        action = models.Action()
+        action.update(values)
+        session = get_db_session()
+        with session.begin():
+            try:
+                action.save(session=session)
+            except Exception as e:
+                session.close()
+                raise freezer_api_exc.\
+                    StorageEngineError(message='mysql operation failed {0}'.
+                                       format(e))
+        session.close()
+
+    LOG.info('action replaced, action_id: {0}'.format(action_id))
+    return action_id
