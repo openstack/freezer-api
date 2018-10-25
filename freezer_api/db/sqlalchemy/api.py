@@ -515,6 +515,215 @@ def replace_action(user_id, action_id, doc, project_id):
     return action_id
 
 
+def delete_job(user_id, job_id, project_id):
+    session = get_db_session()
+    query = model_query(session, models.Job, project_id=project_id)
+    query = query.filter_by(user_id=user_id).filter_by(id=job_id)
+    result = query.all()
+    if 1 == len(result):
+        try:
+            result[0].delete(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+            LOG.info('Job delete, job_id: {0} deleted'.format(job_id))
+    else:
+            LOG.info('Action delete, job_id: {0} not found'.
+                     format(job_id))
+    session.close()
+    return job_id
+
+
+def add_job(user_id, doc, project_id):
+    job_doc = utils.JobDoc.create(doc, project_id, user_id)
+
+    job_id = job_doc.get('job_id')
+    existing = get_job(project_id=project_id, user_id=user_id,
+                       job_id=job_id)
+    if existing:
+        raise freezer_api_exc.\
+            DocumentExists(message='Job already registered with ID {0}'.
+                           format(job_id))
+
+    job = models.Job()
+    jobvalue = {}
+    jobvalue['id'] = job_id
+    jobvalue['project_id'] = project_id
+    jobvalue['user_id'] = user_id
+    jobvalue['schedule'] = json_utils.\
+        json_encode(job_doc.pop('job_schedule', ''))
+    jobvalue['client_id'] = job_doc.get('client_id', '')
+    jobvalue['session_id'] = job_doc.pop('session_id', '')
+    jobvalue['session_tag'] = job_doc.pop('session_tag', 0)
+    jobvalue['description'] = job_doc.pop('description', '')
+    jobvalue['job_actions'] = json_utils.\
+        json_encode(job_doc.pop('job_actions', ''))
+    job.update(jobvalue)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            job.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    LOG.info('Job registered, job_id: {0}'.format(job_id))
+
+    return job_id
+
+
+def get_job(project_id, user_id, job_id):
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Job, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=job_id)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+    values = {}
+    if 1 == len(result):
+        values['job_id'] = result[0].get('id')
+        values['project_id'] = result[0].get('project_id')
+        values['user_id'] = result[0].get('user_id')
+        values['job_schedule'] = json_utils.\
+            json_decode(result[0].get('schedule'))
+        values['client_id'] = result[0].get('client_id')
+        values['session_id'] = result[0].get('session_id')
+        values['session_tag'] = result[0].get('session_tag')
+        values['description'] = result[0].get('description')
+        values['job_actions'] = json_utils.\
+            json_decode(result[0].get('job_actions'))
+    return values
+
+
+def search_job(project_id, user_id, offset=0,
+               limit=10, search=None):
+
+    search = search or {}
+    jobs = []
+    session = get_db_session()
+    query = model_query(session, models.Job, project_id=project_id)
+    query = query.filter_by(user_id=user_id)
+
+    result = query.all()
+
+    for job in result:
+        jobmap = {}
+        jobmap['job_id'] = job.get('id')
+        jobmap['project_id'] = job.get('project_id')
+        jobmap['user_id'] = job.get('user_id')
+        jobmap['job_schedule'] = json_utils.json_decode(job.get('schedule'))
+        jobmap['client_id'] = job.get('client_id')
+        jobmap['session_id'] = job.get('session_id')
+        jobmap['session_tag'] = job.get('session_tag')
+        jobmap['description'] = job.get('description')
+        jobmap['job_actions'] = json_utils.json_decode(
+            job.get('job_actions'))
+
+        jobs.append(jobmap)
+
+    session.close()
+    return jobs
+
+
+def update_job(user_id, job_id, patch_doc, project_id):
+    valid_patch = utils.JobDoc.create_patch(patch_doc)
+
+    values = {}
+    for key in valid_patch.keys():
+        if key == 'job_schedule':
+            values['schedule'] = json_utils.\
+                json_encode(valid_patch.get(key, None))
+        elif key == 'job_actions':
+            values[key] = json_utils.json_encode(valid_patch.get(key, None))
+        else:
+            values[key] = valid_patch.get(key, None)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Job, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=job_id)
+            result = query.update(values)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if not result:
+        raise freezer_api_exc.DocumentNotFound(
+            message='Job not registered with ID'
+                    ' {0}'.format(job_id))
+    else:
+        LOG.info('job updated, job_id: {0}'.format(job_id))
+        return 0
+
+
+def replace_job(user_id, job_id, doc, project_id):
+
+    valid_doc = utils.JobDoc.update(doc, user_id, job_id, project_id)
+    values = {}
+    valuesnew = {}
+    bCreate = False
+
+    values['id'] = job_id
+    values['project_id'] = project_id
+    values['user_id'] = user_id
+    values['schedule'] = json_utils.\
+        json_encode(valid_doc.pop('job_schedule', None))
+    values['client_id'] = valid_doc.get('client_id', None)
+    values['session_id'] = valid_doc.pop('session_id', None)
+    values['session_tag'] = valid_doc.pop('session_tag', None)
+    values['description'] = valid_doc.pop('description', None)
+    values['job_actions'] = json_utils.\
+        json_encode(valid_doc.pop('job_actions', None))
+
+    for key in values:
+        if values[key] is not None:
+            valuesnew[key] = values[key]
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Job, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=job_id)
+            result = query.update(valuesnew)
+            if not result:
+                bCreate = True
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if bCreate:
+        job = models.Job()
+        job.update(valuesnew)
+        session = get_db_session()
+        with session.begin():
+            try:
+                job.save(session=session)
+            except Exception as e:
+                session.close()
+                raise freezer_api_exc.\
+                    StorageEngineError(message='mysql operation failed {0}'.
+                                       format(e))
+        session.close()
+
+    LOG.info('job replaced, job_id: {0}'.format(job_id))
+    return job_id
+
+
 def get_backup(project_id, user_id, backup_id):
     session = get_db_session()
     with session.begin():
