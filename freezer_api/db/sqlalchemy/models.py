@@ -66,16 +66,30 @@ class Client(BASE, FreezerBase):
 
 class Action(BASE, FreezerBase):
     """Represents freezer action."""
+    # The field backup_metadata is json, including :
+    # hostname ,snapshot ,storage ,dry_run , lvm_auto_snap, lvm_dirmount,
+    # lvm_snapname max_level , max_priority, max_segment_size , mode,
+    # mysql_conf, path_to_backup,  remove_older_than restore_abs_path
+    # restore_from_host, ssh_host , ssh_key , ssh_username, ssh_port , proxy
+    # no_incremental, overwrite , nova_inst_id , engine_name
+    # restore_from_date , command , incremental
 
     __tablename__ = 'actions'
     id = Column(String(36), primary_key=True)
     action = Column(String(255), nullable=False)
     project_id = Column(String(36), nullable=False)
+    user_id = Column(String(64), nullable=False)
     mode = Column(String(255))
     src_file = Column(String(255))
     backup_name = Column(String(255))
     container = Column(String(255))
-    restore_abs_path = Column(String(255))
+    timeout = Column(Integer)
+    priority = Column(Integer)
+    max_retries_interval = Column(Integer, default=6)
+    max_retries = Column(Integer, default=5)
+    mandatory = Column(Boolean, default=False)
+    log_file = Column(String(255))
+    backup_metadata = Column(Text)
 
 
 class Job(BASE, FreezerBase):
@@ -98,53 +112,15 @@ class Session(BASE, FreezerBase):
     policy = Column(String(255))
 
 
-class ActionAttachment(BASE, FreezerBase):
-    __tablename__ = 'action_attachments'
-    id = Column(String(36), primary_key=True)
-    action_id = Column(String(36), ForeignKey('actions.id'), nullable=False)
-    job_id = Column(String(36), ForeignKey('jobs.id'), nullable=False)
-    project_id = Column(String(36), nullable=False)
-    priority = Column(Integer)
-    retries = Column(Integer)
-    retry_interval = Column(Integer)
-    mandatory = Column(Boolean, default=False)
-    action = relationship(Action, backref='action_attachments',
-                          foreign_keys=action_id,
-                          primaryjoin='and_('
-                          'ActionAttachment.action_id == Action.id,'
-                          'ActionAttachment.deleted == False)')
-    job = relationship(Job, backref='action_attachments',
-                       foreign_keys=job_id,
-                       primaryjoin='and_('
-                       'ActionAttachment.job_id == Job.id,'
-                       'ActionAttachment.deleted == False)')
-
-
 class ActionReport(BASE, FreezerBase):
     __tablename__ = 'action_reports'
     id = Column(String(36), primary_key=True)
-    action_id = Column(String(36), ForeignKey('actions.id'), nullable=False)
-    action_attachment_id = Column(
-        String(36), ForeignKey('actions.id'), nullable=False
-    )
     project_id = Column(String(36), nullable=False)
+    user_id = Column(String(64), nullable=False)
     result = Column(String(255))
     time_elapsed = Column(String(255))
-    backup_metadata = Column(Text)
     report_date = Column(TIMESTAMP)
     log = Column(BLOB)
-    action = relationship(Action, backref='action_reports',
-                          foreign_keys=action_id,
-                          primaryjoin='and_('
-                          'ActionReport.action_id == Action.id,'
-                          'ActionReport.deleted == False)')
-    action_attachment = relationship(
-        ActionAttachment,
-        backref='action_reports',
-        foreign_keys=action_attachment_id,
-        primaryjoin='and_('
-        'ActionReport.action_attachment_id == ActionAttachment.id,'
-        'ActionReport.deleted == False)')
 
 
 class JobAttachment(BASE, FreezerBase):
