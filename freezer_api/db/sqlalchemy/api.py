@@ -513,3 +513,255 @@ def replace_action(user_id, action_id, doc, project_id):
 
     LOG.info('action replaced, action_id: {0}'.format(action_id))
     return action_id
+
+
+def get_session(project_id, user_id, session_id):
+    jobt = {}
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Session, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=session_id)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+    values = {}
+    if 1 == len(result):
+        values['project_id'] = result[0].get('project_id')
+        values['session_id'] = result[0].get('id')
+        values['user_id'] = result[0].get('user_id')
+        values['description'] = result[0].get('description')
+        values['session_tag'] = result[0].get('session_tag')
+        values['result'] = result[0].get('result')
+        values['hold_off'] = result[0].get('hold_off')
+        values['status'] = result[0].get('status')
+        values['time_ended'] = result[0].get('time_ended')
+        values['time_started'] = result[0].get('time_started')
+        values['time_end'] = result[0].get('time_end')
+        values['time_start'] = result[0].get('time_start')
+
+        values['schedule'] = json_utils.json_decode(result[0].
+                                                    get('schedule'))
+        jobt = result[0].get('job')
+        if jobt is not None:
+            values['jobs'] = json_utils.json_decode(result[0].get('job'))
+
+    return values
+
+
+def delete_session(project_id, user_id, session_id):
+    session = get_db_session()
+    query = model_query(session, models.Session, project_id=project_id)
+    query = query.filter_by(user_id=user_id).filter_by(id=session_id)
+
+    result = query.all()
+    if 1 == len(result):
+        try:
+            result[0].delete(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+            LOG.info('Session delete, session_id: {0} deleted'.
+                     format(session_id))
+    else:
+        LOG.info('Session delete, session_id: {0} not found'.
+                 format(session_id))
+
+    session.close()
+    return session_id
+
+
+def add_session(project_id, user_id, doc):
+    session_doc = utils.SessionDoc.create(doc=doc,
+                                          user_id=user_id,
+                                          project_id=project_id)
+    session_id = session_doc['session_id']
+    schedulingjson = session_doc.get('schedule')
+    existing = get_session(project_id=project_id, user_id=user_id,
+                           session_id=session_id)
+    if existing:
+        raise freezer_api_exc.DocumentExists(
+            message='Session already registered with ID'
+                    ' {0}'.format(session_id))
+
+    sessiont = models.Session()
+    sessionvalue = {}
+    sessionvalue['project_id'] = project_id
+    sessionvalue['id'] = session_id
+    sessionvalue['user_id'] = user_id
+    sessionvalue['description'] = session_doc.get('description', None)
+    sessionvalue['hold_off'] = session_doc.get('hold_off', 30)
+    sessionvalue['session_tag'] = session_doc.get('session_tag', 0)
+    sessionvalue['status'] = session_doc.get('status')
+    sessionvalue['time_ended'] = session_doc.get('time_ended', -1)
+    sessionvalue['time_started'] = session_doc.get('time_started', -1)
+    sessionvalue['time_end'] = session_doc.get('time_end', -1)
+    sessionvalue['time_start'] = session_doc.get('time_start', -1)
+    sessionvalue['result'] = session_doc.get('result', None)
+
+    # The field scheduling is json
+    sessionvalue['schedule'] = json_utils.json_encode(schedulingjson)
+    sessiont.update(sessionvalue)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            sessiont.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.\
+                StorageEngineError(message='mysql operation failed {0}'.
+                                   format(e))
+
+    LOG.info('Session registered, session_id: {0}'.format(session_id))
+
+    session.close()
+    return session_id
+
+
+def update_session(user_id, session_id, patch_doc, project_id):
+    valid_patch = utils.SessionDoc.create_patch(patch_doc)
+
+    sessiont = get_session(project_id=project_id, user_id=user_id,
+                           session_id=session_id)
+    if not sessiont:
+        raise freezer_api_exc.DocumentNotFound(
+            message='Session not register with ID'
+                    ' {0}'.format(session_id))
+
+    values = {}
+    for key in valid_patch.keys():
+        if key == 'jobs':
+            jobintable = sessiont.get('jobs', None)
+            jobinpatch = valid_patch.get('jobs', None)
+            if jobintable:
+                jobintable.update(jobinpatch)
+                jobinpatch.update(jobintable)
+            values['job'] = json_utils.json_encode(valid_patch.get(key, None))
+        elif key == 'schedule':
+            values[key] = json_utils.json_encode(valid_patch.get(key, None))
+        else:
+            values[key] = valid_patch.get(key, None)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Session, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=session_id)
+            result = query.update(values)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if not result:
+        raise freezer_api_exc.DocumentNotFound(
+            message='session not registered with ID'
+                    ' {0}'.format(session_id))
+    else:
+        LOG.info('session updated, session_id: {0}'.format(session_id))
+        return 0
+
+
+def replace_session(user_id, session_id, doc, project_id):
+
+    valid_doc = utils.SessionDoc.update(doc, user_id, session_id,
+                                        project_id)
+    values = {}
+    valuesnew = {}
+    bCreate = False
+
+    values['id'] = session_id
+    values['project_id'] = project_id
+    values['user_id'] = user_id
+    values['schedule'] = json_utils.\
+        json_encode(valid_doc.get('schedule', None))
+    values['job'] = json_utils.json_encode(valid_doc.get('jobs', None))
+    values['session_tag'] = valid_doc.get('session_tag', None)
+    values['description'] = valid_doc.get('description', None)
+    values['status'] = valid_doc.get('status')
+    values['time_ended'] = valid_doc.get('time_ended', None)
+    values['time_started'] = valid_doc.get('time_started', None)
+    values['time_end'] = valid_doc.get('time_end', None)
+    values['time_start'] = valid_doc.get('time_start', None)
+    values['result'] = valid_doc.get('result', None)
+    values['hold_off'] = valid_doc.get('hold_off', None)
+
+    for key in values:
+        if values[key] is not None:
+            valuesnew[key] = values[key]
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Session, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=session_id)
+            result = query.update(valuesnew)
+            if not result:
+                bCreate = True
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if bCreate:
+        sessiont = models.Session()
+        sessiont.update(valuesnew)
+        session = get_db_session()
+        with session.begin():
+            try:
+                sessiont.save(session=session)
+            except Exception as e:
+                session.close()
+                raise freezer_api_exc.\
+                    StorageEngineError(message='mysql operation failed {0}'.
+                                       format(e))
+        session.close()
+
+    LOG.info('session replaced, session_id: {0}'.format(session_id))
+    return session_id
+
+
+def search_session(project_id, user_id, offset=0,
+                   limit=10, search=None):
+    search = search or {}
+    sessions = []
+    jobt = {}
+
+    session = get_db_session()
+    query = model_query(session, models.Session, project_id=project_id)
+    query = query.filter_by(user_id=user_id)
+
+    result = query.all()
+
+    for sessiont in result:
+        sessionmap = {}
+        sessionmap['project_id'] = project_id
+        sessionmap['user_id'] = user_id
+        sessionmap['session_id'] = sessiont.get('id')
+        sessionmap['description'] = sessiont.get('description')
+        sessionmap['session_tag'] = sessiont.get('session_tag')
+        sessionmap['result'] = sessiont.get('result')
+        sessionmap['hold_off'] = sessiont.get('hold_off')
+        sessionmap['status'] = sessiont.get('status')
+        sessionmap['time_ended'] = sessiont.get('time_ended')
+        sessionmap['time_end'] = sessiont.get('time_end')
+        sessionmap['time_started'] = sessiont.get('time_started')
+        sessionmap['time_start'] = sessiont.get('time_start')
+        sessionmap['schedule'] = json_utils.\
+            json_decode(sessiont.get('schedule'))
+        jobt = sessiont.get('job')
+        if jobt is not None:
+            sessionmap['jobs'] = json_utils.json_decode(sessiont.get('job'))
+        sessions.append(sessionmap)
+
+    session.close()
+    return sessions
