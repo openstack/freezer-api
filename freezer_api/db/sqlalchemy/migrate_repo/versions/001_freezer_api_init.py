@@ -60,6 +60,37 @@ def define_tables(meta):
         mysql_charset='utf8'
     )
 
+    # scheduling field info is json, including: {
+    #  "time_ended" : 1538122522,
+    #  "schedule_hour" : "16",
+    #  "time_started" : 1538122500,
+    #  "schedule_start_date" : "2018-09-25T15:50:03",
+    # "schedule_minute" : "15",
+    #  "time_created" : 1537861978,
+    #  "event" : "",
+    #  "status" : "scheduled",
+    #  "result" : "success",
+    #  "current_pid" : 14520
+    # }, etc
+    jobs = Table(
+        'jobs', meta,
+        Column('created_at', DateTime(timezone=False)),
+        Column('updated_at', DateTime(timezone=False)),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('project_id', String(36), nullable=False),
+        Column('user_id', String(36), nullable=False),
+        Column('schedule', Text),
+        Column('client_id', String(255), nullable=False),
+        Column('session_id', String(36), default=''),
+        Column('session_tag', Integer, default=0),
+        Column('description', String(255)),
+        Column('job_actions', Text),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8'
+    )
+
     # The field metadata is json, including :
     # nova_inst_id, engine_name, storage, remove_older_than, restore_from_date,
     # command, incremental, restore_abs_path, etc
@@ -105,7 +136,7 @@ def define_tables(meta):
         mysql_charset='utf8'
     )
 
-    return [clients, sessions, actions, action_reports]
+    return [clients, sessions, jobs, actions, action_reports]
 
 
 def upgrade(migrate_engine):

@@ -92,16 +92,6 @@ class Action(BASE, FreezerBase):
     backup_metadata = Column(Text)
 
 
-class Job(BASE, FreezerBase):
-    """Represents freezer job."""
-
-    __tablename__ = 'jobs'
-    id = Column(String(36), primary_key=True)
-    project_id = Column(String(36), nullable=False)
-    scheduling = Column(Text)
-    description = Column(String(255))
-
-
 class Session(BASE, FreezerBase):
     """Represents freezer session."""
 
@@ -122,6 +112,31 @@ class Session(BASE, FreezerBase):
     result = Column(String(255))
 
 
+class Job(BASE, FreezerBase):
+    """Represents freezer job."""
+
+    __tablename__ = 'jobs'
+    id = Column(String(36), primary_key=True)
+    project_id = Column(String(36), nullable=False)
+    user_id = Column(String(36), nullable=False)
+    schedule = Column(Text)
+    client_id = Column(String(255), ForeignKey('clients.id'), nullable=False)
+    session_id = Column(String(36), ForeignKey('sessions.id'), nullable=False)
+    session_tag = Column(String(255))
+    description = Column(String(255))
+    job_actions = Column(Text)
+    client = relationship(Client, backref='jobs',
+                          foreign_keys=client_id,
+                          primaryjoin='and_('
+                          'Job.client_id == Client.id,'
+                          'Job.deleted == False)')
+    session = relationship(Session, backref='jobs',
+                           foreign_keys=session_id,
+                           primaryjoin='and_('
+                           'Job.session_id == Session.id,'
+                           'Job.deleted == False)')
+
+
 class ActionReport(BASE, FreezerBase):
     __tablename__ = 'action_reports'
     id = Column(String(36), primary_key=True)
@@ -133,45 +148,16 @@ class ActionReport(BASE, FreezerBase):
     log = Column(BLOB)
 
 
-class JobAttachment(BASE, FreezerBase):
-    __tablename__ = 'job_attachments'
-    id = Column(String(36), primary_key=True)
-    client_id = Column(String(255), ForeignKey('clients.id'), nullable=False)
-    job_id = Column(String(36), ForeignKey('jobs.id'), nullable=False)
-    session_id = Column(String(36), ForeignKey('sessions.id'), nullable=False)
-    project_id = Column(String(36), nullable=False)
-    event = Column(String(255))
-    status = Column(String(255))
-    current_pid = Column(Integer)
-    client = relationship(Client, backref='job_attachments',
-                          foreign_keys=client_id,
-                          primaryjoin='and_('
-                          'JobAttachment.client_id == Client.id,'
-                          'JobAttachment.deleted == False)')
-    job = relationship(
-        Job,
-        backref='job_attachments',
-        foreign_keys=job_id,
-        primaryjoin='and_('
-        'JobAttachment.job_id == Job.id,'
-        'JobAttachment.deleted == False)')
-    session = relationship(Session, backref='job_attachments',
-                           foreign_keys=session_id,
-                           primaryjoin='and_('
-                           'JobAttachment.session_id == Session.id,'
-                           'JobAttachment.deleted == False)')
-
-
 def register_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionReport, JobAttachment)
+               ActionReport)
     for _model in _models:
         _model.metadata.create_all(engine)
 
 
 def unregister_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionReport, JobAttachment)
+               ActionReport)
     for _model in _models:
         _model.metadata.drop_all(engine)
 
