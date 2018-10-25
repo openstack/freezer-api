@@ -1,0 +1,30 @@
+{
+        "sessions":
+        [
+            {
+                "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+                "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+                "description": "Instance Database backup ",
+                "schedule":
+                {
+                    "schedule_interval": "1 days",
+                    "status": "scheduled",
+                    "event": "start"
+                },
+                "session_tag": 250,
+                "session_id": "79eba555449d4cfe8ef66f34cb096295",
+                "jobs":
+                {
+                    "0ae284d514eb47dd84154748b5056749":
+                    {
+                        "time_ended": 1493119342,
+                        "status": "scheduled",
+                        "result": "success",
+                        "client_id": "752d8bd43d654e7a840bbfda77ce41af_szaher",
+                        "time_started": 1493119341
+                    }
+                },
+                "hold_off": 50
+            }
+        ]
+}

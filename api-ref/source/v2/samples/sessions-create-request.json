@@ -1,0 +1,10 @@
+{
+   "session_tag":20,
+   "description":"Webapp Database backup ",
+   "hold_off":30,
+   "schedule":{
+      "schedule_interval":"1 hours",
+      "status":"scheduled",
+      "event":"start"
+   }
+}

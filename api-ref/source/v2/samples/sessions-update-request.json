@@ -1,0 +1,10 @@
+{
+  "session_tag": 250,
+  "description": "Instance Database backup ",
+  "hold_off": 50,
+  "schedule": {
+        "schedule_interval": "1 days",
+        "status": "scheduled",
+        "event": "start"
+  }
+}
