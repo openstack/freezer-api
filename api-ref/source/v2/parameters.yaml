@@ -1,4 +1,32 @@
-###############################  Response  ####################################
+###############################  Query  ####################################
+
+action_id_path:
+  type: string
+  in: query
+  required: true
+  description: |
+    The action UUID.
+
+backup_id_path:
+  type: string
+  in: query
+  required: true
+  description: |
+    The UUID of the backup.
+
+client_id_path:
+  type: string
+  in: query
+  required: true
+  description: |
+    The client ID.
+
+job_id_path:
+  type: string
+  in: query
+  required: true
+  description: |
+    The job UUID.
 
 limit:
   description: |
@@ -27,11 +55,79 @@ project_id_path:
     The UUID of the project. A project was also known as
     a tenant.
 
+session_id_path:
+  type: string
+  in: query
+  required: true
+  description: |
+    The session UUID.
+
+###############################  Body  ####################################
+
+action_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The action UUID.
+
+actions:
+  type: list
+  in: body
+  required: true
+  description: |
+    A list of actions.
+
+backup_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The UUID of the backup.
+
+backup_metadata:
+  type: list
+  in: body
+  required: true
+  description: |
+    A list of backup metada information. This contains the backup details.
+    like ``path_to_backup``, ``backup_name``, ``hostname``, ``job_id``,
+    ``storage``, ...
+
 backups:
   type: list
   in: body
   description: |
-    A list of backups
+    A list of backups.
+
+client_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The client UUID.
+
+clients:
+  type: list
+  in: body
+  required: true
+  description: |
+    A list of clients.
+
+freezer_action:
+  type: dict
+  in: body
+  required: true
+  description: |
+    Action parameters. It depends on the actual action (backup, restore,
+    admin, info) so the parameters differ.
+
+hostname:
+  type: string
+  in: body
+  required: true
+  description: |
+    The hostname of the machine that client is running on.
 
 job_actions_req:
   type: list
@@ -45,20 +141,136 @@ job_description_req:
   in: body
   required: true
   description: |
-    The name of the job
+    The name of the job.
+
+job_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The job UUID.
 
 job_schedule_req:
   type: dict
   in: body
   required: true
   description: |
-    The schedule information of the job
+    The schedule information of the job.
 
 jobs:
   type: list
   in: body
   description: |
-    A list of jobs
+    A list of jobs.
+
+max_retries:
+  type: int
+  in: body
+  description: |
+    A number of times freezer should retry to execute the action.
+
+max_retries_interval:
+  type: int
+  in: body
+  description: |
+    The time that freezer should wait between diferrent retrials to execute
+    the action.
+
+result:
+  type: string
+  in: body
+  description: |
+    A string represents if the operation was successful ``success`` or failed.
+
+session_description:
+  type: string
+  in: body
+  required: true
+  description: |
+    A description of the session.
+
+session_event:
+  type: string
+  in: body
+  description: |
+    The event is being used to start or stop a session.
+
+session_hold_off:
+  type: int
+  in: body
+  required: true
+  description: |
+    Amount of time to wait before re-running the same session again.
+
+session_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The session UUID.
+
+session_schedule:
+  type: dict
+  in: body
+  required: true
+  description: |
+    A dictionary that holds the session secheduling information. It's the
+    same like job_schedule. it contains ``schedule_interval``, ``status``
+    and ``event``.
+
+session_schedule_internval:
+  type: string
+  in: body
+  description: |
+    The scheduling information of the session. for examples "2 hours" it
+    means the session will be executed every 2 hours.
+
+session_status:
+  type: string
+  in: body
+  description: |
+    The status of the session. Default is ``active``.
+
+session_tag:
+  type: string
+  in: body
+  required: true
+  description: |
+    The event is being used to start or stop a session.
+
+sessions:
+  type: list
+  in: body
+  description: |
+    A list of existing sessions.
+
+user_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The user UUID.
+
+username:
+  type: string
+  in: body
+  required: true
+  description: |
+    The username.
+
+uuid:
+  type: string
+  in: body
+  required: true
+  description: |
+    The client UUID.
+
+version_doc:
+  type: int
+  in: body
+  required: true
+  description: |
+    The document version.
 
 versions:
   type: list

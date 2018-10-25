@@ -1,0 +1,19 @@
+{
+        "freezer_action":
+        {
+            "backup_name": "production_backup",
+            "container": "prod_container",
+            "no_incremental": true,
+            "path_to_backup": "/etc/",
+            "snapshot": true,
+            "action": "backup",
+            "remove_older_than": 365,
+            "log_file": "/var/log/freezer/job0001.log"
+        },
+        "max_retries_interval": 6,
+        "_version": 1,
+        "max_retries": 5,
+        "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+        "action_id": "1fc414f091b84263b45d7e1f1f85e5bf",
+        "project_id": "752d8bd43d654e7a840bbfda77ce41af"
+}

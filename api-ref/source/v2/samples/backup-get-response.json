@@ -1,0 +1,39 @@
+{
+        "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+        "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
+        "backup_id": "96a5946a6e994a38a3d1008fbc6f3406",
+        "user_name": "demo",
+        "backup_metadata":
+        {
+            "ssh_port": 22,
+            "consistency_checksum": "",
+            "curr_backup_level": 0,
+            "backup_name": "test0001_backup",
+            "container": "/tmp/test0001_container",
+            "compression": "gzip",
+            "dry_run": "",
+            "hostname": "szaher",
+            "storage": "local",
+            "vol_snap_path": "/etc/",
+            "os_auth_version": "",
+            "client_os": "linux2",
+            "time_stamp": 1493052022,
+            "container_segments": "",
+            "ssh_username": "",
+            "path_to_backup": "/etc/",
+            "ssh_key": "",
+            "proxy": "",
+            "job_id": "0ae284d514eb47dd84154748b5056749",
+            "always_level": "",
+            "max_level": "",
+            "backup_media": "fs",
+            "ssh_host": "",
+            "mode": "fs",
+            "fs_real_path": "/etc/",
+            "action": "backup",
+            "client_version": "5.0.0",
+            "log_file": "/home/saad/job0001.log"
+        },
+        "_version": 1
+}
+

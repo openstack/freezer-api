@@ -5,8 +5,9 @@ Backups (backups)
 Backups allow users to record their backups and metadata information about
 those backups and when backups were taken. It holds the backup information.
 
-List backups
-============
+
+List backups(v2)
+================
 
 .. rest_method::  GET /v2/{project_id}/backups
 
@@ -22,15 +23,16 @@ Error response codes:
 - Unauthorized (401)
 - Forbidden (403)
 
-Request Parameters
-------------------
+
+Query Parameters
+-----------------
 
 .. rest_parameters:: parameters.yaml
 
   - project_id: project_id_path
 
-Query Parameters
------------------
+Request Parameters
+-------------------
 
 .. rest_parameters:: parameters.yaml
 
