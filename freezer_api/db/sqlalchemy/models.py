@@ -148,16 +148,32 @@ class ActionReport(BASE, FreezerBase):
     log = Column(BLOB)
 
 
+class Backup(BASE, FreezerBase):
+    """Represents freezer Backup."""
+    # The field backup_metadata is json, including :
+    # nova_inst_id, engine_name, storage, remove_older_than, restore_from_date,
+    # command, incremental, restore_abs_path, etc
+
+    __tablename__ = 'backups'
+    id = Column(String(36), primary_key=True)
+    client_id = Column(String(255), nullable=False)
+    job_id = Column(String(36), nullable=False)
+    project_id = Column(String(36), nullable=False)
+    user_id = Column(String(64), nullable=False)
+    user_name = Column(String(64), nullable=False)
+    backup_metadata = Column(Text)
+
+
 def register_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionReport)
+               ActionReport, Backup)
     for _model in _models:
         _model.metadata.create_all(engine)
 
 
 def unregister_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionReport)
+               ActionReport, Backup)
     for _model in _models:
         _model.metadata.drop_all(engine)
 
