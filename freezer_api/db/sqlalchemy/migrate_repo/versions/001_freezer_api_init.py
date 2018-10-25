@@ -136,7 +136,27 @@ def define_tables(meta):
         mysql_charset='utf8'
     )
 
-    return [clients, sessions, jobs, actions, action_reports]
+    # The field metadata is json, including :
+    # nova_inst_id, engine_name, storage, remove_older_than, restore_from_date,
+    # command, incremental, restore_abs_path, etc
+    backups = Table(
+        'backups', meta,
+        Column('created_at', DateTime(timezone=False)),
+        Column('updated_at', DateTime(timezone=False)),
+        Column('deleted_at', DateTime),
+        Column('deleted', Boolean),
+        Column('id', String(36), primary_key=True, nullable=False),
+        Column('client_id', String(255), nullable=False),
+        Column('job_id', String(36), nullable=False),
+        Column('project_id', String(36), nullable=False),
+        Column('user_id', String(64), nullable=False),
+        Column('user_name', String(64)),
+        Column('backup_metadata', Text),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8'
+    )
+
+    return [clients, sessions, jobs, actions, action_reports, backups]
 
 
 def upgrade(migrate_engine):
