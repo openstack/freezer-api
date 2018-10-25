@@ -26,7 +26,7 @@ def define_tables(meta):
         Column('user_id', String(36), nullable=False),
         Column('id', String(255), primary_key=True, nullable=False),
         Column('project_id', String(36), nullable=False),
-        Column('config_id', String(255), nullable=False),
+        Column('client_id', String(255), nullable=False),
         Column('hostname', String(255), nullable=False),
         Column('description', String(255)),
         Column('uuid', String(36), nullable=False),

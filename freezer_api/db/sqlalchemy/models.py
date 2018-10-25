@@ -58,7 +58,7 @@ class Client(BASE, FreezerBase):
     id = Column(String(255), primary_key=True)
     project_id = Column(String(36), nullable=False)
     user_id = Column(String(64), nullable=False)
-    config_id = Column(String(255), nullable=False)
+    client_id = Column(String(255), nullable=False)
     hostname = Column(String(128))
     description = Column(String(255))
     uuid = Column(String(36), nullable=False)
@@ -178,14 +178,14 @@ class JobAttachment(BASE, FreezerBase):
 
 def register_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionAttachment, ActionReport, JobAttachment)
+               ActionReport, JobAttachment)
     for _model in _models:
         _model.metadata.create_all(engine)
 
 
 def unregister_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionAttachment, ActionReport, JobAttachment)
+               ActionReport, JobAttachment)
     for _model in _models:
         _model.metadata.drop_all(engine)
 
