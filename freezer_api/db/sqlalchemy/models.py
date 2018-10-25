@@ -107,9 +107,19 @@ class Session(BASE, FreezerBase):
 
     __tablename__ = 'sessions'
     id = Column(String(36), primary_key=True)
+    session_tag = Column(String(255), default=0)
+    description = Column(String(255))
+    hold_off = Column(Integer, default=30)
+    schedule = Column(Text)
+    job = Column(Text)
     project_id = Column(String(36), nullable=False)
-    scheduling = Column(Text)
-    policy = Column(String(255))
+    user_id = Column(String(36), nullable=False)
+    time_start = Column(Integer, default=-1)
+    time_end = Column(Integer, default=-1)
+    time_started = Column(Integer, default=-1)
+    time_ended = Column(Integer, default=-1)
+    status = Column(String(255))
+    result = Column(String(255))
 
 
 class ActionReport(BASE, FreezerBase):
