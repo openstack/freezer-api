@@ -17,7 +17,14 @@ import sys
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import enginefacade
+from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
+
+from freezer_api.common._i18n import _
+from freezer_api.common import elasticv2_utils as utils
+from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.db.sqlalchemy import models
+
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -84,5 +91,137 @@ def get_engine(use_slave=False, context=None):
     return ctxt_mgr.get_legacy_facade().get_engine(use_slave=use_slave)
 
 
+def get_db_session(context=None):
+    """Get a database session object.
+    :param context: The request context that can contain a context manager
+    """
+    ctxt_mgr = get_context_manager(context)
+    return ctxt_mgr.get_legacy_facade().get_session()
+
+
 def get_api_engine():
     return api_context_manager.get_legacy_facade().get_engine()
+
+
+def model_query(session, model,
+                args=None,
+                read_deleted='no',
+                project_id=None):
+    """Query helper that accounts for context's `read_deleted` field.
+
+    :param session:     The session to use, sqlalchemy.orm.session.Session
+    :param model:       Model to query. Must be a subclass of ModelBase.
+    :param args:        Arguments to query. If None - model is used.
+    :param read_deleted: If not None, overrides context's read_deleted field.
+                        Permitted values are 'no', which does not return
+                        deleted values; 'only', which only returns deleted
+                        values; and 'yes', which does not filter deleted
+                        values.
+    :param project_id:  tenant id
+    """
+
+    query_kwargs = {}
+    if 'no' == read_deleted:
+        query_kwargs['deleted'] = False
+    elif 'only' == read_deleted:
+        query_kwargs['deleted'] = True
+    elif 'yes' == read_deleted:
+        pass
+    else:
+        raise ValueError(_("Unrecognized read_deleted value '%s'")
+                         % read_deleted)
+
+    query = sqlalchemyutils.model_query(
+        model, session, args, **query_kwargs)
+
+    if project_id:
+        query = query.filter_by(project_id=project_id)
+
+    return query
+
+
+def get_client(project_id, user_id, client_id=None, offset=0,
+               limit=10, search=None):
+    search = search or {}
+    clients = []
+    session = get_db_session()
+    query = model_query(session, models.Client, project_id=project_id)
+
+    if client_id:
+        query = query.filter_by(user_id=user_id).filter_by(client_id=client_id)
+    else:
+        query = query.filter_by(user_id=user_id)
+
+    result = query.all()
+
+    for client in result:
+        clientmap = {}
+        clientmap[u'project_id'] = client.project_id
+        clientmap[u'user_id'] = client.user_id
+        clientmap[u'client'] = {u'uuid': client.uuid,
+                                u'hostname': client.hostname,
+                                u'client_id': client.client_id,
+                                u'description': client.description}
+        clients.append(clientmap)
+
+    session.close()
+    return clients
+
+
+def add_client(project_id, user_id, doc):
+    client_doc = utils.ClientDoc.create(doc, project_id, user_id)
+    client_id = client_doc['client']['client_id']
+    values = {}
+    client_json = client_doc.get('client', {})
+
+    existing = get_client(project_id=project_id, user_id=user_id,
+                          client_id=client_id)
+    if existing:
+        raise freezer_api_exc.DocumentExists(
+            message='Client already registered with ID'
+                    ' {0}'.format(client_id))
+
+    client = models.Client()
+    values['project_id'] = project_id
+    values['client_id'] = client_id
+    values['id'] = client_json.get('uuid', None)
+    values['user_id'] = user_id
+    values['hostname'] = client_json.get('hostname', None)
+    values['uuid'] = client_json.get('uuid', None)
+    values['description'] = client_json.get('description', None)
+    client.update(values)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            client.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    LOG.info('Client registered, client_id: {0}'.format(client_id))
+    session.close()
+    return client_id
+
+
+def delete_client(project_id, user_id, client_id):
+    session = get_db_session()
+    query = model_query(session, models.Client, project_id=project_id)
+    query = query.filter_by(user_id=user_id).filter_by(client_id=client_id)
+    result = query.all()
+    if 1 == len(result):
+        try:
+            result[0].delete(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+        LOG.info('Client delete, client_id: {0} deleted'.
+                 format(client_id))
+    else:
+        LOG.info('Client delete, client_id: {0} not found'.
+                 format(client_id))
+
+    session.close()
+    return client_id
