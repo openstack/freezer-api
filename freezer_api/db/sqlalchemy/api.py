@@ -515,6 +515,129 @@ def replace_action(user_id, action_id, doc, project_id):
     return action_id
 
 
+def get_backup(project_id, user_id, backup_id):
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, models.Backup, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=backup_id)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+
+    session.close()
+    values = {}
+    if 1 == len(result):
+        values['project_id'] = result[0].get('project_id')
+        values['backup_id'] = result[0].get('id')
+        values['user_id'] = result[0].get('user_id')
+        values['user_name'] = result[0].get('user_name')
+        values['client_id'] = result[0].get('client_id')
+        values['backup_uuid'] = result[0].get('id')
+        values['backup_metadata'] = json_utils.\
+            json_decode(result[0].get('backup_metadata'))
+    return values
+
+
+def add_backup(project_id, user_id, user_name, doc):
+
+    metadatadoc = utils.BackupMetadataDoc(project_id, user_id, user_name, doc)
+    if not metadatadoc.is_valid():
+        raise freezer_api_exc.BadDataFormat(
+            message='Bad Data Format')
+    backup_id = metadatadoc.backup_id
+    backupjson = metadatadoc.serialize()
+    backup_metadata = backupjson.get('backup_metadata')
+
+    job_doc = backup_metadata.get('job_doc')
+
+    existing = get_backup(project_id=project_id, user_id=user_id,
+                          backup_id=backup_id)
+    if existing:
+        raise freezer_api_exc.DocumentExists(
+            message='Backup already registered with ID'
+                    ' {0}'.format(backup_id))
+
+    backup = models.Backup()
+    backupvalue = {}
+    backupvalue['project_id'] = project_id
+    backupvalue['id'] = backup_id
+    backupvalue['user_id'] = user_id
+    backupvalue['user_name'] = user_name
+    backupvalue['client_id'] = job_doc.get('client_id')
+    backupvalue['job_id'] = backup_metadata.get('job_id')
+    # The field backup_metadata is json, including :
+    # hostname , backup_name , container etc
+    backupvalue['backup_metadata'] = json_utils.json_encode(backup_metadata)
+    backup.update(backupvalue)
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            backup.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.\
+                StorageEngineError(message='mysql operation failed {0}'.
+                                   format(e))
+
+    LOG.info('Backup registered, backup_id: {0}'.format(backup_id))
+
+    session.close()
+    return backup_id
+
+
+def delete_backup(project_id, user_id, backup_id):
+    session = get_db_session()
+    query = model_query(session, models.Backup, project_id=project_id)
+    query = query.filter_by(user_id=user_id).filter_by(id=backup_id)
+
+    result = query.all()
+    if 1 == len(result):
+        try:
+            result[0].delete(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='mysql operation failed {0}'.format(e))
+            LOG.info('Backup delete, backup_id: {0} deleted'.
+                     format(backup_id))
+    else:
+        LOG.info('Backup delete, backup_id: {0} not found'.
+                 format(backup_id))
+
+    session.close()
+    return backup_id
+
+
+def search_backup(project_id, user_id, offset=0,
+                  limit=10, search=None):
+
+    search = search or {}
+    backups = []
+    session = get_db_session()
+    query = model_query(session, models.Backup, project_id=project_id)
+    query = query.filter_by(user_id=user_id)
+
+    result = query.all()
+
+    for backup in result:
+        backupmap = {}
+        backupmap['project_id'] = project_id
+        backupmap['user_id'] = user_id
+        backupmap['backup_id'] = backup.id
+        backupmap['backup_uuid'] = backup.id
+        backupmap['user_name'] = backup.user_name
+        backupmap['client_id'] = backup.client_id
+        backupmap['backup_metadata'] = json_utils.\
+            json_decode(backup.get('backup_metadata'))
+        backups.append(backupmap)
+
+    session.close()
+    return backups
+
+
 def get_session(project_id, user_id, session_id):
     jobt = {}
     session = get_db_session()
