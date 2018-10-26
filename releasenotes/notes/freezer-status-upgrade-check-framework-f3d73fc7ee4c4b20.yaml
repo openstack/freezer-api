@@ -1,0 +1,13 @@
+---
+prelude: >
+    Added new tool ``freezer-manager-status upgrade check``.
+features:
+  - |
+    New framework for ``freezer-manager-status upgrade check`` command is added.
+    This framework allows adding various checks which can be run before a
+    Freezer API upgrade to ensure if the upgrade can be performed safely.
+upgrade:
+  - |
+    Operator can now use new CLI tool ``freezer-manager-status upgrade check``
+    to check if Freezer API deployment can be safely upgraded from
+    N-1 to N release.
