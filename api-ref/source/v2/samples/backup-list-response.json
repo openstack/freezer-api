@@ -1,6 +1,7 @@
 {
   "backups": [
     {
+      "project_id": "752d8bd43d654e7a840bbfda77ce41af",
       "backup_id": "96a5946a6e994a38a3d1008fbc6f3406",
       "user_id": "a387de3311484ce58c4560486bc153f1",
       "job_id": "df96800d16fc4d28af75c8451daf0a92",
@@ -37,6 +38,7 @@
       "user_name": "os_backup"
     },
     {
+      "project_id": "752d8bd43d654e7a840bbfda77ce41af",
       "backup_id": "0cd44caf6db5486b94a04b33256a5ff4",
       "user_id": "a387de3311484ce58c4560486bc153f1",
       "job_id": "b30efac3ef744c45bf3062775ea3525b",
