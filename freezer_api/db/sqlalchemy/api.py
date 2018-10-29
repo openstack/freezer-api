@@ -529,7 +529,7 @@ def delete_job(user_id, job_id, project_id):
                 message='mysql operation failed {0}'.format(e))
             LOG.info('Job delete, job_id: {0} deleted'.format(job_id))
     else:
-            LOG.info('Action delete, job_id: {0} not found'.
+            LOG.info('Job delete, job_id: {0} not found'.
                      format(job_id))
     session.close()
     return job_id
