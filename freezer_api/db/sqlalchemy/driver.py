@@ -12,8 +12,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
+import threading
+
+from stevedore import driver
+
 from oslo_config import cfg
 from oslo_db import api as db_api
+from oslo_db.sqlalchemy import migration
 from oslo_log import log
 
 from freezer_api.db import base as db_base
@@ -21,8 +27,19 @@ from freezer_api.db.sqlalchemy import api as db_session
 from freezer_api.db.sqlalchemy import models
 
 
+INIT_VERSION = 0
+
+_IMPL = None
+_LOCK = threading.Lock()
+
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
+
+
+MIGRATE_REPO_PATH = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)),
+    'migrate_repo',
+)
 
 _BACKEND_MAPPING = {'sqlalchemy': 'freezer_api.db.sqlalchemy.api'}
 
@@ -40,12 +57,28 @@ class SQLDriver(db_base.DBDriver):
         return self._engine
 
     def get_api(self):
-        return self.get_engine()
+        self.get_engine()
+        return self.IMPL
 
-    def db_sync(self):
+    def get_backend(self):
+        global _IMPL
+        if _IMPL is None:
+            with _LOCK:
+                if _IMPL is None:
+                    _IMPL = driver.DriverManager(
+                        "freezer.database.migration_backend",
+                        cfg.CONF.database.backend).driver
+        return _IMPL
+
+    def db_sync(self, version=None, init_version=INIT_VERSION, engine=None):
+        """Migrate the database to `version` or the most recent version."""
+
         if not self._engine:
             self._engine = self.get_engine()
-        models.register_models(self._engine)
+        return migration.db_sync(engine=self._engine,
+                                 abs_path=MIGRATE_REPO_PATH,
+                                 version=version,
+                                 init_version=init_version)
 
     def db_show(self):
         if not self._engine:
