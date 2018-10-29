@@ -157,6 +157,7 @@ Response Parameters
   - max_retries: max_retries
   - max_retries_interval: max_retries_interval
   - user_id: user_id
+  - project_id: project_id
   - action_id: action_id
 
 Response Example

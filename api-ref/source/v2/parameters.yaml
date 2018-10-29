@@ -176,6 +176,14 @@ max_retries_interval:
     The time that freezer should wait between diferrent retrials to execute
     the action.
 
+project_id:
+  type: string
+  in: body
+  required: true
+  description: |
+    The UUID of the project. A project was also known as
+    a tenant.
+
 result:
   type: string
   in: body
