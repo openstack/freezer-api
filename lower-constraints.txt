@@ -44,6 +44,7 @@ oslo.log==3.36.0
 oslo.middleware==3.31.0
 oslo.policy==1.30.0
 oslo.serialization==2.25.0
+oslo.upgradecheck==0.1.0
 oslo.utils==3.36.0
 oslosphinx==4.7.0
 Paste==2.0.2
