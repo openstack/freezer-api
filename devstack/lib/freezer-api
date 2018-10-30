@@ -62,7 +62,9 @@ function is_freezer_api_enabled {
 function cleanup_freezer_api {
     disable_apache_site freezer-api
     sudo rm -f $(apache_site_config_for freezer-api)
-    ${TOP_DIR}/pkg/elasticsearch.sh uninstall
+    if [[ "${FREEZER_BACKEND}" != "sqlalchemy" ]]; then
+        ${TOP_DIR}/pkg/elasticsearch.sh uninstall
+    fi
     sudo rm -rf $FREEZER_API_AUTH_CACHE_DIR $FREEZER_API_CONF_DIR
 }
 
@@ -71,8 +73,10 @@ function install_freezer_api {
 
     git_clone $FREEZER_API_REPO $FREEZER_API_DIR $FREEZER_API_BRANCH
 
-    ${TOP_DIR}/pkg/elasticsearch.sh download
-    ${TOP_DIR}/pkg/elasticsearch.sh install
+    if [[ "${FREEZER_BACKEND}" != "sqlalchemy" ]]; then
+       ${TOP_DIR}/pkg/elasticsearch.sh download
+       ${TOP_DIR}/pkg/elasticsearch.sh install
+    fi
 
     setup_develop $FREEZER_API_DIR
 
@@ -110,13 +114,25 @@ function configure_freezer_api {
     # make sure the stack user has the right permissions on the config folder
     sudo chown -R $USER $FREEZER_API_CONF_DIR
 
-    #set elasticsearch configuration
-    iniset $FREEZER_API_CONF 'storage' backend elasticsearch
-    iniset $FREEZER_API_CONF 'storage' driver elasticsearch
+    if [[ "${FREEZER_BACKEND}" == "sqlalchemy" ]]; then
 
-    iniset $FREEZER_API_CONF 'elasticsearch' index freezer
-    iniset $FREEZER_API_CONF 'elasticsearch' number_of_replicas 0
-    iniset $FREEZER_API_CONF 'elasticsearch' hosts http://$SERVICE_HOST:9200
+        #set sqlalchemy configuration
+
+        iniset $FREEZER_API_CONF 'storage' backend sqlalchemy
+        iniset $FREEZER_API_CONF 'storage' driver sqlalchemy
+        iniset $FREEZER_API_CONF 'database' connection `database_connection_url freezer`
+
+    else
+        #set elasticsearch configuration
+
+        iniset $FREEZER_API_CONF 'storage' backend elasticsearch
+        iniset $FREEZER_API_CONF 'storage' driver elasticsearch
+
+        iniset $FREEZER_API_CONF 'elasticsearch' index freezer
+        iniset $FREEZER_API_CONF 'elasticsearch' number_of_replicas 0
+        iniset $FREEZER_API_CONF 'elasticsearch' hosts http://$SERVICE_HOST:9200
+
+    fi
 
     # create freezer_api_cache_dir
     sudo mkdir -p $FREEZER_API_AUTH_CACHE_DIR/api
@@ -143,12 +159,19 @@ function configure_freezer_api {
 
 # executed during: stack extra
 function init_freezer_api {
-    # this also waits for elasticsearch to start
-    ${TOP_DIR}/pkg/elasticsearch.sh start
 
-    # put elasticsearch mappings
-    freezer-manage db update
-    freezer-manage db show
+    if [[ "${FREEZER_BACKEND}" == "sqlalchemy" ]]; then
+        recreate_database freezer utf8
+        freezer-manage db sync
+    else
+
+       # this also waits for elasticsearch to start
+        ${TOP_DIR}/pkg/elasticsearch.sh start
+        # put elasticsearch mappings
+        freezer-manage db update
+        freezer-manage db show
+    fi
+
 }
 
 
@@ -176,7 +199,10 @@ function start_freezer_api {
 
 # executed during: stop
 function stop_freezer_api {
-    ${TOP_DIR}/pkg/elasticsearch.sh stop
+
+    if [[ "${FREEZER_BACKEND}" != "sqlalchemy" ]]; then
+        ${TOP_DIR}/pkg/elasticsearch.sh stop
+    fi
 
     if [[ "${FREEZER_API_SERVER_TYPE}" == "uwsgi" ]]; then
         uwsgi --stop $FREEZER_API_UWSGI_MASTER_PIDFILE
