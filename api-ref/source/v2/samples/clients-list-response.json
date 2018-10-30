@@ -2,27 +2,25 @@
         "clients":
         [
             {
+                "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+                "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
                 "client":
                 {
-                    "client":
-                    {
-                        "hostname": "szaher01",
-                        "uuid": "c4031a4885384376a717a238de975a9c"
-                    },
-                    "user_id": "5cd44cafcdb5386b94a04b33d56a5ff6",
+                    "hostname": "szaher01",
                     "uuid": "6f588392aa864c96b4af96a4eae005ce",
                     "client_id": "752d8bd43d654e7a840bbfda77ce41af_szaher01"
-                },
-                "user_id": "0cd44caf6db5486b94a04b33256a5ff4"
+                }
+
             },
             {
+                "project_id": "752d8bd43d654e7a840bbfda77ce41af",
+                "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
                 "client":
                 {
                     "hostname": "szaher",
                     "uuid": "c4031a9885384376a717a238ae975d9b",
                     "client_id": "752d8bd43d654e7a840bbfda77ce41af_szaher"
-                },
-                "user_id": "0cd44caf6db5486b94a04b33256a5ff4"
+                }
             }
         ]
 }
