@@ -53,3 +53,73 @@ Response Example
 .. literalinclude:: samples/backup-list-response.json
    :language: javascript
 
+
+Show backups(v2)
+================
+
+.. rest_method::  GET /v2/{project_id}/backups/{backup_id}
+
+Shows a backups.
+
+This operation shows a certain backup. The backup details.
+
+Normal response codes: 200
+
+Error response codes:
+
+- Unauthorized (401)
+- Forbidden (403)
+
+
+Query Parameters
+-----------------
+
+.. rest_parameters:: parameters.yaml
+
+  - project_id: project_id_path
+  - backup_id: backup_id_path
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - project_id: project_id
+  - user_id: user_id
+  - backup_id: backup_id
+  - username: username
+  - backup_metadata: backup_metadata
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/backup-get-response.json
+   :language: javascript
+
+
+Delete backups(v2)
+==================
+
+.. rest_method::  DELETE /v2/{project_id}/actions/{backup_id}
+
+Delete backups in a project.
+
+This operation deletes a certain backup.
+
+Normal response codes: 204
+
+Error response codes:
+
+- Unauthorized (401)
+- Forbidden (403)
+
+Query Parameters
+-----------------
+
+.. rest_parameters:: parameters.yaml
+
+  - project_id: project_id_path
+  - backup_id: backup_id_path
+
+There is no response for this operation.
