@@ -138,6 +138,7 @@ Response Parameters
 
 .. rest_parameters:: parameters.yaml
 
+  - project_id: project_id
   - user_id: user_id
   - client_id: client_id
   - hostname: hostname
