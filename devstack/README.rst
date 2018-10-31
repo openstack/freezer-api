@@ -29,5 +29,10 @@ For example to make use of port 19090 use:
 
 export FREEZER_API_PORT=19090
 
+The plugin makes use of elasticsearch as db backend by default.
+To use the sqlachemy set the following environment variable:
+
+export FREEZER_BACKEND='sqlalchemy'
+
 For more information, see:
  https://docs.openstack.org/devstack/latest/plugins.html
