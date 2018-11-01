@@ -22,8 +22,9 @@ from oslo_log import log
 
 from freezer_api.api.common import utils as json_utils
 from freezer_api.common._i18n import _
-from freezer_api.common import elasticv2_utils as utils
+from freezer_api.common import elasticv2_utils as utilsv2
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.common import utils as utilsv1
 from freezer_api.db.sqlalchemy import models
 
 
@@ -141,8 +142,9 @@ def model_query(session, model,
     return query
 
 
-def get_client(project_id, user_id, client_id=None, offset=0,
+def get_client(user_id, project_id=None, client_id=None, offset=0,
                limit=10, search=None):
+
     search = search or {}
     clients = []
     session = get_db_session()
@@ -169,8 +171,11 @@ def get_client(project_id, user_id, client_id=None, offset=0,
     return clients
 
 
-def add_client(project_id, user_id, doc):
-    client_doc = utils.ClientDoc.create(doc, project_id, user_id)
+def add_client(user_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        client_doc = utilsv1.ClientDoc.create(doc, user_id)
+    else:
+        client_doc = utilsv2.ClientDoc.create(doc, project_id, user_id)
     client_id = client_doc['client']['client_id']
     values = {}
     client_json = client_doc.get('client', {})
@@ -206,7 +211,7 @@ def add_client(project_id, user_id, doc):
     return client_id
 
 
-def delete_client(project_id, user_id, client_id):
+def delete_client(user_id, client_id, project_id=None):
     session = get_db_session()
     query = model_query(session, models.Client, project_id=project_id)
     query = query.filter_by(user_id=user_id).filter_by(client_id=client_id)
@@ -228,7 +233,7 @@ def delete_client(project_id, user_id, client_id):
     return client_id
 
 
-def delete_action(project_id, user_id, action_id):
+def delete_action(user_id, action_id, project_id=None):
 
     session = get_db_session()
     query = model_query(session, models.Action, project_id=project_id)
@@ -268,8 +273,12 @@ def delete_action(project_id, user_id, action_id):
     return action_id
 
 
-def add_action(project_id, user_id, doc):
-    action_doc = utils.ActionDoc.create(doc, user_id, project_id)
+def add_action(user_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        action_doc = utilsv1.ActionDoc.create(doc, user_id)
+    else:
+        action_doc = utilsv2.ActionDoc.create(doc, user_id, project_id)
+
     keyt = ['action', 'mode', 'backup_name',
             'container', 'src_file', 'timeout',
             'priority', 'mandatory', 'log_file']
@@ -340,7 +349,7 @@ def add_action(project_id, user_id, doc):
     return action_id
 
 
-def get_action(project_id, user_id, action_id):
+def get_action(user_id, action_id, project_id=None):
     session = get_db_session()
     with session.begin():
         try:
@@ -375,7 +384,9 @@ def get_action(project_id, user_id, action_id):
     return values
 
 
-def search_action(project_id, user_id, offset=0, limit=10, search=None):
+def search_action(user_id, project_id=None, offset=0,
+                  limit=10, search=None):
+
     search = search or {}
     actions = []
 
@@ -414,9 +425,13 @@ def search_action(project_id, user_id, offset=0, limit=10, search=None):
     return actions
 
 
-def update_action(user_id, action_id, patch_doc, project_id):
+def update_action(user_id, action_id, patch_doc, project_id=None):
     # changes in user_id or action_id are not allowed
-    valid_patch = utils.ActionDoc.create_patch(patch_doc)
+    if CONF.enable_v1_api:
+        valid_patch = utilsv1.ActionDoc.create_patch(patch_doc)
+    else:
+        valid_patch = utilsv2.ActionDoc.create_patch(patch_doc)
+
     keyt = ['action', 'mode', 'backup_name', 'container',
             'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
 
@@ -460,9 +475,12 @@ def update_action(user_id, action_id, patch_doc, project_id):
         return action_id
 
 
-def replace_action(user_id, action_id, doc, project_id):
-
-    valid_doc = utils.ActionDoc.update(doc, user_id, action_id, project_id)
+def replace_action(user_id, action_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        valid_doc = utilsv1.ActionDoc.update(doc, user_id, action_id)
+    else:
+        valid_doc = utilsv2.ActionDoc.update(doc, user_id, action_id,
+                                             project_id)
     values = {}
     keyt = ['action', 'mode', 'backup_name', 'container',
             'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
@@ -515,7 +533,7 @@ def replace_action(user_id, action_id, doc, project_id):
     return action_id
 
 
-def delete_job(user_id, job_id, project_id):
+def delete_job(user_id, job_id, project_id=None):
     session = get_db_session()
     query = model_query(session, models.Job, project_id=project_id)
     query = query.filter_by(user_id=user_id).filter_by(id=job_id)
@@ -535,8 +553,11 @@ def delete_job(user_id, job_id, project_id):
     return job_id
 
 
-def add_job(user_id, doc, project_id):
-    job_doc = utils.JobDoc.create(doc, project_id, user_id)
+def add_job(user_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        job_doc = utilsv1.JobDoc.create(doc, user_id)
+    else:
+        job_doc = utilsv2.JobDoc.create(doc, project_id, user_id)
 
     job_id = job_doc.get('job_id')
     existing = get_job(project_id=project_id, user_id=user_id,
@@ -575,7 +596,7 @@ def add_job(user_id, doc, project_id):
     return job_id
 
 
-def get_job(project_id, user_id, job_id):
+def get_job(user_id, job_id, project_id=None):
     session = get_db_session()
     with session.begin():
         try:
@@ -603,7 +624,7 @@ def get_job(project_id, user_id, job_id):
     return values
 
 
-def search_job(project_id, user_id, offset=0,
+def search_job(user_id, project_id=None, offset=0,
                limit=10, search=None):
 
     search = search or {}
@@ -633,8 +654,11 @@ def search_job(project_id, user_id, offset=0,
     return jobs
 
 
-def update_job(user_id, job_id, patch_doc, project_id):
-    valid_patch = utils.JobDoc.create_patch(patch_doc)
+def update_job(user_id, job_id, patch_doc, project_id=None):
+    if CONF.enable_v1_api:
+        valid_patch = utilsv1.JobDoc.create_patch(patch_doc)
+    else:
+        valid_patch = utilsv2.JobDoc.create_patch(patch_doc)
 
     values = {}
     for key in valid_patch.keys():
@@ -668,9 +692,12 @@ def update_job(user_id, job_id, patch_doc, project_id):
         return 0
 
 
-def replace_job(user_id, job_id, doc, project_id):
+def replace_job(user_id, job_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        valid_doc = utilsv1.JobDoc.update(doc, user_id, job_id)
+    else:
+        valid_doc = utilsv2.JobDoc.update(doc, user_id, job_id, project_id)
 
-    valid_doc = utils.JobDoc.update(doc, user_id, job_id, project_id)
     values = {}
     valuesnew = {}
     bCreate = False
@@ -724,7 +751,7 @@ def replace_job(user_id, job_id, doc, project_id):
     return job_id
 
 
-def get_backup(project_id, user_id, backup_id):
+def get_backup(user_id, backup_id, project_id=None):
     session = get_db_session()
     with session.begin():
         try:
@@ -749,9 +776,13 @@ def get_backup(project_id, user_id, backup_id):
     return values
 
 
-def add_backup(project_id, user_id, user_name, doc):
-
-    metadatadoc = utils.BackupMetadataDoc(project_id, user_id, user_name, doc)
+def add_backup(user_id, user_name, doc, project_id=None):
+    if CONF.enable_v1_api:
+        metadatadoc = utilsv1.BackupMetadataDoc(user_id, user_name,
+                                                doc)
+    else:
+        metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, user_name,
+                                                doc)
     if not metadatadoc.is_valid():
         raise freezer_api_exc.BadDataFormat(
             message='Bad Data Format')
@@ -797,7 +828,7 @@ def add_backup(project_id, user_id, user_name, doc):
     return backup_id
 
 
-def delete_backup(project_id, user_id, backup_id):
+def delete_backup(user_id, backup_id, project_id=None):
     session = get_db_session()
     query = model_query(session, models.Backup, project_id=project_id)
     query = query.filter_by(user_id=user_id).filter_by(id=backup_id)
@@ -820,7 +851,7 @@ def delete_backup(project_id, user_id, backup_id):
     return backup_id
 
 
-def search_backup(project_id, user_id, offset=0,
+def search_backup(user_id, project_id=None, offset=0,
                   limit=10, search=None):
 
     search = search or {}
@@ -847,7 +878,7 @@ def search_backup(project_id, user_id, offset=0,
     return backups
 
 
-def get_session(project_id, user_id, session_id):
+def get_session(user_id, session_id, project_id=None):
     jobt = {}
     session = get_db_session()
     with session.begin():
@@ -884,7 +915,7 @@ def get_session(project_id, user_id, session_id):
     return values
 
 
-def delete_session(project_id, user_id, session_id):
+def delete_session(user_id, session_id, project_id=None):
     session = get_db_session()
     query = model_query(session, models.Session, project_id=project_id)
     query = query.filter_by(user_id=user_id).filter_by(id=session_id)
@@ -907,10 +938,14 @@ def delete_session(project_id, user_id, session_id):
     return session_id
 
 
-def add_session(project_id, user_id, doc):
-    session_doc = utils.SessionDoc.create(doc=doc,
-                                          user_id=user_id,
-                                          project_id=project_id)
+def add_session(user_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        session_doc = utilsv1.SessionDoc.create(doc=doc,
+                                                user_id=user_id)
+    else:
+        session_doc = utilsv2.SessionDoc.create(doc=doc,
+                                                user_id=user_id,
+                                                project_id=project_id)
     session_id = session_doc['session_id']
     schedulingjson = session_doc.get('schedule')
     existing = get_session(project_id=project_id, user_id=user_id,
@@ -955,8 +990,11 @@ def add_session(project_id, user_id, doc):
     return session_id
 
 
-def update_session(user_id, session_id, patch_doc, project_id):
-    valid_patch = utils.SessionDoc.create_patch(patch_doc)
+def update_session(user_id, session_id, patch_doc, project_id=None):
+    if CONF.enable_v1_api:
+        valid_patch = utilsv1.SessionDoc.create_patch(patch_doc)
+    else:
+        valid_patch = utilsv2.SessionDoc.create_patch(patch_doc)
 
     sessiont = get_session(project_id=project_id, user_id=user_id,
                            session_id=session_id)
@@ -1001,10 +1039,13 @@ def update_session(user_id, session_id, patch_doc, project_id):
         return 0
 
 
-def replace_session(user_id, session_id, doc, project_id):
+def replace_session(user_id, session_id, doc, project_id=None):
+    if CONF.enable_v1_api:
+        valid_doc = utilsv1.SessionDoc.update(doc, user_id, session_id)
 
-    valid_doc = utils.SessionDoc.update(doc, user_id, session_id,
-                                        project_id)
+    else:
+        valid_doc = utilsv2.SessionDoc.update(doc, user_id, session_id,
+                                              project_id)
     values = {}
     valuesnew = {}
     bCreate = False
@@ -1062,7 +1103,7 @@ def replace_session(user_id, session_id, doc, project_id):
     return session_id
 
 
-def search_session(project_id, user_id, offset=0,
+def search_session(user_id, project_id=None, offset=0,
                    limit=10, search=None):
     search = search or {}
     sessions = []
