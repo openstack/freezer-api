@@ -61,35 +61,27 @@ def api_common_opts():
                     ),
         cfg.BoolOpt('enable_v1_api',
                     default=False,
-                    help="""Deploy the v1 OpenStack Freezer API.
-When this option is set to ``True``, Freezer-api service will respond to
-requests on registered endpoints conforming to the v1 OpenStack Freezer API.
-NOTES:
-    * Multi-tenancy is not supported under this api version.
-    * Everything is user based.
-    * Freezer api v1 doesn't support Oslo.db.
-    * Use elasticsearch db with v1 api version
-Possible values:
-    * True
-    * False
-Related options:
-    * enable_v2_api
-                    """),
-        cfg.BoolOpt('enable_v2_api',
-                    default=True,
-                    help="""Deploy the v2 OpenStack Freezer API.
-When this option is set to ``True``, Freezer-api service will respond to
-requests on registered endpoints conforming to the v2 OpenStack Freezer api.
-    NOTES:
-        * Multi-tenancy is supported under this api version.
-        * Freezer api v2 supports Oslo.db.
-        * Recommended to use oslo.db with api v2
-    Possible values:
-        * True
-        * False
-    Related options:
-        * enable_v1_api
-                        """)
+                    help="""Default False, That is the v2 Freezer API
+                    will be deployed. When this option is set
+                    to ``True``, Freezer-api service will respond
+                    to requests on registered endpoints conforming
+                    to the v1 OpenStack Freezer api.
+                    The v1 OpenStack Freezer API functions
+                    as follows:
+                        * Multi-tenancy is not supported under this
+                         api version.
+                        * Everything is user based.
+                        * Freezer api v1 doesn't support Oslo.db.
+                        * Use elasticsearch db with v1 api version
+                    The v2 OpenStack Freezer API functions
+                    as follows:
+                        * Multi-tenancy is supported under this api version.
+                        * Freezer api v2 supports Oslo.db.
+                        * Recommended to use oslo.db with api v2
+                    Possible values:
+                        * True
+                        * False
+                    """)
     ]
 
     return _COMMON

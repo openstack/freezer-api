@@ -33,13 +33,16 @@ FALCON_MINVERSION_MIDDLEWARE = pkg_resources.parse_version('0.2.0b1')
 
 
 def root_app_factory(loader, global_conf, **local_conf):
-    """Allows freezer to launch multiple applications at a time.
-    It will allow freezer to manage multiple versions.
+    """Freezer can manage multiple versions, but
+    only launch one version at a time, Otherwise it is
+     easy to cause confusion. If there is a demand in the future
+    for a single freezer-api instance to support both v1 and v2 at a time,
+    you need to add a new patch to implement it.
     """
-    if not CONF.enable_v1_api and '/v1' in local_conf:
-        del local_conf['/v1']
-    if not CONF.enable_v2_api and '/v2' in local_conf:
+    if CONF.enable_v1_api and '/v1' in local_conf:
         del local_conf['/v2']
+    else:
+        del local_conf['/v1']
     return urlmap.urlmap_factory(loader, global_conf, **local_conf)
 
 
