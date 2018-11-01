@@ -56,7 +56,7 @@ class Client(BASE, FreezerBase):
 
     __tablename__ = 'clients'
     id = Column(String(255), primary_key=True)
-    project_id = Column(String(36), nullable=False)
+    project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
     client_id = Column(String(255), nullable=False)
     hostname = Column(String(128))
@@ -77,7 +77,7 @@ class Action(BASE, FreezerBase):
     __tablename__ = 'actions'
     id = Column(String(36), primary_key=True)
     action = Column(String(255), nullable=False)
-    project_id = Column(String(36), nullable=False)
+    project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
     mode = Column(String(255))
     src_file = Column(String(255))
@@ -102,7 +102,7 @@ class Session(BASE, FreezerBase):
     hold_off = Column(Integer, default=30)
     schedule = Column(Text)
     job = Column(Text)
-    project_id = Column(String(36), nullable=False)
+    project_id = Column(String(36))
     user_id = Column(String(36), nullable=False)
     time_start = Column(Integer, default=-1)
     time_end = Column(Integer, default=-1)
@@ -117,7 +117,7 @@ class Job(BASE, FreezerBase):
 
     __tablename__ = 'jobs'
     id = Column(String(36), primary_key=True)
-    project_id = Column(String(36), nullable=False)
+    project_id = Column(String(36))
     user_id = Column(String(36), nullable=False)
     schedule = Column(Text)
     client_id = Column(String(255), ForeignKey('clients.id'), nullable=False)
@@ -140,7 +140,7 @@ class Job(BASE, FreezerBase):
 class ActionReport(BASE, FreezerBase):
     __tablename__ = 'action_reports'
     id = Column(String(36), primary_key=True)
-    project_id = Column(String(36), nullable=False)
+    project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
     result = Column(String(255))
     time_elapsed = Column(String(255))
@@ -158,7 +158,7 @@ class Backup(BASE, FreezerBase):
     id = Column(String(36), primary_key=True)
     client_id = Column(String(255), nullable=False)
     job_id = Column(String(36), nullable=False)
-    project_id = Column(String(36), nullable=False)
+    project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
     user_name = Column(String(64), nullable=False)
     backup_metadata = Column(Text)
