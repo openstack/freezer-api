@@ -12,36 +12,26 @@
 # Maximum value: 65535
 #bind_port = 9090
 
-# Deploy the v1 OpenStack Freezer API.
-# When this option is set to ``True``, Freezer-api service will respond to
-# requests on registered endpoints conforming to the v1 OpenStack Freezer API.
-# NOTES:
-#     * Multi-tenancy is not supported under this api version.
-#     * Everything is user based.
-#     * Freezer api v1 doesn't support Oslo.db.
-#     * Use elasticsearch db with v1 api version
+# Deploy the OpenStack Freezer API.
+# Default is the v2 Freezer API.
+# When this option is set
+# to ``True``, Freezer-api service will respond
+# to requests on registered endpoints conforming
+# to the v1 OpenStack Freezer api.
+# The v1 OpenStack Freezer API:
+#    * Multi-tenancy is not supported under this
+#     api version.
+#    * Everything is user based.
+#    * Freezer api v1 doesn't support Oslo.db.
+#    * Use elasticsearch db with v1 api version
+# The v2 OpenStack Freezer API:
+#    * Multi-tenancy is supported under this api version.
+#    * Freezer api v2 supports Oslo.db.
+#    * Recommended to use oslo.db with api v2
 # Possible values:
-#     * True
-#     * False
-# Related options:
-#     * enable_v2_api
-#                      (boolean value)
-#enable_v1_api = false
-
-# Deploy the v2 OpenStack Freezer API.
-# When this option is set to ``True``, Freezer-api service will respond to
-# requests on registered endpoints conforming to the v2 OpenStack Freezer api.
-#     NOTES:
-#         * Multi-tenancy is supported under this api version.
-#         * Freezer api v2 supports Oslo.db.
-#         * Recommended to use oslo.db with api v2
-#     Possible values:
-#         * True
-#         * False
-#     Related options:
-#         * enable_v1_api
-#                          (boolean value)
-#enable_v2_api = true
+#    * True
+#    * False
+#enable_v1_api = False
 
 #
 # From oslo.log

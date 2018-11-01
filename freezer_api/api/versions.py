@@ -51,7 +51,8 @@ def api_versions(conf=None):
 class Resource(object):
 
     def _build_versions(self, host_url):
-        allowed_versions = {'v1': CONF.enable_v1_api, 'v2': CONF.enable_v2_api}
+        allowed_versions = {'v1': CONF.enable_v1_api,
+                            'v2': False if CONF.enable_v1_api else True}
 
         updated_versions = {'versions': []}
         for version in VERSIONS['versions']:
