@@ -71,7 +71,7 @@ def api_common_opts():
                         * Multi-tenancy is not supported under this
                          api version.
                         * Everything is user based.
-                        * Freezer api v1 doesn't support Oslo.db.
+                        * Freezer api v1 supports Oslo.db.
                         * Use elasticsearch db with v1 api version
                     The v2 OpenStack Freezer API functions
                     as follows:
