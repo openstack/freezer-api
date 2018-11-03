@@ -142,20 +142,157 @@ def model_query(session, model,
     return query
 
 
+def delete_tuple(tablename, user_id, tuple_id, project_id=None):
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, tablename, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            result = query.all()
+            if 1 == len(result):
+                result[0].delete(session=session)
+                LOG.info('Tuple delete, Tuple_id: '
+                         '{0} deleted in Table {1}'.
+                         format(tuple_id, tablename))
+            else:
+                LOG.info('Tuple delete, Tuple_id: '
+                         '{0} not found in Table {1}'.
+                         format(tuple_id, tablename))
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+    session.close()
+    return tuple_id
+
+
+def get_tuple(tablename, user_id, tuple_id, project_id=None):
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, tablename, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+    session.close()
+    return result
+
+
+def add_tuple(tuple):
+    session = get_db_session()
+    with session.begin():
+        try:
+            tuple.save(session=session)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+
+    session.close()
+
+
+def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, tablename, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            result = query.update(tuple_values)
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if not result:
+        raise freezer_api_exc.DocumentNotFound(
+            message='Tuple not registered with ID'
+                    ' {0} in Table{1} '.format(tuple_id, tablename))
+
+    else:
+        LOG.info('Tuple updated, tuple_id: {0}'.format(tuple_id))
+        return tuple_id
+
+
+def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
+
+    bCreate = False
+
+    session = get_db_session()
+    with session.begin():
+        try:
+            query = model_query(session, tablename, project_id=project_id)
+            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            result = query.update(tuple_values)
+            if not result:
+                bCreate = True
+        except Exception as e:
+            session.close()
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+
+    session.close()
+
+    if bCreate:
+        tuplet = models.Session()
+        tuplet.update(tuple_values)
+        session = get_db_session()
+        with session.begin():
+            try:
+                tuplet.save(session=session)
+            except Exception as e:
+                session.close()
+                raise freezer_api_exc.\
+                    StorageEngineError(message='Mysql operation failed {0}'.
+                                       format(e))
+        session.close()
+
+    return tuple_id
+
+
+def search_tuple(tablename, user_id, project_id=None, offset=0,
+                 limit=100, search=None):
+    session = get_db_session()
+    with session.begin():
+        try:
+            # TODO(gecong) search will be implemented in the future
+            query = model_query(session, tablename, project_id=project_id)
+            query = query.filter_by(user_id=user_id)
+            query = query.offset(offset)
+            query = query.limit(limit)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+    session.close()
+    return result
+
+
 def get_client(user_id, project_id=None, client_id=None, offset=0,
-               limit=10, search=None):
+               limit=100, search=None):
 
     search = search or {}
     clients = []
     session = get_db_session()
-    query = model_query(session, models.Client, project_id=project_id)
-
-    if client_id:
-        query = query.filter_by(user_id=user_id).filter_by(client_id=client_id)
-    else:
-        query = query.filter_by(user_id=user_id)
-
-    result = query.all()
+    with session.begin():
+        try:
+            query = model_query(session, models.Client, project_id=project_id)
+            if client_id:
+                query = query.filter_by(user_id=user_id).filter_by(
+                    client_id=client_id)
+            else:
+                query = query.filter_by(user_id=user_id)
+                query = query.offset(offset)
+                query = query.limit(limit)
+            result = query.all()
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='Mysql operation failed {0}'.format(e))
+    session.close()
 
     for client in result:
         clientmap = {}
@@ -167,7 +304,6 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
                                 u'description': client.description}
         clients.append(clientmap)
 
-    session.close()
     return clients
 
 
@@ -197,80 +333,38 @@ def add_client(user_id, doc, project_id=None):
     values['description'] = client_json.get('description', None)
     client.update(values)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            client.save(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+    add_tuple(tuple=client)
 
     LOG.info('Client registered, client_id: {0}'.format(client_id))
-    session.close()
     return client_id
 
 
 def delete_client(user_id, client_id, project_id=None):
-    session = get_db_session()
-    query = model_query(session, models.Client, project_id=project_id)
-    query = query.filter_by(user_id=user_id).filter_by(client_id=client_id)
-    result = query.all()
-    if 1 == len(result):
-        try:
-            result[0].delete(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+
+    existing = get_client(project_id=project_id, user_id=user_id,
+                          client_id=client_id)
+
+    if existing:
+        clientt = existing[0].get('client')
+        clientid = clientt.get('uuid')
+        delete_tuple(tablename=models.Client, user_id=user_id,
+                     tuple_id=clientid, project_id=project_id)
         LOG.info('Client delete, client_id: {0} deleted'.
                  format(client_id))
     else:
         LOG.info('Client delete, client_id: {0} not found'.
                  format(client_id))
-
-    session.close()
     return client_id
 
 
 def delete_action(user_id, action_id, project_id=None):
 
-    session = get_db_session()
-    query = model_query(session, models.Action, project_id=project_id)
-    query = query.filter_by(user_id=user_id).filter_by(id=action_id)
+    tupleid = delete_tuple(tablename=models.Action, user_id=user_id,
+                           tuple_id=action_id, project_id=project_id)
 
-    result = query.all()
-    if 1 == len(result):
-        try:
-            result[0].delete(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-            LOG.info('Action delete, action_id: {0} deleted'.
-                     format(action_id))
-    else:
-            LOG.info('Action delete, action_id: {0} not found'.
-                     format(action_id))
-
-    query = model_query(session, models.ActionReport, project_id=project_id)
-    query = query.filter_by(user_id=user_id).filter_by(id=action_id)
-
-    result = query.all()
-    if 1 == len(result):
-        try:
-            result[0].delete(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-            LOG.info('ActionReport delete, action_id: {0} deleted'.
-                     format(action_id))
-    else:
-            LOG.info('ActionReport delete, action_id: {0} not found'.
-                     format(action_id))
-    session.close()
-    return action_id
+    tupleid = delete_tuple(tablename=models.ActionReport, user_id=user_id,
+                           tuple_id=action_id, project_id=project_id)
+    return tupleid
 
 
 def add_action(user_id, doc, project_id=None):
@@ -316,14 +410,7 @@ def add_action(user_id, doc, project_id=None):
 
     action.update(actionvalue)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            action.save(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+    add_tuple(tuple=action)
 
     LOG.info('Action registered, action_id: {0}'.format(action_id))
 
@@ -335,32 +422,17 @@ def add_action(user_id, doc, project_id=None):
 
     actionReport.update(actionreportvalue)
 
-    with session.begin():
-        try:
-            actionReport.save(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-
+    add_tuple(tuple=actionReport)
     LOG.info('Action Reports registered, action_id: {0}'.
              format(action_id))
-    session.close()
     return action_id
 
 
 def get_action(user_id, action_id, project_id=None):
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Action, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=action_id)
-            result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
 
-    session.close()
+    result = get_tuple(tablename=models.Action, user_id=user_id,
+                       tuple_id=action_id, project_id=project_id)
+
     values = {}
     if 1 == len(result):
         values['project_id'] = result[0].get('project_id')
@@ -385,17 +457,13 @@ def get_action(user_id, action_id, project_id=None):
 
 
 def search_action(user_id, project_id=None, offset=0,
-                  limit=10, search=None):
+                  limit=100, search=None):
 
-    search = search or {}
     actions = []
 
-    session = get_db_session()
-    query = model_query(session, models.Action, project_id=project_id)
-    query = query.filter_by(user_id=user_id)
-
-    result = query.all()
-
+    result = search_tuple(tablename=models.Action, user_id=user_id,
+                          project_id=project_id, offset=offset,
+                          limit=limit, search=search)
     for action in result:
         actionmap = {}
         actionmap['project_id'] = project_id
@@ -421,7 +489,6 @@ def search_action(user_id, project_id=None, offset=0,
 
         actions.append(actionmap)
 
-    session.close()
     return actions
 
 
@@ -453,26 +520,10 @@ def update_action(user_id, action_id, patch_doc, project_id=None):
 
     values['backup_metadata'] = json_utils.json_encode(freezer_action)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Action, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=action_id)
-            result = query.update(values)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+    update_tuple(tablename=models.Action, user_id=user_id, tuple_id=action_id,
+                 tuple_values=values, project_id=project_id)
 
-    session.close()
-
-    if not result:
-        raise freezer_api_exc.DocumentNotFound(
-            message='Action not registered with ID'
-                    ' {0}'.format(action_id))
-    else:
-        LOG.info('action updated, action_id: {0}'.format(action_id))
-        return action_id
+    return action_id
 
 
 def replace_action(user_id, action_id, doc, project_id=None):
@@ -484,7 +535,6 @@ def replace_action(user_id, action_id, doc, project_id=None):
     values = {}
     keyt = ['action', 'mode', 'backup_name', 'container',
             'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
-    bCreate = False
 
     freezer_action = valid_doc.get('freezer_action', {})
 
@@ -500,57 +550,19 @@ def replace_action(user_id, action_id, doc, project_id=None):
         if key in keyt:
             values[key] = freezer_action.get(key)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Action, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=action_id)
-            result = query.update(values)
-            if not result:
-                bCreate = True
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-
-    session.close()
-
-    if bCreate:
-        action = models.Action()
-        action.update(values)
-        session = get_db_session()
-        with session.begin():
-            try:
-                action.save(session=session)
-            except Exception as e:
-                session.close()
-                raise freezer_api_exc.\
-                    StorageEngineError(message='mysql operation failed {0}'.
-                                       format(e))
-        session.close()
+    replace_tuple(tablename=models.Action, user_id=user_id,
+                  tuple_id=action_id, tuple_values=values,
+                  project_id=project_id)
 
     LOG.info('action replaced, action_id: {0}'.format(action_id))
     return action_id
 
 
 def delete_job(user_id, job_id, project_id=None):
-    session = get_db_session()
-    query = model_query(session, models.Job, project_id=project_id)
-    query = query.filter_by(user_id=user_id).filter_by(id=job_id)
-    result = query.all()
-    if 1 == len(result):
-        try:
-            result[0].delete(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-            LOG.info('Job delete, job_id: {0} deleted'.format(job_id))
-    else:
-            LOG.info('Job delete, job_id: {0} not found'.
-                     format(job_id))
-    session.close()
-    return job_id
+
+    tupleid = delete_tuple(tablename=models.Job, user_id=user_id,
+                           tuple_id=job_id, project_id=project_id)
+    return tupleid
 
 
 def add_job(user_id, doc, project_id=None):
@@ -582,14 +594,7 @@ def add_job(user_id, doc, project_id=None):
         json_encode(job_doc.pop('job_actions', ''))
     job.update(jobvalue)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            job.save(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+    add_tuple(tuple=job)
 
     LOG.info('Job registered, job_id: {0}'.format(job_id))
 
@@ -597,17 +602,9 @@ def add_job(user_id, doc, project_id=None):
 
 
 def get_job(user_id, job_id, project_id=None):
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Job, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=job_id)
-            result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
 
-    session.close()
+    result = get_tuple(tablename=models.Job, user_id=user_id,
+                       tuple_id=job_id, project_id=project_id)
     values = {}
     if 1 == len(result):
         values['job_id'] = result[0].get('id')
@@ -625,16 +622,11 @@ def get_job(user_id, job_id, project_id=None):
 
 
 def search_job(user_id, project_id=None, offset=0,
-               limit=10, search=None):
-
-    search = search or {}
+               limit=100, search=None):
     jobs = []
-    session = get_db_session()
-    query = model_query(session, models.Job, project_id=project_id)
-    query = query.filter_by(user_id=user_id)
-
-    result = query.all()
-
+    result = search_tuple(tablename=models.Job, user_id=user_id,
+                          project_id=project_id, offset=offset,
+                          limit=limit, search=search)
     for job in result:
         jobmap = {}
         jobmap['job_id'] = job.get('id')
@@ -650,7 +642,6 @@ def search_job(user_id, project_id=None, offset=0,
 
         jobs.append(jobmap)
 
-    session.close()
     return jobs
 
 
@@ -670,26 +661,10 @@ def update_job(user_id, job_id, patch_doc, project_id=None):
         else:
             values[key] = valid_patch.get(key, None)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Job, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=job_id)
-            result = query.update(values)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+    update_tuple(tablename=models.Job, user_id=user_id, tuple_id=job_id,
+                 tuple_values=values, project_id=project_id)
 
-    session.close()
-
-    if not result:
-        raise freezer_api_exc.DocumentNotFound(
-            message='Job not registered with ID'
-                    ' {0}'.format(job_id))
-    else:
-        LOG.info('job updated, job_id: {0}'.format(job_id))
-        return 0
+    return 0
 
 
 def replace_job(user_id, job_id, doc, project_id=None):
@@ -700,7 +675,6 @@ def replace_job(user_id, job_id, doc, project_id=None):
 
     values = {}
     valuesnew = {}
-    bCreate = False
 
     values['id'] = job_id
     values['project_id'] = project_id
@@ -718,51 +692,17 @@ def replace_job(user_id, job_id, doc, project_id=None):
         if values[key] is not None:
             valuesnew[key] = values[key]
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Job, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=job_id)
-            result = query.update(valuesnew)
-            if not result:
-                bCreate = True
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-
-    session.close()
-
-    if bCreate:
-        job = models.Job()
-        job.update(valuesnew)
-        session = get_db_session()
-        with session.begin():
-            try:
-                job.save(session=session)
-            except Exception as e:
-                session.close()
-                raise freezer_api_exc.\
-                    StorageEngineError(message='mysql operation failed {0}'.
-                                       format(e))
-        session.close()
-
+    replace_tuple(tablename=models.Job, user_id=user_id,
+                  tuple_id=job_id, tuple_values=valuesnew,
+                  project_id=project_id)
     LOG.info('job replaced, job_id: {0}'.format(job_id))
     return job_id
 
 
 def get_backup(user_id, backup_id, project_id=None):
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Backup, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=backup_id)
-            result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
 
-    session.close()
+    result = get_tuple(tablename=models.Backup, user_id=user_id,
+                       tuple_id=backup_id, project_id=project_id)
     values = {}
     if 1 == len(result):
         values['project_id'] = result[0].get('project_id')
@@ -812,56 +752,26 @@ def add_backup(user_id, user_name, doc, project_id=None):
     backupvalue['backup_metadata'] = json_utils.json_encode(backup_metadata)
     backup.update(backupvalue)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            backup.save(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.\
-                StorageEngineError(message='mysql operation failed {0}'.
-                                   format(e))
-
+    add_tuple(tuple=backup)
     LOG.info('Backup registered, backup_id: {0}'.format(backup_id))
-
-    session.close()
     return backup_id
 
 
 def delete_backup(user_id, backup_id, project_id=None):
-    session = get_db_session()
-    query = model_query(session, models.Backup, project_id=project_id)
-    query = query.filter_by(user_id=user_id).filter_by(id=backup_id)
 
-    result = query.all()
-    if 1 == len(result):
-        try:
-            result[0].delete(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-            LOG.info('Backup delete, backup_id: {0} deleted'.
-                     format(backup_id))
-    else:
-        LOG.info('Backup delete, backup_id: {0} not found'.
-                 format(backup_id))
-
-    session.close()
-    return backup_id
+    tupleid = delete_tuple(tablename=models.Backup, user_id=user_id,
+                           tuple_id=backup_id, project_id=project_id)
+    return tupleid
 
 
 def search_backup(user_id, project_id=None, offset=0,
-                  limit=10, search=None):
+                  limit=100, search=None):
 
-    search = search or {}
     backups = []
-    session = get_db_session()
-    query = model_query(session, models.Backup, project_id=project_id)
-    query = query.filter_by(user_id=user_id)
 
-    result = query.all()
-
+    result = search_tuple(tablename=models.Backup, user_id=user_id,
+                          project_id=project_id, offset=offset,
+                          limit=limit, search=search)
     for backup in result:
         backupmap = {}
         backupmap['project_id'] = project_id
@@ -874,24 +784,14 @@ def search_backup(user_id, project_id=None, offset=0,
             json_decode(backup.get('backup_metadata'))
         backups.append(backupmap)
 
-    session.close()
     return backups
 
 
 def get_session(user_id, session_id, project_id=None):
     jobt = {}
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Session, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=session_id)
-            result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-
-    session.close()
     values = {}
+    result = get_tuple(tablename=models.Session, user_id=user_id,
+                       tuple_id=session_id, project_id=project_id)
     if 1 == len(result):
         values['project_id'] = result[0].get('project_id')
         values['session_id'] = result[0].get('id')
@@ -916,26 +816,10 @@ def get_session(user_id, session_id, project_id=None):
 
 
 def delete_session(user_id, session_id, project_id=None):
-    session = get_db_session()
-    query = model_query(session, models.Session, project_id=project_id)
-    query = query.filter_by(user_id=user_id).filter_by(id=session_id)
 
-    result = query.all()
-    if 1 == len(result):
-        try:
-            result[0].delete(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-            LOG.info('Session delete, session_id: {0} deleted'.
-                     format(session_id))
-    else:
-        LOG.info('Session delete, session_id: {0} not found'.
-                 format(session_id))
-
-    session.close()
-    return session_id
+    tupleid = delete_tuple(tablename=models.Session, user_id=user_id,
+                           tuple_id=session_id, project_id=project_id)
+    return tupleid
 
 
 def add_session(user_id, doc, project_id=None):
@@ -974,19 +858,9 @@ def add_session(user_id, doc, project_id=None):
     sessionvalue['schedule'] = json_utils.json_encode(schedulingjson)
     sessiont.update(sessionvalue)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            sessiont.save(session=session)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.\
-                StorageEngineError(message='mysql operation failed {0}'.
-                                   format(e))
-
+    add_tuple(tuple=sessiont)
     LOG.info('Session registered, session_id: {0}'.format(session_id))
 
-    session.close()
     return session_id
 
 
@@ -1017,26 +891,11 @@ def update_session(user_id, session_id, patch_doc, project_id=None):
         else:
             values[key] = valid_patch.get(key, None)
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Session, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=session_id)
-            result = query.update(values)
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
+    update_tuple(tablename=models.Session, user_id=user_id,
+                 tuple_id=session_id, tuple_values=values,
+                 project_id=project_id)
 
-    session.close()
-
-    if not result:
-        raise freezer_api_exc.DocumentNotFound(
-            message='session not registered with ID'
-                    ' {0}'.format(session_id))
-    else:
-        LOG.info('session updated, session_id: {0}'.format(session_id))
-        return 0
+    return 0
 
 
 def replace_session(user_id, session_id, doc, project_id=None):
@@ -1048,7 +907,6 @@ def replace_session(user_id, session_id, doc, project_id=None):
                                               project_id)
     values = {}
     valuesnew = {}
-    bCreate = False
 
     values['id'] = session_id
     values['project_id'] = project_id
@@ -1070,51 +928,22 @@ def replace_session(user_id, session_id, doc, project_id=None):
         if values[key] is not None:
             valuesnew[key] = values[key]
 
-    session = get_db_session()
-    with session.begin():
-        try:
-            query = model_query(session, models.Session, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=session_id)
-            result = query.update(valuesnew)
-            if not result:
-                bCreate = True
-        except Exception as e:
-            session.close()
-            raise freezer_api_exc.StorageEngineError(
-                message='mysql operation failed {0}'.format(e))
-
-    session.close()
-
-    if bCreate:
-        sessiont = models.Session()
-        sessiont.update(valuesnew)
-        session = get_db_session()
-        with session.begin():
-            try:
-                sessiont.save(session=session)
-            except Exception as e:
-                session.close()
-                raise freezer_api_exc.\
-                    StorageEngineError(message='mysql operation failed {0}'.
-                                       format(e))
-        session.close()
-
+    replace_tuple(tablename=models.Session, user_id=user_id,
+                  tuple_id=session_id,
+                  tuple_values=valuesnew,
+                  project_id=project_id)
     LOG.info('session replaced, session_id: {0}'.format(session_id))
     return session_id
 
 
 def search_session(user_id, project_id=None, offset=0,
-                   limit=10, search=None):
-    search = search or {}
+                   limit=100, search=None):
     sessions = []
     jobt = {}
 
-    session = get_db_session()
-    query = model_query(session, models.Session, project_id=project_id)
-    query = query.filter_by(user_id=user_id)
-
-    result = query.all()
-
+    result = search_tuple(tablename=models.Session, user_id=user_id,
+                          project_id=project_id, offset=offset,
+                          limit=limit, search=search)
     for sessiont in result:
         sessionmap = {}
         sessionmap['project_id'] = project_id
@@ -1136,5 +965,4 @@ def search_session(user_id, project_id=None, offset=0,
             sessionmap['jobs'] = json_utils.json_decode(sessiont.get('job'))
         sessions.append(sessionmap)
 
-    session.close()
     return sessions
