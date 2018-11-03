@@ -141,12 +141,13 @@ Response Parameters
 
 .. rest_parameters:: parameters.yaml
 
-  - user_id: user_id
-  - description: job_description_req
-  - job_schedule: job_schedule_req
-  - client_id: client_id
-  - job_actions: job_actions_req
   - job_id: job_id
+  - client_id: client_id
+  - user_id: user_id
+  - session_id: session_id
+  - description: job_description_req
+  - job_actions: job_actions_req
+  - job_schedule: job_schedule_req
 
 Response Example
 ----------------
