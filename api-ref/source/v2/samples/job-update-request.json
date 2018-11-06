@@ -5,7 +5,6 @@
         "status": "scheduled",
         "event": "stop"
     },
-    "project_id": "752d8bd43d654e7a840bbfda77ce41af",
     "job_actions": [
         {
             "max_retries": 10,
@@ -20,7 +19,6 @@
                 "snapshot": false,
                 "action": "backup",
                 "remove_older_than": 365,
-                "project_id": "752d8bd43d654e7a840bbfda77ce41af"
             }
         }
 ]
