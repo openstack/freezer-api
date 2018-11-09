@@ -156,8 +156,7 @@ class Backup(BASE, FreezerBase):
 
     __tablename__ = 'backups'
     id = Column(String(36), primary_key=True)
-    client_id = Column(String(255), nullable=False)
-    job_id = Column(String(36), nullable=False)
+    job_id = Column(String(36))
     project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
     user_name = Column(String(64), nullable=False)

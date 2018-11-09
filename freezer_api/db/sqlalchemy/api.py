@@ -700,7 +700,6 @@ def replace_job(user_id, job_id, doc, project_id=None):
 
 
 def get_backup(user_id, backup_id, project_id=None):
-
     result = get_tuple(tablename=models.Backup, user_id=user_id,
                        tuple_id=backup_id, project_id=project_id)
     values = {}
@@ -709,8 +708,6 @@ def get_backup(user_id, backup_id, project_id=None):
         values['backup_id'] = result[0].get('id')
         values['user_id'] = result[0].get('user_id')
         values['user_name'] = result[0].get('user_name')
-        values['client_id'] = result[0].get('client_id')
-        values['backup_uuid'] = result[0].get('id')
         values['backup_metadata'] = json_utils.\
             json_decode(result[0].get('backup_metadata'))
     return values
@@ -730,8 +727,6 @@ def add_backup(user_id, user_name, doc, project_id=None):
     backupjson = metadatadoc.serialize()
     backup_metadata = backupjson.get('backup_metadata')
 
-    job_doc = backup_metadata.get('job_doc')
-
     existing = get_backup(project_id=project_id, user_id=user_id,
                           backup_id=backup_id)
     if existing:
@@ -745,7 +740,6 @@ def add_backup(user_id, user_name, doc, project_id=None):
     backupvalue['id'] = backup_id
     backupvalue['user_id'] = user_id
     backupvalue['user_name'] = user_name
-    backupvalue['client_id'] = job_doc.get('client_id')
     backupvalue['job_id'] = backup_metadata.get('job_id')
     # The field backup_metadata is json, including :
     # hostname , backup_name , container etc
@@ -766,7 +760,6 @@ def delete_backup(user_id, backup_id, project_id=None):
 
 def search_backup(user_id, project_id=None, offset=0,
                   limit=100, search=None):
-
     backups = []
 
     result = search_tuple(tablename=models.Backup, user_id=user_id,
@@ -777,9 +770,7 @@ def search_backup(user_id, project_id=None, offset=0,
         backupmap['project_id'] = project_id
         backupmap['user_id'] = user_id
         backupmap['backup_id'] = backup.id
-        backupmap['backup_uuid'] = backup.id
         backupmap['user_name'] = backup.user_name
-        backupmap['client_id'] = backup.client_id
         backupmap['backup_metadata'] = json_utils.\
             json_decode(backup.get('backup_metadata'))
         backups.append(backupmap)
