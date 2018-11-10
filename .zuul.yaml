@@ -13,16 +13,16 @@
         - openstack-tox-lower-constraints
         - openstack-tox-pylint
         - freezer-tempest-basic
-        - freezer-tempest-basic-sqlalchemy:
-            voting: false
+        - freezer-tempest-basic-sqlalchemy
+
     gate:
       jobs:
         - freezer-api-ubuntu-xenial
         - openstack-tox-lower-constraints
         - openstack-tox-pylint
         - freezer-tempest-basic
-        - freezer-tempest-basic-sqlalchemy:
-            voting: false
+        - freezer-tempest-basic-sqlalchemy
+
     experimental:
       jobs:
         - freezer-api-opensuse-423
@@ -81,6 +81,7 @@
       - openstack/python-openstackclient
       - openstack/python-freezerclient
       - openstack/freezer
+      - openstack/freezer-api
       - openstack/freezer-tempest-plugin
       - openstack/tempest
     vars:
