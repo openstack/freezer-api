@@ -27,6 +27,7 @@ class DBDriver(object):
     _OPTS = [
         cfg.StrOpt('host',
                    required=True,
+                   default='0.0.0.0',
                    help="Database host"),
         cfg.StrOpt("username",
                    help="Database username"),
