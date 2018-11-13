@@ -59,3 +59,21 @@ class DbJobTestCase(base.DbTestCase):
                          get('schedule_interval'),
                          self.fake_job_0.get('job_schedule').
                          get('schedule_interval'))
+
+    def test_add_and_delete_job(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_job_0.get('user_id'),
+                                    doc=job_doc,
+                                    project_id="myproject")
+        self.assertIsNotNone(job_id)
+
+        result = self.dbapi.delete_job(user_id=self.fake_job_0.get('user_id'),
+                                       job_id=job_id,
+                                       project_id="myproject")
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result, job_id)
+        result = self.dbapi.get_job(project_id="myproject",
+                                    user_id=self.fake_job_0.get('user_id'),
+                                    job_id=job_id)
+        self.assertEqual(len(result), 0)
