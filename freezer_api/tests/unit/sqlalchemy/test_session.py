@@ -60,3 +60,27 @@ class DbSessionTestCase(base.DbTestCase):
                          self.fake_session_0.get('project_id'))
         self.assertEqual(result.get('schedule'),
                          self.fake_session_0.get('schedule'))
+
+    def test_add_and_delete_session(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_id = self.dbapi.add_session(project_id=self.fake_session_0.
+                                            get('project_id'),
+                                            user_id=self.fake_session_0.
+                                            get('user_id'),
+                                            doc=session_doc)
+        self.assertIsNotNone(session_id)
+
+        result = self.dbapi.delete_session(project_id=self.fake_session_0.
+                                           get('project_id'),
+                                           user_id=self.fake_session_0.
+                                           get('user_id'),
+                                           session_id=session_id)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result, session_id)
+        result = self.dbapi.get_session(project_id=self.fake_session_0.
+                                        get('project_id'),
+                                        user_id=self.fake_session_0.
+                                        get('user_id'),
+                                        session_id=session_id)
+        self.assertEqual(len(result), 0)
