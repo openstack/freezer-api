@@ -304,6 +304,14 @@ fake_client_entry_1 = {
     "user_id": "user_id-is-provided-keystone"
 }
 
+
+def get_fake_client_0():
+    return copy.deepcopy(fake_client_entry_0)
+
+
+def get_fake_client_1():
+    return copy.deepcopy(fake_client_entry_1)
+
 fake_action_0 = {
     "freezer_action":
         {
