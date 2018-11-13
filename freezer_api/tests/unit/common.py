@@ -65,6 +65,7 @@ fake_data_0_wrapped_backup_metadata = {
     }
 }
 
+
 fake_data_0_backup_metadata = {
     "container": "freezer_container",
     "hostname": "alpha",
@@ -89,6 +90,10 @@ fake_data_0_backup_metadata = {
     "excluded_files": ["excluded_file_01", "excluded_file_02"],
     "cli": ""
 }
+
+
+def get_fake_backup_metadata():
+    return copy.deepcopy(fake_data_0_backup_metadata)
 
 fake_malformed_data_0_backup_metadata = {
     "hostname": "alpha",
