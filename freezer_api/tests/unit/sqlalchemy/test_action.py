@@ -65,3 +65,27 @@ class DbActionTestCase(base.DbTestCase):
 
         self.assertEqual(freezer_action.get('mode'),
                          self.freezer_action_0.get('mode'))
+
+    def test_add_and_delete_action(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_id = self.dbapi.add_action(user_id=self.fake_action_0.
+                                          get('user_id'),
+                                          doc=action_doc,
+                                          project_id="myproject")
+        self.assertIsNotNone(action_id)
+
+        result = self.dbapi.delete_action(project_id="myproject",
+                                          user_id=self.fake_action_0.
+                                          get('user_id'),
+                                          action_id=action_id)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(result, action_id)
+
+        result = self.dbapi.get_action(project_id="myproject",
+                                       user_id=self.fake_action_0.
+                                       get('user_id'),
+                                       action_id=action_id)
+
+        self.assertEqual(len(result), 0)
