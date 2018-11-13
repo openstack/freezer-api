@@ -97,7 +97,7 @@ class Session(BASE, FreezerBase):
 
     __tablename__ = 'sessions'
     id = Column(String(36), primary_key=True)
-    session_tag = Column(String(255), default=0)
+    session_tag = Column(Integer, default=0)
     description = Column(String(255))
     hold_off = Column(Integer, default=30)
     schedule = Column(Text)
