@@ -498,6 +498,39 @@ fake_session_1 = {
     "project_id": "tecs"
 }
 
+fake_session_2 = {
+    "session_id": 'turistidellademocrazia',
+    "session_tag": 5,
+    "description": 'This is a session about test',
+    "hold_off": 100,
+    "schedule": {
+        "time_created": 1234,
+        "time_started": 1234,
+        "time_ended": 0,
+        "status": "stop",
+        "schedule_date": "2018-11-14T16:20:00"
+    },
+    "jobs": {
+        'venerescollataincorpodalolita': {
+            "client_id": 'bruco',
+            "status": 'running',
+            "start_time": 12344321,
+        },
+        'job_id_2': {
+            "client_id": "cocktail",
+            "status": 'completed',
+            "result": 'success',
+            "start_time": 123321,
+            "end_time": 123325,
+        }
+    },
+    "time_start": 123412344,
+    "time_end": 432234432,
+    "status": "running",
+    "user_id": "califfo",
+    "project_id": "tecs"
+}
+
 
 def get_fake_session_0():
     return copy.deepcopy(fake_session_0)
@@ -505,6 +538,10 @@ def get_fake_session_0():
 
 def get_fake_session_1():
     return copy.deepcopy(fake_session_1)
+
+
+def get_fake_session_2():
+    return copy.deepcopy(fake_session_2)
 
 
 class FakeReqResp(object):

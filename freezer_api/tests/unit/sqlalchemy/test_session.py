@@ -29,6 +29,8 @@ class DbSessionTestCase(base.DbTestCase):
         super(DbSessionTestCase, self).setUp()
         self.fake_session_0 = common.get_fake_session_0()
         self.fake_session_0.pop('session_id')
+        self.fake_session_2 = common.get_fake_session_2()
+        self.fake_session_2.pop('session_id')
 
     def test_add_and_get_session(self):
         session_doc = copy.deepcopy(self.fake_session_0)
@@ -84,3 +86,36 @@ class DbSessionTestCase(base.DbTestCase):
                                         get('user_id'),
                                         session_id=session_id)
         self.assertEqual(len(result), 0)
+
+    def test_add_and_update_session(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_id = self.dbapi.add_session(project_id=self.fake_session_0.
+                                            get('project_id'),
+                                            user_id=self.fake_session_0.
+                                            get('user_id'),
+                                            doc=session_doc)
+        self.assertIsNotNone(session_id)
+
+        patch_doc = copy.deepcopy(self.fake_session_2)
+        result = self.dbapi.update_session(user_id=self.fake_session_0.
+                                           get('user_id'),
+                                           session_id=session_id,
+                                           patch_doc=patch_doc,
+                                           project_id=self.fake_session_0.
+                                           get('project_id'))
+        self.assertIsNotNone(result)
+        self.assertEqual(result, 0)
+
+        result = self.dbapi.get_session(project_id=self.fake_session_0.
+                                        get('project_id'),
+                                        user_id=self.fake_session_0.
+                                        get('user_id'),
+                                        session_id=session_id)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.get('description'),
+                         self.fake_session_2.get('description'))
+        self.assertEqual(result.get('hold_off'),
+                         self.fake_session_2.get('hold_off'))
+        self.assertEqual(result.get('schedule').get('schedule_date'),
+                         self.fake_session_2.get('schedule').
+                         get('schedule_date'))
