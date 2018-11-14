@@ -19,6 +19,7 @@ limitations under the License.
 import copy
 import io
 import os
+import uuid
 
 import fixtures
 from oslo_config import cfg
@@ -385,6 +386,9 @@ def get_fake_action_1():
 def get_fake_action_2():
     return copy.deepcopy(fake_action_2)
 
+
+def get_fake_action_id():
+    return uuid.uuid4().hex
 
 fake_session_0 = {
     "session_id": 'turistidellademocrazia',

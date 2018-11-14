@@ -30,6 +30,7 @@ class DbActionTestCase(base.DbTestCase):
         self.freezer_action_0 = self.fake_action_0.get('freezer_action')
         self.freezer_action_2 = self.fake_action_2.get('freezer_action')
         self.fake_project_id = self.fake_action_0.get('project_id')
+        self.fake_action_id = common.get_fake_action_id()
 
     def test_add_and_get_action(self):
         action_doc = copy.deepcopy(self.fake_action_0)
@@ -128,3 +129,50 @@ class DbActionTestCase(base.DbTestCase):
 
         self.assertEqual(freezer_action.get('action'),
                          self.freezer_action_2.get('action'))
+
+    def test_add_and_replace_action(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_id = self.dbapi.add_action(user_id=self.fake_action_0.
+                                          get('user_id'),
+                                          doc=action_doc,
+                                          project_id=self.fake_project_id)
+        self.assertIsNotNone(action_id)
+
+        patch_doc = copy.deepcopy(self.fake_action_2)
+
+        result = self.dbapi.replace_action(project_id=self.fake_project_id,
+                                           user_id=self.fake_action_2.
+                                           get('user_id'),
+                                           doc=patch_doc,
+                                           action_id=action_id)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(result, action_id)
+
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       user_id=self.fake_action_2.
+                                       get('user_id'),
+                                       action_id=action_id)
+
+        self.assertEqual(result.get('max_retries'),
+                         self.fake_action_2.get('max_retries'))
+
+        self.assertEqual(result.get('max_retries_interval'),
+                         self.fake_action_2.get('max_retries_interval'))
+
+        freezer_action = result.get('freezer_action')
+
+        self.assertEqual(freezer_action.get('action'),
+                         self.freezer_action_2.get('action'))
+
+        patch_doc1 = copy.deepcopy(self.fake_action_0)
+
+        result = self.dbapi.replace_action(project_id=self.fake_project_id,
+                                           user_id=self.fake_action_2.
+                                           get('user_id'),
+                                           doc=patch_doc1,
+                                           action_id=self.fake_action_id)
+        self.assertIsNotNone(result)
+
+        self.assertEqual(result, self.fake_action_id)
