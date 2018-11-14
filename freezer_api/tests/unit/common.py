@@ -237,6 +237,51 @@ fake_job_0 = {
 }
 
 
+fake_job_2 = {
+    "job_actions": [
+        {
+            "freezer_action": {
+                "action": "backup",
+                "mode": "fs",
+                "src_file": "/home/tylerdurden/project_mayhem",
+                "backup_name": "project_mayhem_backup",
+                "container": "my_backup_container1"
+            },
+            "max_retries": 6,
+            "max_retries_interval": 100,
+            "mandatory": False
+        },
+        {
+            "freezer_action": {
+                "action": "restore",
+                "mode": "fs",
+                "restore_abs_path": "/home/tylerdurden/project_mayhem",
+                "restore_from_host": "node_on_which_backup_was_made",
+                "backup_name": "project_mayhem_backup",
+                "container": "my_backup_container1"
+            },
+            "max_retries": 4,
+            "max_retries_interval": 60,
+            "mandatory": True
+        }
+    ],
+    "job_schedule": {
+        "time_created": 1234,
+        "time_started": 1234,
+        "time_ended": 1234,
+        "status": "stop",
+        "result": "success",
+        "schedule_date": "2015-06-02T16:20:00",
+        "schedule_interval": "7 days"
+    },
+    "job_id": "e7181e5e-2c75-43f8-92c0-c037ae5f11e4",
+    "client_id": "mytenantid_myhostname1",
+    "user_id": "f4db4da085f043059441565720b217c7",
+    "project_id": "tecs",
+    "description": "test action 5"
+}
+
+
 def get_fake_job_0():
     return copy.deepcopy(fake_job_0)
 
@@ -245,6 +290,10 @@ def get_fake_job_1():
     job = copy.deepcopy(fake_job_0)
     job["job_id"] = 'pqoqurioew'
     return job
+
+
+def get_fake_job_2():
+    return copy.deepcopy(fake_job_2)
 
 
 fake_job_0_elasticsearch_found = {
