@@ -27,6 +27,7 @@ class DbActionTestCase(base.DbTestCase):
         super(DbActionTestCase, self).setUp()
         self.fake_action_0 = common.get_fake_action_0()
         self.fake_action_2 = common.get_fake_action_2()
+        self.fake_action_3 = common.get_fake_action_3()
         self.freezer_action_0 = self.fake_action_0.get('freezer_action')
         self.freezer_action_2 = self.fake_action_2.get('freezer_action')
         self.fake_project_id = self.fake_action_0.get('project_id')
@@ -176,3 +177,33 @@ class DbActionTestCase(base.DbTestCase):
         self.assertIsNotNone(result)
 
         self.assertEqual(result, self.fake_action_id)
+
+    def test_add_and_search_action(self):
+        count = 0
+        actionids = []
+        while(count < 20):
+            doc = copy.deepcopy(self.fake_action_3)
+            action_id = common.get_fake_action_id()
+            doc['action_id'] = action_id
+            result = self.dbapi.add_action(user_id=self.fake_action_3.
+                                           get('user_id'),
+                                           doc=doc,
+                                           project_id=self.fake_project_id)
+            self.assertIsNotNone(result)
+            self.assertEqual(result, action_id)
+            actionids.append(action_id)
+            count += 1
+
+        result = self.dbapi.search_action(project_id=self.fake_project_id,
+                                          user_id=self.fake_action_3.
+                                          get('user_id'),
+                                          limit=10,
+                                          offset=0)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(len(result), 10)
+
+        for index in range(len(result)):
+            actionmap = result[index]
+            self.assertEqual(actionids[index], actionmap['action_id'])
