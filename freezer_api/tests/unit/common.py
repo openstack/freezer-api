@@ -355,6 +355,24 @@ fake_action_1 = {
     "project_id": "project_id-is-tecs"
 }
 
+fake_action_2 = {
+    "freezer_action":
+        {
+            "action": "restore",
+            "mode": "fs",
+            "src_file": "/home/tecs/project_tecs",
+            "backup_name": "project_tecs_restore",
+            "container": "my_restore_container",
+        },
+    "exit_status": "success",
+    "max_retries": 5,
+    "max_retries_interval": 70,
+    "mandatory": False,
+    "action_id": "qwerqwerqwerrewq",
+    "user_id": "user_id-is-provided-by-keystone",
+    "project_id": "project_id-is-tecs"
+}
+
 
 def get_fake_action_0():
     return copy.deepcopy(fake_action_0)
@@ -362,6 +380,10 @@ def get_fake_action_0():
 
 def get_fake_action_1():
     return copy.deepcopy(fake_action_1)
+
+
+def get_fake_action_2():
+    return copy.deepcopy(fake_action_2)
 
 
 fake_session_0 = {
