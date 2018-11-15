@@ -29,16 +29,17 @@ class DbBackupTestCase(base.DbTestCase):
         self.fake_backup_metadata = common.get_fake_backup_metadata()
         self.fake_user_id = common.fake_data_0_user_id
         self.fake_user_name = common.fake_data_0_user_name
+        self.fake_project_id = common.fake_data_0_project_id
 
     def test_add_and_get_backup(self):
         backup_doc = copy.deepcopy(self.fake_backup_metadata)
         backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
                                           user_name=self.fake_user_name,
                                           doc=backup_doc,
-                                          project_id="myproject")
+                                          project_id=self.fake_project_id)
         self.assertIsNotNone(backup_id)
 
-        result = self.dbapi.get_backup(project_id="myproject",
+        result = self.dbapi.get_backup(project_id=self.fake_project_id,
                                        user_id=self.fake_user_id,
                                        backup_id=backup_id)
         self.assertIsNotNone(result)
@@ -56,3 +57,25 @@ class DbBackupTestCase(base.DbTestCase):
 
         self.assertEqual(backup_metadata,
                          self.fake_backup_metadata)
+
+    def test_add_and_delete_backup(self):
+        backup_doc = copy.deepcopy(self.fake_backup_metadata)
+        backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                          user_name=self.fake_user_name,
+                                          doc=backup_doc,
+                                          project_id=self.fake_project_id)
+
+        self.assertIsNotNone(backup_id)
+
+        result = self.dbapi.delete_backup(project_id=self.fake_project_id,
+                                          user_id=self.fake_user_id,
+                                          backup_id=backup_id)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(result, backup_id)
+
+        result = self.dbapi.get_backup(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       backup_id=backup_id)
+        self.assertEqual(len(result), 0)
