@@ -297,6 +297,10 @@ def get_fake_job_2():
     return copy.deepcopy(fake_job_2)
 
 
+def get_fake_job_id():
+    return uuid.uuid4().hex
+
+
 fake_job_0_elasticsearch_found = {
     "_id": "e7181e5e-2c75-43f8-92c0-c037ae5f11e4",
     "_index": "freezer",

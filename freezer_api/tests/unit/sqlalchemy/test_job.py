@@ -32,6 +32,7 @@ class DbJobTestCase(base.DbTestCase):
         self.fake_job_2 = common.get_fake_job_2()
         self.fake_job_2.pop('job_id')
         self.fake_project_id = self.fake_job_0.get('project_id')
+        self.fake_job_id = common.get_fake_job_id()
 
     def test_add_and_get_job(self):
         job_doc = copy.deepcopy(self.fake_job_0)
@@ -111,3 +112,47 @@ class DbJobTestCase(base.DbTestCase):
                          get('schedule_interval'))
         self.assertEqual(result.get('job_actions'),
                          self.fake_job_2.get('job_actions'))
+
+    def test_add_and_replace_job(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_job_0.get('user_id'),
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        self.assertIsNotNone(job_id)
+
+        patch_doc = copy.deepcopy(self.fake_job_2)
+        result = self.dbapi.replace_job(user_id=self.
+                                        fake_job_2.get('user_id'),
+                                        job_id=job_id,
+                                        doc=patch_doc,
+                                        project_id=self.fake_project_id)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result, job_id)
+
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    user_id=self.fake_job_2.get('user_id'),
+                                    job_id=job_id)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.get('client_id'),
+                         self.fake_job_2.get('client_id'))
+        self.assertEqual(result.get('description'),
+                         self.fake_job_2.get('description'))
+        self.assertEqual(result.get('job_schedule').
+                         get('schedule_interval'),
+                         self.fake_job_2.get('job_schedule').
+                         get('schedule_interval'))
+        self.assertEqual(result.get('job_actions'),
+                         self.fake_job_2.get('job_actions'))
+
+        patch_doc1 = copy.deepcopy(self.fake_job_0)
+
+        result = self.dbapi.replace_job(user_id=self.
+                                        fake_job_2.get('user_id'),
+                                        job_id=self.fake_job_id,
+                                        doc=patch_doc1,
+                                        project_id=self.fake_project_id)
+        self.assertIsNotNone(result)
+
+        self.assertEqual(result, self.fake_job_id)
