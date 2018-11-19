@@ -31,6 +31,8 @@ class DbSessionTestCase(base.DbTestCase):
         self.fake_session_0.pop('session_id')
         self.fake_session_2 = common.get_fake_session_2()
         self.fake_session_2.pop('session_id')
+        self.fake_session_3 = common.get_fake_session_3()
+        self.fake_session_3.pop('session_id')
         self.fake_session_id = common.get_fake_session_id()
 
     def test_add_and_get_session(self):
@@ -166,3 +168,30 @@ class DbSessionTestCase(base.DbTestCase):
         self.assertIsNotNone(result)
 
         self.assertEqual(result, self.fake_session_id)
+
+    def test_add_and_search_session(self):
+        count = 0
+        sessionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_session_3)
+            session_id = self.dbapi.add_session(project_id=self.fake_session_3.
+                                                get('project_id'),
+                                                user_id=self.fake_session_3.
+                                                get('user_id'),
+                                                doc=doc)
+            self.assertIsNotNone(session_id)
+            sessionids.append(session_id)
+            count += 1
+
+        result = self.dbapi.search_session(user_id=self.fake_session_3.
+                                           get('user_id'),
+                                           project_id=self.fake_session_3.
+                                           get('project_id'),
+                                           offset=0,
+                                           limit=10)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 10)
+
+        for index in range(len(result)):
+            sessionmap = result[index]
+            self.assertEqual(sessionids[index], sessionmap['session_id'])
