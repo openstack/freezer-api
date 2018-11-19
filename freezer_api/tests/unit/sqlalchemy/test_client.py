@@ -77,3 +77,31 @@ class DbClientTestCase(base.DbTestCase):
                                        client_id=client_id)
 
         self.assertEqual(len(result), 0)
+
+    def test_add_and_search_client(self):
+        count = 0
+        clientids = []
+        while (count < 20):
+            client_doc = copy.deepcopy(self.fake_client_doc)
+            clientid = common.get_fake_client_id()
+            client_doc['client_id'] = clientid
+            client_id = self.dbapi.add_client(user_id=self.fake_user_id,
+                                              doc=client_doc,
+                                              project_id=self.fake_project_id)
+            self.assertIsNotNone(client_id)
+            self.assertEqual(clientid, client_id)
+            clientids.append(client_id)
+            count += 1
+
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       limit=10,
+                                       offset=0)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 10)
+
+        for index in range(len(result)):
+            clientmap = result[index]
+            clientid = clientmap['client'].get('client_id')
+            self.assertEqual(clientids[index], clientid)

@@ -420,6 +420,10 @@ def get_fake_client_0():
 def get_fake_client_1():
     return copy.deepcopy(fake_client_entry_1)
 
+
+def get_fake_client_id():
+    return uuid.uuid4().hex
+
 fake_action_0 = {
     "freezer_action":
         {
