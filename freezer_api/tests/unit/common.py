@@ -566,6 +566,10 @@ def get_fake_session_2():
     return copy.deepcopy(fake_session_2)
 
 
+def get_fake_session_id():
+    return uuid.uuid4().hex
+
+
 class FakeReqResp(object):
     def __init__(self, method='GET', body=''):
         self.method = method
