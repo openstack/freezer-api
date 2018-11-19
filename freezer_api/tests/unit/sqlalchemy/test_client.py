@@ -28,18 +28,18 @@ class DbClientTestCase(base.DbTestCase):
         super(DbClientTestCase, self).setUp()
         self.fake_client_0 = common.get_fake_client_0()
         self.fake_client_doc = self.fake_client_0.get('client')
+        self.fake_user_id = self.fake_client_0.get('user_id')
+        self.fake_project_id = self.fake_client_doc.get('project_id')
 
     def test_add_and_get_client(self):
         client_doc = copy.deepcopy(self.fake_client_doc)
-        client_id = self.dbapi.add_client(user_id=self.fake_client_0.
-                                          get('user_id'),
+        client_id = self.dbapi.add_client(user_id=self.fake_user_id,
                                           doc=client_doc,
-                                          project_id="myproject")
+                                          project_id=self.fake_project_id)
         self.assertIsNotNone(client_id)
 
-        result = self.dbapi.get_client(project_id="myproject",
-                                       user_id=self.fake_client_0.
-                                       get('user_id'),
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
                                        client_id=client_id)
 
         self.assertIsNotNone(result)
@@ -47,7 +47,7 @@ class DbClientTestCase(base.DbTestCase):
         self.assertEqual(len(result), 1)
 
         self.assertEqual(result[0].get('user_id'),
-                         self.fake_client_0.get('user_id'))
+                         self.fake_user_id)
 
         client = result[0].get('client')
 
@@ -56,3 +56,24 @@ class DbClientTestCase(base.DbTestCase):
 
         self.assertEqual(client.get('description'),
                          self.fake_client_doc.get('description'))
+
+    def test_add_and_delete_client(self):
+        client_doc = copy.deepcopy(self.fake_client_doc)
+        client_id = self.dbapi.add_client(user_id=self.fake_user_id,
+                                          doc=client_doc,
+                                          project_id=self.fake_project_id)
+        self.assertIsNotNone(client_id)
+
+        result = self.dbapi.delete_client(project_id=self.fake_project_id,
+                                          user_id=self.fake_user_id,
+                                          client_id=client_id)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(result, client_id)
+
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       client_id=client_id)
+
+        self.assertEqual(len(result), 0)
