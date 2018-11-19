@@ -31,6 +31,8 @@ class DbJobTestCase(base.DbTestCase):
         self.fake_job_0.pop('job_id')
         self.fake_job_2 = common.get_fake_job_2()
         self.fake_job_2.pop('job_id')
+        self.fake_job_3 = common.get_fake_job_3()
+        self.fake_job_3.pop('job_id')
         self.fake_project_id = self.fake_job_0.get('project_id')
         self.fake_job_id = common.get_fake_job_id()
 
@@ -156,3 +158,30 @@ class DbJobTestCase(base.DbTestCase):
         self.assertIsNotNone(result)
 
         self.assertEqual(result, self.fake_job_id)
+
+    def test_add_and_search_job(self):
+        count = 0
+        jobids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_job_3)
+            job_id = self.dbapi.add_job(user_id=self.fake_job_3.
+                                        get('user_id'),
+                                        doc=doc,
+                                        project_id=self.fake_project_id)
+            self.assertIsNotNone(job_id)
+            jobids.append(job_id)
+            count += 1
+
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=0,
+                                       limit=10)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(len(result), 10)
+
+        for index in range(len(result)):
+            jobmap = result[index]
+            self.assertEqual(jobids[index], jobmap['job_id'])
