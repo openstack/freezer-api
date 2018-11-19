@@ -79,3 +79,30 @@ class DbBackupTestCase(base.DbTestCase):
                                        user_id=self.fake_user_id,
                                        backup_id=backup_id)
         self.assertEqual(len(result), 0)
+
+    def test_add_and_search_backup(self):
+        count = 0
+        backupids = []
+        while (count < 20):
+            backup_doc = copy.deepcopy(self.fake_backup_metadata)
+            backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                              user_name=self.fake_user_name,
+                                              doc=backup_doc,
+                                              project_id=self.fake_project_id)
+
+            self.assertIsNotNone(backup_id)
+            backupids.append(backup_id)
+            count += 1
+
+        result = self.dbapi.search_backup(project_id=self.fake_project_id,
+                                          user_id=self.fake_user_id,
+                                          limit=10,
+                                          offset=0)
+
+        self.assertIsNotNone(result)
+
+        self.assertEqual(len(result), 10)
+
+        for index in range(len(result)):
+            backupmap = result[index]
+            self.assertEqual(backupids[index], backupmap['backup_id'])
