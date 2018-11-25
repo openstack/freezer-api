@@ -272,6 +272,94 @@ def search_tuple(tablename, user_id, project_id=None, offset=0,
     return result
 
 
+def get_recursively(source_dict, search_keys):
+    """
+    Takes a dict with nested lists and dicts,
+    and searches all dicts for a key of the search_keys
+    provided.
+    """
+    search_keys_found = {}
+    for key, value in source_dict.iteritems():
+        if key in search_keys.keys():
+            search_keys_found[key] = value
+        elif isinstance(value, dict):
+            results = get_recursively(value, search_keys)
+            for keytmp in results.keys():
+                search_keys_found[keytmp] = results.get(keytmp)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    more_results = get_recursively(item, search_keys)
+                    for key_another in more_results.keys():
+                        search_keys_found[key_another] = \
+                            more_results.get(key_another)
+
+    return search_keys_found
+
+
+def filter_tuple_by_search_opt(tuples, search=None):
+    search = search or {}
+    # search opt is null, all tuples will be filtered in.
+    if len(search) == 0:
+        return tuples
+    #
+    match_opt = search.get('match')
+    if len(match_opt) and '_all' in match_opt[0].keys():
+        # From python-freezer lient cli, if cli --search is
+        # '{match_not": [{"status": completed],
+        #  match: [{client_id": node1_2"}]}, it will be converted to
+        #  {'match': [{'_all': '{"match_not": [{"status": "completed"}],
+        #  "match": [{"client_id": "node1_2"}]}'}]}
+        search = match_opt[0].get('_all')
+        try:
+            search = json_utils.json_decode(search)
+        except Exception as e:
+            msg = "search opt error, please input correct format." \
+                  " search opt {0} will be not use. error msg: {1}".\
+                format(search, e)
+            LOG.error(msg)
+            raise Exception(msg)
+            search = {}
+    if not isinstance(search, dict):
+        search = {}
+
+    if len(search) == 0:
+        return tuples
+
+    result_last = []
+    search_key = {}
+
+    for m in search.get('match', []):
+        key = m.keys()[0]
+        search_key[key] = m.get(key)
+    for m in search.get('match_not', []):
+        key = m.keys()[0]
+        search_key[key] = m.get(key)
+
+    for tuple in tuples:
+        filter_out = False
+        search_keys_found = get_recursively(tuple, search_key)
+        # If all keys and values are in search_keys_found, this tuple will be
+        # filtered in, otherwise filtered out
+        for m in search.get('match', []):
+            key = m.keys()[0]
+            value = m.get(key)
+            if value != search_keys_found.get(key):
+                filter_out = True
+                break
+        # If one keys and values are in search_keys_found, this tuple will be
+        # filtered out, otherwise filtered in.
+        for m in search.get('match_not', []):
+            key = m.keys()[0]
+            value = m.get(key)
+            if value == search_keys_found.get(key):
+                filter_out = True
+                break
+        if not filter_out:
+            result_last.append(tuple)
+    return result_last
+
+
 def get_client(user_id, project_id=None, client_id=None, offset=0,
                limit=100, search=None):
 
@@ -626,7 +714,7 @@ def search_job(user_id, project_id=None, offset=0,
     jobs = []
     result = search_tuple(tablename=models.Job, user_id=user_id,
                           project_id=project_id, offset=offset,
-                          limit=limit, search=search)
+                          limit=limit)
     for job in result:
         jobmap = {}
         jobmap['job_id'] = job.get('id')
@@ -641,7 +729,7 @@ def search_job(user_id, project_id=None, offset=0,
             job.get('job_actions'))
 
         jobs.append(jobmap)
-
+    jobs = filter_tuple_by_search_opt(jobs, search)
     return jobs
 
 
