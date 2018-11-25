@@ -1022,7 +1022,7 @@ def search_session(user_id, project_id=None, offset=0,
 
     result = search_tuple(tablename=models.Session, user_id=user_id,
                           project_id=project_id, offset=offset,
-                          limit=limit, search=search)
+                          limit=limit)
     for sessiont in result:
         sessionmap = {}
         sessionmap['project_id'] = project_id
@@ -1043,5 +1043,5 @@ def search_session(user_id, project_id=None, offset=0,
         if jobt is not None:
             sessionmap['jobs'] = json_utils.json_decode(sessiont.get('job'))
         sessions.append(sessionmap)
-
+    sessions = filter_tuple_by_search_opt(sessions, search)
     return sessions
