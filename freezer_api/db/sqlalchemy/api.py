@@ -279,7 +279,7 @@ def get_recursively(source_dict, search_keys):
     provided.
     """
     search_keys_found = {}
-    for key, value in source_dict.iteritems():
+    for key, value in source_dict.items():
         if key in search_keys.keys():
             search_keys_found[key] = value
         elif isinstance(value, dict):
@@ -297,44 +297,55 @@ def get_recursively(source_dict, search_keys):
     return search_keys_found
 
 
+def valid_and_get_search_option(search=None):
+    if not search:
+        return {}
+    match_opt = search.get('match', {})
+    match_not_opt = search.get('match_not', {})
+    if not match_opt and not match_not_opt:
+        return {}
+    if len(match_opt) and '_all' in match_opt[0].keys():
+        error_msg = '''
+        Freezer-api supported by sqlalchemy:
+        The option --search in freezer cmd needs a list about {key, value},
+        such as:
+        '[{"client_id": "node1_2"}]'
+        '[{"client_id": "node1_2"}, {"status": "completed"}]'
+        '''
+        search = match_opt[0].get('_all')
+        try:
+            search = json_utils.json_decode(search)
+        except Exception as e:
+            msg = "{0} \n json_decode error: {1}".\
+                format(error_msg, e)
+            LOG.error(error_msg)
+            raise Exception(msg)
+        if not isinstance(search, list):
+            LOG.error(error_msg)
+            raise Exception(error_msg)
+        search = {'match': search}
+    if not isinstance(search, dict):
+        search = {}
+    return search
+
+
 def filter_tuple_by_search_opt(tuples, search=None):
     search = search or {}
     # search opt is null, all tuples will be filtered in.
     if len(search) == 0:
         return tuples
-    #
-    match_opt = search.get('match')
-    if len(match_opt) and '_all' in match_opt[0].keys():
-        # From python-freezer lient cli, if cli --search is
-        # '{match_not": [{"status": completed],
-        #  match: [{client_id": node1_2"}]}, it will be converted to
-        #  {'match': [{'_all': '{"match_not": [{"status": "completed"}],
-        #  "match": [{"client_id": "node1_2"}]}'}]}
-        search = match_opt[0].get('_all')
-        try:
-            search = json_utils.json_decode(search)
-        except Exception as e:
-            msg = "search opt error, please input correct format." \
-                  " search opt {0} will be not use. error msg: {1}".\
-                format(search, e)
-            LOG.error(msg)
-            raise Exception(msg)
-            search = {}
-    if not isinstance(search, dict):
-        search = {}
-
+    search = valid_and_get_search_option(search=search)
     if len(search) == 0:
         return tuples
-
     result_last = []
     search_key = {}
 
     for m in search.get('match', []):
-        key = m.keys()[0]
-        search_key[key] = m.get(key)
+        for key, value in m.items():
+            search_key[key] = value
     for m in search.get('match_not', []):
-        key = m.keys()[0]
-        search_key[key] = m.get(key)
+        for key, value in m.items():
+            search_key[key] = value
 
     for tuple in tuples:
         filter_out = False
@@ -342,19 +353,17 @@ def filter_tuple_by_search_opt(tuples, search=None):
         # If all keys and values are in search_keys_found, this tuple will be
         # filtered in, otherwise filtered out
         for m in search.get('match', []):
-            key = m.keys()[0]
-            value = m.get(key)
-            if value != search_keys_found.get(key):
-                filter_out = True
-                break
+            for key, value in m.items():
+                if value != search_keys_found.get(key):
+                    filter_out = True
+                    break
         # If one keys and values are in search_keys_found, this tuple will be
         # filtered out, otherwise filtered in.
         for m in search.get('match_not', []):
-            key = m.keys()[0]
-            value = m.get(key)
-            if value == search_keys_found.get(key):
-                filter_out = True
-                break
+            for key, value in m.items():
+                if value == search_keys_found.get(key):
+                    filter_out = True
+                    break
         if not filter_out:
             result_last.append(tuple)
     return result_last
@@ -729,7 +738,12 @@ def search_job(user_id, project_id=None, offset=0,
             job.get('job_actions'))
 
         jobs.append(jobmap)
-    jobs = filter_tuple_by_search_opt(jobs, search)
+    # If search opt is wrong, filter will not work,
+    # return all tuples.
+    try:
+        jobs = filter_tuple_by_search_opt(jobs, search)
+    except Exception as e:
+        LOG.error(e)
     return jobs
 
 
@@ -1043,5 +1057,10 @@ def search_session(user_id, project_id=None, offset=0,
         if jobt is not None:
             sessionmap['jobs'] = json_utils.json_decode(sessiont.get('job'))
         sessions.append(sessionmap)
-    sessions = filter_tuple_by_search_opt(sessions, search)
+    # If search opt is wrong, filter will not work,
+    # return all tuples.
+    try:
+        sessions = filter_tuple_by_search_opt(sessions, search)
+    except Exception as e:
+        LOG.error(e)
     return sessions
