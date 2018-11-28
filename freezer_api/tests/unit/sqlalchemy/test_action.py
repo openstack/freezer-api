@@ -207,3 +207,118 @@ class DbActionTestCase(base.DbTestCase):
         for index in range(len(result)):
             actionmap = result[index]
             self.assertEqual(actionids[index], actionmap['action_id'])
+
+    def test_action_list_with_search_match_and_match_not(self):
+        count = 0
+        actionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_action_3)
+            action_id = common.get_fake_action_id()
+            doc['action_id'] = action_id
+            if count in [0, 4, 8, 12, 16]:
+                doc['max_retries'] = 10
+                if count in [4, 12]:
+                    doc['freezer_action']['mode'] = 'nova'
+            result = self.dbapi.add_action(user_id=self.fake_action_3.
+                                           get('user_id'),
+                                           doc=doc,
+                                           project_id=self.fake_project_id)
+
+            self.assertIsNotNone(result)
+            self.assertEqual(result, action_id)
+            actionids.append(action_id)
+            count += 1
+
+        search_opt = {'match_not': [{'mode': 'nova'}],
+                      'match': [{'max_retries': 10}]}
+        result = self.dbapi.search_action(project_id=self.fake_project_id,
+                                          user_id=self.fake_action_3.
+                                          get('user_id'),
+                                          limit=20,
+                                          offset=0,
+                                          search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 3)
+        for index in range(len(result)):
+            actionmap = result[index]
+            self.assertEqual(10, actionmap['max_retries'])
+            self.assertEqual('fs',
+                             actionmap['freezer_action']['mode'])
+
+    def test_action_list_with_search_match_list(self):
+        count = 0
+        actionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_action_3)
+            action_id = common.get_fake_action_id()
+            doc['action_id'] = action_id
+            if count in [0, 4, 8, 12, 16]:
+                doc['max_retries'] = 10
+                if count in [4, 12]:
+                    doc['freezer_action']['mode'] = 'nova'
+            result = self.dbapi.add_action(user_id=self.fake_action_3.
+                                           get('user_id'),
+                                           doc=doc,
+                                           project_id=self.fake_project_id)
+
+            self.assertIsNotNone(result)
+            self.assertEqual(result, action_id)
+            actionids.append(action_id)
+            count += 1
+
+        search_opt = {'match': [{'max_retries': 10},
+                                {'mode': 'nova'}]}
+        result = self.dbapi.search_action(project_id=self.fake_project_id,
+                                          user_id=self.fake_action_3.
+                                          get('user_id'),
+                                          limit=20,
+                                          offset=0,
+                                          search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+        for index in range(len(result)):
+            actionmap = result[index]
+            self.assertEqual(10, actionmap['max_retries'])
+            self.assertEqual('nova',
+                             actionmap['freezer_action']['mode'])
+
+    def test_action_list_with_search_match_not_list(self):
+        count = 0
+        actionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_action_3)
+            action_id = common.get_fake_action_id()
+            doc['action_id'] = action_id
+            if count in [0, 4, 8, 12, 16]:
+                doc['max_retries'] = 10
+                if count in [4, 12]:
+                    doc['freezer_action']['mode'] = 'nova'
+            result = self.dbapi.add_action(user_id=self.fake_action_3.
+                                           get('user_id'),
+                                           doc=doc,
+                                           project_id=self.fake_project_id)
+
+            self.assertIsNotNone(result)
+            self.assertEqual(result, action_id)
+            actionids.append(action_id)
+            count += 1
+
+        search_opt = {'match_not':
+                      [{'mode': 'nova'},
+                       {'max_retries': 5}]}
+        result = self.dbapi.search_action(project_id=self.fake_project_id,
+                                          user_id=self.fake_action_3.
+                                          get('user_id'),
+                                          limit=20,
+                                          offset=0,
+                                          search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 3)
+        for index in range(len(result)):
+            actionmap = result[index]
+            self.assertEqual(10, actionmap['max_retries'])
+            self.assertEqual('fs',
+                             actionmap['freezer_action']['mode'])
