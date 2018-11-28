@@ -551,7 +551,7 @@ def search_action(user_id, project_id=None, offset=0,
 
     result = search_tuple(tablename=models.Action, user_id=user_id,
                           project_id=project_id, offset=offset,
-                          limit=limit, search=search)
+                          limit=limit)
     for action in result:
         actionmap = {}
         actionmap['project_id'] = project_id
@@ -576,7 +576,7 @@ def search_action(user_id, project_id=None, offset=0,
         actionmap['freezer_action']['log_file'] = action.get('log_file')
 
         actions.append(actionmap)
-
+    actions = filter_tuple_by_search_opt(actions, search)
     return actions
 
 
