@@ -285,3 +285,100 @@ class DbJobTestCase(base.DbTestCase):
             self.assertEqual('node1', jobmap['client_id'])
             self.assertEqual('14 days',
                              jobmap['job_schedule']['schedule_interval'])
+
+    def test_job_list_with_search_with_all_opt_one_match(self):
+        count = 0
+        jobids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_job_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['client_id'] = "node1"
+            job_id = self.dbapi.add_job(user_id=self.fake_job_3.
+                                        get('user_id'),
+                                        doc=doc,
+                                        project_id=self.fake_project_id)
+            self.assertIsNotNone(job_id)
+            jobids.append(job_id)
+            count += 1
+        search_opt = {'match': [{'_all': '[{"client_id": "node1"}]'}]}
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=0,
+                                       limit=20,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 5)
+        for index in range(len(result)):
+            jobmap = result[index]
+            self.assertEqual('node1', jobmap['client_id'])
+
+    def test_job_list_with_search_with_all_opt_two_matches(self):
+        count = 0
+        jobids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_job_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['client_id'] = "node1"
+            if count in [4, 12]:
+                doc['job_schedule']['schedule_interval'] = '10 days'
+            job_id = self.dbapi.add_job(user_id=self.fake_job_3.
+                                        get('user_id'),
+                                        doc=doc,
+                                        project_id=self.fake_project_id)
+            self.assertIsNotNone(job_id)
+            jobids.append(job_id)
+            count += 1
+        search_opt = {'match':
+                      [{'_all':
+                        '[{"client_id": "node1"}, '
+                        '{"schedule_interval": "10 days"}]'}]}
+
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=0,
+                                       limit=20,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+        for index in range(len(result)):
+            jobmap = result[index]
+            self.assertEqual('node1', jobmap['client_id'])
+            self.assertEqual('10 days',
+                             jobmap['job_schedule']['schedule_interval'])
+
+    def test_job_list_with_search_with_error_all_opt_return_alltuples(self):
+        count = 0
+        jobids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_job_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['client_id'] = "node1"
+            job_id = self.dbapi.add_job(user_id=self.fake_job_3.
+                                        get('user_id'),
+                                        doc=doc,
+                                        project_id=self.fake_project_id)
+            self.assertIsNotNone(job_id)
+            jobids.append(job_id)
+            count += 1
+        search_opt = {'match': [{'_all': '{"client_id": "node1"}'}]}
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=0,
+                                       limit=20,
+                                       search=search_opt)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 20)
+        search_opt = {'match': [{'_all': 'client_id=node1'}]}
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=0,
+                                       limit=20,
+                                       search=search_opt)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 20)
