@@ -169,7 +169,7 @@ class DbSessionTestCase(base.DbTestCase):
 
         self.assertEqual(result, self.fake_session_id)
 
-    def test_add_and_search_session(self):
+    def test_session_list_without_search(self):
         count = 0
         sessionids = []
         while (count < 20):
@@ -195,3 +195,111 @@ class DbSessionTestCase(base.DbTestCase):
         for index in range(len(result)):
             sessionmap = result[index]
             self.assertEqual(sessionids[index], sessionmap['session_id'])
+
+    def test_session_list_with_search_match_and_match_not(self):
+        count = 0
+        sessionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_session_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['hold_off'] = 100
+                if count in [4, 12]:
+                    doc['schedule']['schedule_date'] = \
+                        '2018-12-12T00:00:00'
+            session_id = self.dbapi.add_session(project_id=self.fake_session_3.
+                                                get('project_id'),
+                                                user_id=self.fake_session_3.
+                                                get('user_id'),
+                                                doc=doc)
+            self.assertIsNotNone(session_id)
+            sessionids.append(session_id)
+            count += 1
+        search_opt = {'match': [{'hold_off': 100}],
+                      'match_not':
+                          [{'schedule_date': '2018-12-12T00:00:00'}]
+                      }
+        result = self.dbapi.search_session(user_id=self.fake_session_3.
+                                           get('user_id'),
+                                           project_id=self.fake_session_3.
+                                           get('project_id'),
+                                           offset=0,
+                                           limit=20,
+                                           search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 3)
+        for index in range(len(result)):
+            sessionmap = result[index]
+            self.assertEqual(100, sessionmap['hold_off'])
+            self.assertEqual('2018-11-14T16:20:00',
+                             sessionmap['schedule']['schedule_date'])
+
+    def test_session_list_with_search_match_list(self):
+        count = 0
+        sessionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_session_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['hold_off'] = 100
+                if count in [4, 12]:
+                    doc['schedule']['schedule_date'] = '2018-12-12T00:00:00'
+            session_id = self.dbapi.add_session(project_id=self.fake_session_3.
+                                                get('project_id'),
+                                                user_id=self.fake_session_3.
+                                                get('user_id'),
+                                                doc=doc)
+            self.assertIsNotNone(session_id)
+            sessionids.append(session_id)
+            count += 1
+        search_opt = {'match': [{'hold_off': 100},
+                                {'schedule_date': '2018-12-12T00:00:00'}]}
+        result = self.dbapi.search_session(user_id=self.fake_session_3.
+                                           get('user_id'),
+                                           project_id=self.fake_session_3.
+                                           get('project_id'),
+                                           offset=0,
+                                           limit=20,
+                                           search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+        for index in range(len(result)):
+            sessionmap = result[index]
+            self.assertEqual(100, sessionmap['hold_off'])
+            self.assertEqual('2018-12-12T00:00:00',
+                             sessionmap['schedule']['schedule_date'])
+
+    def test_session_list_with_search_match_not_list(self):
+        count = 0
+        sessionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_session_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['hold_off'] = 100
+                if count in [4, 12]:
+                    doc['schedule']['schedule_date'] = '2018-12-12T00:00:00'
+            session_id = self.dbapi.add_session(project_id=self.fake_session_3.
+                                                get('project_id'),
+                                                user_id=self.fake_session_3.
+                                                get('user_id'),
+                                                doc=doc)
+            self.assertIsNotNone(session_id)
+            sessionids.append(session_id)
+            count += 1
+        search_opt = {'match_not': [{'schedule_date': '2018-11-14T16:20:00'},
+                                    {'hold_off': 60}]}
+        result = self.dbapi.search_session(user_id=self.fake_session_3.
+                                           get('user_id'),
+                                           project_id=self.fake_session_3.
+                                           get('project_id'),
+                                           offset=0,
+                                           limit=20,
+                                           search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+        for index in range(len(result)):
+            sessionmap = result[index]
+            self.assertEqual(100, sessionmap['hold_off'])
+            self.assertEqual('2018-12-12T00:00:00',
+                             sessionmap['schedule']['schedule_date'])
