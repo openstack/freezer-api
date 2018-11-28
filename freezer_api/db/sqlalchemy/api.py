@@ -585,7 +585,12 @@ def search_action(user_id, project_id=None, offset=0,
         actionmap['freezer_action']['log_file'] = action.get('log_file')
 
         actions.append(actionmap)
-    actions = filter_tuple_by_search_opt(actions, search)
+    # If search opt is wrong, filter will not work,
+    # return all tuples.
+    try:
+        actions = filter_tuple_by_search_opt(actions, search)
+    except Exception as e:
+        LOG.error(e)
     return actions
 
 
@@ -866,7 +871,7 @@ def search_backup(user_id, project_id=None, offset=0,
 
     result = search_tuple(tablename=models.Backup, user_id=user_id,
                           project_id=project_id, offset=offset,
-                          limit=limit, search=search)
+                          limit=limit)
     for backup in result:
         backupmap = {}
         backupmap['project_id'] = project_id
@@ -876,6 +881,13 @@ def search_backup(user_id, project_id=None, offset=0,
         backupmap['backup_metadata'] = json_utils.\
             json_decode(backup.get('backup_metadata'))
         backups.append(backupmap)
+
+    # If search opt is wrong, filter will not work,
+    # return all tuples.
+    try:
+        backups = filter_tuple_by_search_opt(backups, search)
+    except Exception as e:
+        LOG.error(e)
 
     return backups
 
