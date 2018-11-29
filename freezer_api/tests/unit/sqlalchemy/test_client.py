@@ -225,3 +225,119 @@ class DbClientTestCase(base.DbTestCase):
             description = clientmap['client'].get('description')
             self.assertEqual('node1', hostname)
             self.assertEqual('tecs', description)
+
+    def test_add_and_search_client_with_all_opt_one_match(self):
+        count = 0
+        clientids = []
+        while (count < 20):
+            client_doc = copy.deepcopy(self.fake_client_doc)
+            clientid = common.get_fake_client_id()
+            client_doc['client_id'] = clientid
+            client_doc['hostname'] = "node1"
+            if count in [0, 4, 8, 12, 16]:
+                client_doc['description'] = "tecs"
+
+            client_id = self.dbapi.add_client(user_id=self.fake_user_id,
+                                              doc=client_doc,
+                                              project_id=self.fake_project_id)
+            self.assertIsNotNone(client_id)
+            self.assertEqual(clientid, client_id)
+            clientids.append(client_id)
+            count += 1
+
+        search_opt = {'match': [{'_all': '[{"description": "tecs"}]'}]}
+
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       limit=20,
+                                       offset=0,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 5)
+
+        for index in range(len(result)):
+            clientmap = result[index]
+            description = clientmap['client'].get('description')
+            self.assertEqual('tecs', description)
+
+    def test_add_and_search_client_with_all_opt_two_match(self):
+        count = 0
+        clientids = []
+        while (count < 20):
+            client_doc = copy.deepcopy(self.fake_client_doc)
+            clientid = common.get_fake_client_id()
+            client_doc['client_id'] = clientid
+            client_doc['hostname'] = "node1"
+            if count in [0, 4, 8, 12, 16]:
+                client_doc['hostname'] = "node2"
+            if count in [4, 12]:
+                client_doc['description'] = "tecs"
+
+            client_id = self.dbapi.add_client(user_id=self.fake_user_id,
+                                              doc=client_doc,
+                                              project_id=self.fake_project_id)
+            self.assertIsNotNone(client_id)
+            self.assertEqual(clientid, client_id)
+            clientids.append(client_id)
+            count += 1
+
+        search_opt = {'match':
+                      [{'_all':
+                        '[{"description": "tecs"}, '
+                        '{"hostname": "node2"}]'}]}
+
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       limit=20,
+                                       offset=0,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+
+        for index in range(len(result)):
+            clientmap = result[index]
+            description = clientmap['client'].get('description')
+            hostname = clientmap['client'].get('hostname')
+            self.assertEqual('tecs', description)
+            self.assertEqual('node2', hostname)
+
+    def test_add_and_search_client_with_error_all_opt_return_alltuples(self):
+        count = 0
+        clientids = []
+        while (count < 20):
+            client_doc = copy.deepcopy(self.fake_client_doc)
+            clientid = common.get_fake_client_id()
+            client_doc['client_id'] = clientid
+            client_doc['hostname'] = "node1"
+            if count in [0, 4, 8, 12, 16]:
+                client_doc['hostname'] = "node2"
+
+            client_id = self.dbapi.add_client(user_id=self.fake_user_id,
+                                              doc=client_doc,
+                                              project_id=self.fake_project_id)
+            self.assertIsNotNone(client_id)
+            self.assertEqual(clientid, client_id)
+            clientids.append(client_id)
+            count += 1
+
+        search_opt = {'match': [{'_all': '{"hostname": "node2"}'}]}
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       limit=20,
+                                       offset=0,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 20)
+
+        search_opt = {'match': [{'_all': 'hostname=node2'}]}
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       limit=20,
+                                       offset=0,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 20)
