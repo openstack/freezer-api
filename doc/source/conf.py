@@ -141,12 +141,12 @@ html_theme = 'default'
 #html_last_updated_fmt = '%b %d, %Y'
 git_cmd = ["git", "log", "--pretty=format:%ad, commit %h", "--date=local",
            "-n1"]
-try:
-    html_last_updated_fmt = subprocess.check_output(git_cmd).decode('utf-8')
-except Exception:
-    warnings.warn('Cannot get last updated time from git repository. '
-                  'Not setting "html_last_updated_fmt".')
-
+#try:
+#    html_last_updated_fmt = subprocess.check_output(git_cmd).decode('utf-8')
+#except Exception:
+#    warnings.warn('Cannot get last updated time from git repository. '
+#                  'Not setting "html_last_updated_fmt".')
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True

@@ -1,0 +1,12 @@
+{
+    "match_not": [
+        {
+            "storage": "ftps"
+        }
+    ],
+    "match": [
+        {
+            "backup_name": "freezer_mysql_backup"
+        }
+    ]
+}

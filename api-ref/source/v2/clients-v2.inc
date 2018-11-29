@@ -37,6 +37,7 @@ Request Parameters
 
   - limit: limit
   - offset: marker
+  - search: search_option
 
 Response Parameters
 -------------------
@@ -45,6 +46,12 @@ Response Parameters
 
   - clients: clients
 
+
+Request Example
+---------------
+
+.. literalinclude:: samples/clients-list-request.json
+   :language: javascript
 
 Response Example
 ----------------

@@ -1,0 +1,12 @@
+{
+    "match_not": [
+        {
+            "schedule_interval": "10 days"
+        }
+    ],
+    "match": [
+        {
+            "hold_off": 50
+        }
+    ]
+}

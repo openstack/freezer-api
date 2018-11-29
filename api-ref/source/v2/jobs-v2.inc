@@ -37,6 +37,8 @@ Request Parameters
 
   - limit: limit
   - offset: marker
+  - search: search_option
+
 
 Response Parameters
 -------------------
@@ -44,6 +46,13 @@ Response Parameters
 .. rest_parameters:: parameters.yaml
 
   - jobs: jobs
+
+
+Request Example
+---------------
+
+.. literalinclude:: samples/jobs-list-request.json
+   :language: javascript
 
 
 Response Example

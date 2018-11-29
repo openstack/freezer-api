@@ -1,0 +1,12 @@
+{
+    "match_not": [
+        {
+            "max_retries": 20
+        }
+    ],
+    "match": [
+        {
+            "backup_name": "test0001_backup"
+        }
+    ]
+}
