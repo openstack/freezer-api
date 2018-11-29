@@ -372,7 +372,6 @@ def filter_tuple_by_search_opt(tuples, search=None):
 def get_client(user_id, project_id=None, client_id=None, offset=0,
                limit=100, search=None):
 
-    search = search or {}
     clients = []
     session = get_db_session()
     with session.begin():
@@ -400,6 +399,13 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
                                 u'client_id': client.client_id,
                                 u'description': client.description}
         clients.append(clientmap)
+
+    # If search opt is wrong, filter will not work,
+    # return all tuples.
+    try:
+        clients = filter_tuple_by_search_opt(clients, search)
+    except Exception as e:
+        LOG.error(e)
 
     return clients
 
