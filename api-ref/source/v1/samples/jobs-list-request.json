@@ -1,0 +1,12 @@
+{
+    "match_not": [
+        {
+            "schedule_interval": "10 days"
+        }
+    ],
+    "match": [
+        {
+            "client_id": "752d8bd43d654e7a840bbfda77ce41af_szaher"
+        }
+    ]
+}

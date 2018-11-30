@@ -38,6 +38,7 @@ Request Parameters
 
   - limit: limit
   - offset: marker
+  - search: search_option
 
 Response Parameters
 -------------------
@@ -46,6 +47,12 @@ Response Parameters
 
   - actions: actions
 
+
+Request Example
+---------------
+
+.. literalinclude:: samples/actions-list-request.json
+   :language: javascript
 
 Response Example
 ----------------

@@ -38,6 +38,7 @@ Request Parameters
 
   - limit: limit
   - marker: marker
+  - search: search_option
 
 Response Parameters
 -------------------
@@ -46,6 +47,12 @@ Response Parameters
 
   - backups: backups
 
+
+Request Example
+---------------
+
+.. literalinclude:: samples/backup-list-request.json
+   :language: javascript
 
 Response Example
 ----------------

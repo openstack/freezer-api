@@ -37,6 +37,7 @@ Query Parameters
 
   - limit: limit
   - offset: marker
+  - search: search_option
 
 Response Parameters
 -------------------
@@ -45,6 +46,12 @@ Response Parameters
 
   - sessions: sessions
 
+
+Request Example
+---------------
+
+.. literalinclude:: samples/sessions-list-request.json
+   :language: javascript
 
 Response Example
 ----------------

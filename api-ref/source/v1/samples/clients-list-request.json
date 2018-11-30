@@ -1,0 +1,12 @@
+{
+    "match_not": [
+        {
+            "client_id": "tecs_node1"
+        }
+    ],
+    "match": [
+        {
+            "user_id":"0cd44caf6db5486b94a04b33256a5ff4"
+        }
+    ]
+}
