@@ -256,20 +256,24 @@ def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
 def search_tuple(tablename, user_id, project_id=None, offset=0,
                  limit=100, search=None):
+    search = valid_and_get_search_option(search=search)
     session = get_db_session()
     with session.begin():
         try:
             # TODO(gecong) search will be implemented in the future
             query = model_query(session, tablename, project_id=project_id)
             query = query.filter_by(user_id=user_id)
-            query = query.offset(offset)
-            query = query.limit(limit)
+            #  If search option isn't valid or set, we use limit and offset
+            #  in sqlalchemy level
+            if len(search) == 0:
+                query = query.offset(offset)
+                query = query.limit(limit)
             result = query.all()
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
     session.close()
-    return result
+    return result, search
 
 
 def get_recursively(source_dict, search_keys):
@@ -318,28 +322,24 @@ def valid_and_get_search_option(search=None):
         except Exception as e:
             msg = "{0} \n json_decode error: {1}".\
                 format(error_msg, e)
-            LOG.error(error_msg)
-            raise Exception(msg)
+            LOG.error(msg)
+            return {}
         if not isinstance(search, list):
             LOG.error(error_msg)
-            raise Exception(error_msg)
+            return {}
         search = {'match': search}
     if not isinstance(search, dict):
-        search = {}
+        return {}
     return search
 
 
-def filter_tuple_by_search_opt(tuples, search=None):
+def filter_tuple_by_search_opt(tuples, offset=0, limit=100, search=None):
     search = search or {}
+    search_key = {}
+    result_last = []
     # search opt is null, all tuples will be filtered in.
     if len(search) == 0:
         return tuples
-    search = valid_and_get_search_option(search=search)
-    if len(search) == 0:
-        return tuples
-    result_last = []
-    search_key = {}
-
     for m in search.get('match', []):
         for key, value in m.items():
             search_key[key] = value
@@ -347,7 +347,11 @@ def filter_tuple_by_search_opt(tuples, search=None):
         for key, value in m.items():
             search_key[key] = value
 
+    jobs_search_offset = 0
+    jobs_search_count = 0
     for tuple in tuples:
+        if jobs_search_count >= limit:
+            return result_last
         filter_out = False
         search_keys_found = get_recursively(tuple, search_key)
         # If all keys and values are in search_keys_found, this tuple will be
@@ -365,14 +369,15 @@ def filter_tuple_by_search_opt(tuples, search=None):
                     filter_out = True
                     break
         if not filter_out:
-            result_last.append(tuple)
+            jobs_search_offset += 1
+            if jobs_search_offset > offset:
+                jobs_search_count += 1
+                result_last.append(tuple)
     return result_last
 
 
-def get_client(user_id, project_id=None, client_id=None, offset=0,
-               limit=100, search=None):
+def get_client_byid(user_id, client_id, project_id=None):
 
-    clients = []
     session = get_db_session()
     with session.begin():
         try:
@@ -380,15 +385,26 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
             if client_id:
                 query = query.filter_by(user_id=user_id).filter_by(
                     client_id=client_id)
-            else:
-                query = query.filter_by(user_id=user_id)
-                query = query.offset(offset)
-                query = query.limit(limit)
-            result = query.all()
+                result = query.all()
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
     session.close()
+    return result
+
+
+def get_client(user_id, project_id=None, client_id=None, offset=0,
+               limit=100, search=None):
+
+    clients = []
+    search_key = {}
+    if client_id:
+        result = get_client_byid(user_id, client_id, project_id=project_id)
+    else:
+        result, search_key = search_tuple(tablename=models.Client,
+                                          user_id=user_id,
+                                          project_id=project_id, offset=offset,
+                                          limit=limit, search=search)
 
     for client in result:
         clientmap = {}
@@ -402,11 +418,9 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
 
     # If search opt is wrong, filter will not work,
     # return all tuples.
-    try:
-        clients = filter_tuple_by_search_opt(clients, search)
-    except Exception as e:
-        LOG.error(e)
-
+    if not client_id:
+        clients = filter_tuple_by_search_opt(clients, offset=offset,
+                                             limit=limit, search=search_key)
     return clients
 
 
@@ -564,9 +578,9 @@ def search_action(user_id, project_id=None, offset=0,
 
     actions = []
 
-    result = search_tuple(tablename=models.Action, user_id=user_id,
-                          project_id=project_id, offset=offset,
-                          limit=limit)
+    result, search_key = search_tuple(tablename=models.Action, user_id=user_id,
+                                      project_id=project_id, offset=offset,
+                                      limit=limit, search=search)
     for action in result:
         actionmap = {}
         actionmap['project_id'] = project_id
@@ -593,10 +607,8 @@ def search_action(user_id, project_id=None, offset=0,
         actions.append(actionmap)
     # If search opt is wrong, filter will not work,
     # return all tuples.
-    try:
-        actions = filter_tuple_by_search_opt(actions, search)
-    except Exception as e:
-        LOG.error(e)
+    actions = filter_tuple_by_search_opt(actions, offset=offset, limit=limit,
+                                         search=search_key)
     return actions
 
 
@@ -732,9 +744,9 @@ def get_job(user_id, job_id, project_id=None):
 def search_job(user_id, project_id=None, offset=0,
                limit=100, search=None):
     jobs = []
-    result = search_tuple(tablename=models.Job, user_id=user_id,
-                          project_id=project_id, offset=offset,
-                          limit=limit)
+    result, search_key = search_tuple(tablename=models.Job, user_id=user_id,
+                                      project_id=project_id, offset=offset,
+                                      limit=limit, search=search)
     for job in result:
         jobmap = {}
         jobmap['job_id'] = job.get('id')
@@ -751,10 +763,8 @@ def search_job(user_id, project_id=None, offset=0,
         jobs.append(jobmap)
     # If search opt is wrong, filter will not work,
     # return all tuples.
-    try:
-        jobs = filter_tuple_by_search_opt(jobs, search)
-    except Exception as e:
-        LOG.error(e)
+    jobs = filter_tuple_by_search_opt(jobs, offset=offset, limit=limit,
+                                      search=search_key)
     return jobs
 
 
@@ -875,9 +885,9 @@ def search_backup(user_id, project_id=None, offset=0,
                   limit=100, search=None):
     backups = []
 
-    result = search_tuple(tablename=models.Backup, user_id=user_id,
-                          project_id=project_id, offset=offset,
-                          limit=limit)
+    result, search_key = search_tuple(tablename=models.Backup, user_id=user_id,
+                                      project_id=project_id, offset=offset,
+                                      limit=limit, search=search)
     for backup in result:
         backupmap = {}
         backupmap['project_id'] = project_id
@@ -887,14 +897,10 @@ def search_backup(user_id, project_id=None, offset=0,
         backupmap['backup_metadata'] = json_utils.\
             json_decode(backup.get('backup_metadata'))
         backups.append(backupmap)
-
     # If search opt is wrong, filter will not work,
     # return all tuples.
-    try:
-        backups = filter_tuple_by_search_opt(backups, search)
-    except Exception as e:
-        LOG.error(e)
-
+    backups = filter_tuple_by_search_opt(backups, offset=offset, limit=limit,
+                                         search=search_key)
     return backups
 
 
@@ -1052,9 +1058,10 @@ def search_session(user_id, project_id=None, offset=0,
     sessions = []
     jobt = {}
 
-    result = search_tuple(tablename=models.Session, user_id=user_id,
-                          project_id=project_id, offset=offset,
-                          limit=limit)
+    result, search_key = search_tuple(tablename=models.Session,
+                                      user_id=user_id,
+                                      project_id=project_id, offset=offset,
+                                      limit=limit, search=search)
     for sessiont in result:
         sessionmap = {}
         sessionmap['project_id'] = project_id
@@ -1077,8 +1084,7 @@ def search_session(user_id, project_id=None, offset=0,
         sessions.append(sessionmap)
     # If search opt is wrong, filter will not work,
     # return all tuples.
-    try:
-        sessions = filter_tuple_by_search_opt(sessions, search)
-    except Exception as e:
-        LOG.error(e)
+    sessions = filter_tuple_by_search_opt(sessions, offset=offset,
+                                          limit=limit, search=search_key)
+
     return sessions
