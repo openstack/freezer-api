@@ -382,3 +382,46 @@ class DbJobTestCase(base.DbTestCase):
                                        search=search_opt)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
+
+    def test_job_list_with_search_and_offset_and_limit(self):
+        count = 0
+        jobids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_job_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['client_id'] = "node1"
+            job_id = self.dbapi.add_job(user_id=self.fake_job_3.
+                                        get('user_id'),
+                                        doc=doc,
+                                        project_id=self.fake_project_id)
+            self.assertIsNotNone(job_id)
+            jobids.append(job_id)
+            count += 1
+        # There are 5 records.
+        search_opt = {'match': [{'_all': '[{"client_id": "node1"}]'}]}
+        # First, we can get 3 tuples
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=0,
+                                       limit=3,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 3)
+        for index in range(len(result)):
+            jobmap = result[index]
+            self.assertEqual('node1', jobmap['client_id'])
+        # Second, we can get 2 tuples
+        result = self.dbapi.search_job(user_id=self.fake_job_3.
+                                       get('user_id'),
+                                       project_id=self.fake_project_id,
+                                       offset=3,
+                                       limit=3,
+                                       search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+        for index in range(len(result)):
+            jobmap = result[index]
+            self.assertEqual('node1', jobmap['client_id'])
