@@ -411,3 +411,49 @@ class DbSessionTestCase(base.DbTestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
+
+    def test_session_list_with_search_and_offset_and_limit(self):
+        count = 0
+        sessionids = []
+        while (count < 20):
+            doc = copy.deepcopy(self.fake_session_3)
+            if count in [0, 4, 8, 12, 16]:
+                doc['hold_off'] = 100
+            session_id = self.dbapi.add_session(project_id=self.fake_session_3.
+                                                get('project_id'),
+                                                user_id=self.fake_session_3.
+                                                get('user_id'),
+                                                doc=doc)
+            self.assertIsNotNone(session_id)
+            sessionids.append(session_id)
+            count += 1
+        # There are 5 records.
+        search_opt = {'match': [{'_all': '[{"hold_off": 100}]'}]}
+        # First, we can get 3 tuples
+        result = self.dbapi.search_session(user_id=self.fake_session_3.
+                                           get('user_id'),
+                                           project_id=self.fake_session_3.
+                                           get('project_id'),
+                                           offset=0,
+                                           limit=3,
+                                           search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 3)
+        for index in range(len(result)):
+            sessionmap = result[index]
+            self.assertEqual(100, sessionmap['hold_off'])
+        # Second, we can get 2 tuples
+        result = self.dbapi.search_session(user_id=self.fake_session_3.
+                                           get('user_id'),
+                                           project_id=self.fake_session_3.
+                                           get('project_id'),
+                                           offset=3,
+                                           limit=3,
+                                           search=search_opt)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 2)
+        for index in range(len(result)):
+            sessionmap = result[index]
+            self.assertEqual(100, sessionmap['hold_off'])
