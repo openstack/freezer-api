@@ -380,3 +380,298 @@ class ClientTypeManagerV2(unittest.TestCase):
             }
         }
         self.assertEqual(expected_q, q)
+
+
+class JobTypeManagerV2(unittest.TestCase):
+    def setUp(self):
+        self.mock_es = mock.Mock()
+        self.job_manager = elastic.JobTypeManagerV2(self.mock_es, 'clients')
+
+    def test_get_search_query(self):
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        q = self.job_manager.get_search_query(project_id='tecs',
+                                              user_id='my_user_id',
+                                              doc_id='my_doc_id',
+                                              search=my_search)
+        expected_q = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'project_id': 'tecs'
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'user_id': 'my_user_id'
+                                    }
+                                },
+                                {
+                                    'query': {
+                                        'bool': {
+                                            'must_not': [],
+                                            'must': [
+                                                {
+                                                    'match': {
+                                                        'some_field':
+                                                            'some text'
+                                                    }
+                                                },
+                                                {
+                                                    'match': {
+                                                        'description':
+                                                            'some other text'
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {'term': {
+                                    'job_id': 'my_doc_id'
+                                }
+                                }
+                            ]}}}}}
+        self.assertEqual(expected_q, q)
+
+    def test_update_ok(self):
+        self.mock_es.update.return_value = {
+            u'_id': u'd6c1e00d-b9c1-4eb3-8219-1e83c02af101',
+            u'_index': u'freezer',
+            u'_type': u'jobs',
+            u'_version': 3
+        }
+        res = self.job_manager.update(job_id=common.fake_job_0_job_id,
+                                      job_update_doc={'status': 'sleepy'})
+        self.assertEqual(3, res)
+        self.mock_es.update.assert_called_with(
+            index=self.job_manager.index,
+            doc_type=self.job_manager.doc_type,
+            id=common.fake_job_0_job_id,
+            body={"doc": {'status': 'sleepy'}}
+        )
+
+    def test_update_raise_DocumentNotFound_when_not_found(self):
+        self.mock_es.update.side_effect = elasticsearch.TransportError(
+            'regular test failure', 1)
+        self.assertRaises(exceptions.DocumentNotFound, self.job_manager.update,
+                          job_id=common.fake_job_0_job_id,
+                          job_update_doc={'status': 'sleepy'})
+
+    def test_update_raise_DocumentExists_when_elasticsearch_returns_409(self):
+        self.mock_es.update.side_effect = elasticsearch.TransportError(
+            409, 'regular test failure'
+        )
+        self.assertRaises(exceptions.DocumentExists, self.job_manager.update,
+                          job_id=common.fake_job_0_job_id,
+                          job_update_doc={'status': 'sleepy'})
+
+    def test_update_raise_StorageEngineError_when_db_raises(self):
+        self.mock_es.update.side_effect = Exception('regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.job_manager.update,
+                          job_id=common.fake_job_0_job_id,
+                          job_update_doc={'status': 'sleepy'})
+
+
+class ActionTypeManagerV2(unittest.TestCase):
+    def setUp(self):
+        self.mock_es = mock.Mock()
+        self.action_manager = elastic.ActionTypeManagerV2(self.mock_es,
+                                                          'actions')
+
+    def test_get_search_query(self):
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        q = self.action_manager.get_search_query(project_id='tecs',
+                                                 user_id='my_user_id',
+                                                 doc_id='my_doc_id',
+                                                 search=my_search)
+        expected_q = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'project_id': 'tecs'
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'user_id': 'my_user_id'
+                                    }
+                                },
+                                {
+                                    'query': {
+                                        'bool': {
+                                            'must_not': [],
+                                            'must': [
+                                                {
+                                                    'match': {
+                                                        'some_field':
+                                                            'some text'}
+                                                },
+                                                {
+                                                    'match': {
+                                                        'description':
+                                                            'some other text'}
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'action_id': 'my_doc_id'
+                                    }
+                                }
+                            ]}}}}}
+        self.assertEqual(expected_q, q)
+
+    def test_update_ok(self):
+        self.mock_es.update.return_value = {
+            u'_id': u'd6c1e00d-b9c1-4eb3-8219-1e83c02af101',
+            u'_index': u'freezer',
+            u'_type': u'actions',
+            u'_version': 3
+        }
+        res = self.action_manager.update(action_id='poiuuiop7890',
+                                         action_update_doc={
+                                             'status': 'sleepy'})
+        self.assertEqual(3, res)
+        self.mock_es.update.assert_called_with(
+            index=self.action_manager.index,
+            doc_type=self.action_manager.doc_type,
+            id='poiuuiop7890',
+            body={"doc": {'status': 'sleepy'}}
+        )
+
+    def test_update_raise_DocumentNotFound_when_not_found(self):
+        self.mock_es.update.side_effect = elasticsearch.TransportError(
+            'regular test failure', 1)
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.action_manager.update,
+                          action_id='asdfsadf',
+                          action_update_doc={'status': 'sleepy'})
+
+    def test_update_raise_DocumentExists_when_elasticsearch_returns_409(self):
+        self.mock_es.update.side_effect = elasticsearch.TransportError(
+            409, 'regular test failure'
+        )
+        self.assertRaises(exceptions.DocumentExists,
+                          self.action_manager.update,
+                          action_id='pepepepepe2321',
+                          action_update_doc={'status': 'sleepy'})
+
+    def test_update_raise_StorageEngineError_when_db_raises(self):
+        self.mock_es.update.side_effect = Exception('regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.action_manager.update,
+                          action_id='pepepepepe2321',
+                          action_update_doc={'status': 'sleepy'})
+
+
+class SessionTypeManagerV2(unittest.TestCase):
+    def setUp(self):
+        self.mock_es = mock.Mock()
+        self.session_manager = elastic.SessionTypeManagerV2(self.mock_es,
+                                                            'sessions')
+
+    def test_get_search_query(self):
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        q = self.session_manager.get_search_query(project_id='tecs',
+                                                  user_id='my_user_id',
+                                                  doc_id='my_doc_id',
+                                                  search=my_search)
+        expected_q = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'project_id': 'tecs'
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'user_id': 'my_user_id'
+                                    }
+                                },
+                                {
+                                    'query': {
+                                        'bool': {
+                                            'must_not': [],
+                                            'must': [
+                                                {
+                                                    'match': {
+                                                        'some_field':
+                                                            'some text'
+                                                    }
+                                                },
+                                                {
+                                                    'match': {
+                                                        'description':
+                                                            'some other text'
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'session_id': 'my_doc_id'
+                                    }
+                                }
+                            ]}}}}}
+        self.assertEqual(expected_q, q)
+
+    def test_update_ok(self):
+        self.mock_es.update.return_value = {
+            u'_id': u'd6c1e00d-b9c1-4eb3-8219-1e83c02af101',
+            u'_index': u'freezer',
+            u'_type': u'actions',
+            u'_version': 3
+        }
+        res = self.session_manager.update(session_id='poiuuiop7890',
+                                          session_update_doc={
+                                              'status': 'sleepy'})
+        self.assertEqual(3, res)
+        self.mock_es.update.assert_called_with(
+            index=self.session_manager.index,
+            doc_type=self.session_manager.doc_type,
+            id='poiuuiop7890',
+            body={"doc": {'status': 'sleepy'}})
+
+    def test_update_raise_DocumentNotFound_when_not_found(self):
+        self.mock_es.update.side_effect = elasticsearch.TransportError(
+            'regular test failure', 1)
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.session_manager.update,
+                          session_id='asdfsadf',
+                          session_update_doc={'status': 'sleepy'})
+
+    def test_update_raise_DocumentExists_when_elasticsearch_returns_409(self):
+        self.mock_es.update.side_effect = elasticsearch.TransportError(
+            409, 'regular test failure'
+        )
+        self.assertRaises(exceptions.DocumentExists,
+                          self.session_manager.update,
+                          session_id='pepepepepe2321',
+                          session_update_doc={'status': 'sleepy'})
+
+    def test_update_raise_StorageEngineError_when_db_raises(self):
+        self.mock_es.update.side_effect = Exception('regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.session_manager.update,
+                          session_id='pepepepepe2321',
+                          session_update_doc={'status': 'sleepy'})
