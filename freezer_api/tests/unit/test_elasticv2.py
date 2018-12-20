@@ -237,3 +237,146 @@ class TypeManagerV2(unittest.TestCase):
         self.assertEqual(
             'cicciopassamilolio', res, 'invalid res {0}'.format(res)
         )
+
+
+class TestBackupManagerV2(unittest.TestCase):
+    def setUp(self):
+        self.mock_es = mock.Mock()
+        self.backup_manager = elastic.BackupTypeManagerV2(self.mock_es,
+                                                          'backups')
+
+    def test_get_search_query(self):
+        my_search = {'match': [{'backup_name': 'my_backup'}, {'mode': 'fs'}],
+                     "time_before": 1428510506,
+                     "time_after": 1428510506
+                     }
+        q = self.backup_manager.get_search_query(project_id='tecs',
+                                                 user_id='my_user_id',
+                                                 doc_id='my_doc_id',
+                                                 search=my_search)
+        expected_q = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'project_id': 'tecs'
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'user_id': 'my_user_id'
+                                    }
+                                },
+                                {
+                                    'query': {
+                                        'bool': {
+                                            'must_not': [],
+                                            'must': [
+                                                {
+                                                    'match': {
+                                                        'backup_name':
+                                                            'my_backup'
+                                                    }
+                                                },
+                                                {
+                                                    'match': {
+                                                        'mode': 'fs'
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'backup_id': 'my_doc_id'
+                                    }
+                                },
+                                {
+                                    'range': {
+                                        'timestamp': {
+                                            'gte': 1428510506
+                                        }
+                                    }
+                                },
+                                {
+                                    'range': {
+                                        'timestamp': {
+                                            'lte': 1428510506
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(expected_q, q)
+
+
+class ClientTypeManagerV2(unittest.TestCase):
+    def setUp(self):
+        self.mock_es = mock.Mock()
+        self.client_manager = elastic.ClientTypeManagerV2(self.mock_es,
+                                                          'clients')
+
+    def test_get_search_query(self):
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        q = self.client_manager.get_search_query(project_id='tecs',
+                                                 user_id='my_user_id',
+                                                 doc_id='my_doc_id',
+                                                 search=my_search)
+        expected_q = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'project_id': 'tecs'
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'user_id': 'my_user_id'
+                                    }
+                                },
+                                {
+                                    'query': {
+                                        'bool': {
+                                            'must_not': [],
+                                            'must': [
+                                                {
+                                                    'match': {
+                                                        'some_field':
+                                                            'some text'
+                                                    }
+                                                },
+                                                {
+                                                    'match': {
+                                                        'description':
+                                                            'some other text'
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'client.client_id': 'my_doc_id'
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(expected_q, q)
