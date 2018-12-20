@@ -220,8 +220,6 @@ def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
 def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
-    bCreate = False
-
     session = get_db_session()
     with session.begin():
         try:
@@ -229,28 +227,12 @@ def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
             result = query.update(tuple_values)
             if not result:
-                bCreate = True
+                tuplet = tablename()
+                tuplet.update(tuple_values)
+                tuplet.save(session=session)
         except Exception as e:
-            session.close()
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-
-    session.close()
-
-    if bCreate:
-        tuplet = models.Session()
-        tuplet.update(tuple_values)
-        session = get_db_session()
-        with session.begin():
-            try:
-                tuplet.save(session=session)
-            except Exception as e:
-                session.close()
-                raise freezer_api_exc.\
-                    StorageEngineError(message='Mysql operation failed {0}'.
-                                       format(e))
-        session.close()
-
     return tuple_id
 
 
@@ -669,7 +651,7 @@ def replace_action(user_id, action_id, doc, project_id=None):
     for key in freezer_action.keys():
         if key in keyt:
             values[key] = freezer_action.get(key)
-
+    values['backup_metadata'] = json_utils.json_encode(freezer_action)
     replace_tuple(tablename=models.Action, user_id=user_id,
                   tuple_id=action_id, tuple_values=values,
                   project_id=project_id)
@@ -803,13 +785,13 @@ def replace_job(user_id, job_id, doc, project_id=None):
     values['project_id'] = project_id
     values['user_id'] = user_id
     values['schedule'] = json_utils.\
-        json_encode(valid_doc.pop('job_schedule', None))
-    values['client_id'] = valid_doc.get('client_id', None)
-    values['session_id'] = valid_doc.pop('session_id', None)
-    values['session_tag'] = valid_doc.pop('session_tag', None)
-    values['description'] = valid_doc.pop('description', None)
+        json_encode(valid_doc.pop('job_schedule', ''))
+    values['client_id'] = valid_doc.get('client_id', '')
+    values['session_id'] = valid_doc.pop('session_id', '')
+    values['session_tag'] = valid_doc.pop('session_tag', 0)
+    values['description'] = valid_doc.pop('description', '')
     values['job_actions'] = json_utils.\
-        json_encode(valid_doc.pop('job_actions', None))
+        json_encode(valid_doc.pop('job_actions', ''))
 
     for key in values:
         if values[key] is not None:
