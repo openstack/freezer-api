@@ -18,8 +18,11 @@
 """Tests for manipulating job via the DB API"""
 
 import copy
+import mock
+from mock import patch
 from oslo_config import cfg
 
+from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.tests.unit import common
 from freezer_api.tests.unit.sqlalchemy import base
 
@@ -31,6 +34,7 @@ class DbSessionTestCase(base.DbTestCase):
     def setUp(self):
         super(DbSessionTestCase, self).setUp()
         self.fake_session_0 = common.get_fake_session_0()
+        self.fake_user_id = self.fake_session_0.get('user_id')
         self.fake_session_0.pop('session_id')
         self.fake_session_2 = common.get_fake_session_2()
         self.fake_session_2.pop('session_id')
@@ -405,3 +409,16 @@ class DbSessionTestCase(base.DbTestCase):
         for index in range(len(result)):
             sessionmap = result[index]
             self.assertEqual(100, sessionmap['hold_off'])
+
+    @patch('freezer_api.db.sqlalchemy.api.get_session')
+    def test_raise_add_session_exist(self, mock_get_session):
+        mock_get_session.return_value = mock.MagicMock()
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.add_session, self.fake_user_id,
+                          self.fake_session_0)
+
+    def test_raise_update_session_noexist(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.update_session, self.fake_user_id,
+                          self.fake_session_id,
+                          self.fake_session_0)
