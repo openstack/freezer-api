@@ -156,8 +156,10 @@ class DbJobTestCase(base.DbTestCase):
                                         doc=patch_doc1,
                                         project_id=self.fake_project_id)
         self.assertIsNotNone(result)
-
-        self.assertEqual(result, self.fake_job_id)
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    user_id=self.fake_job_2.get('user_id'),
+                                    job_id=self.fake_job_id)
+        self.assertEqual(result.get('job_id'), self.fake_job_id)
 
     def test_job_list_without_search(self):
         count = 0

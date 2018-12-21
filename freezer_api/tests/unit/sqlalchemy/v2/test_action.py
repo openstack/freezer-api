@@ -175,8 +175,11 @@ class DbActionTestCase(base.DbTestCase):
                                            doc=patch_doc1,
                                            action_id=self.fake_action_id)
         self.assertIsNotNone(result)
-
-        self.assertEqual(result, self.fake_action_id)
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       user_id=self.fake_action_2.
+                                       get('user_id'),
+                                       action_id=self.fake_action_id)
+        self.assertEqual(result.get('action_id'), self.fake_action_id)
 
     def test_add_and_search_action(self):
         count = 0
