@@ -48,6 +48,7 @@
 XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
+source $FREEZER_API_DIR/devstack/lib/elasticsearch.sh
 
 # Functions
 # ---------
@@ -63,7 +64,7 @@ function cleanup_freezer_api {
     disable_apache_site freezer-api
     sudo rm -f $(apache_site_config_for freezer-api)
     if [[ "${FREEZER_BACKEND}" != "sqlalchemy" ]]; then
-        ${TOP_DIR}/pkg/elasticsearch.sh uninstall
+        uninstall_elasticsearch
     fi
     sudo rm -rf $FREEZER_API_AUTH_CACHE_DIR $FREEZER_API_CONF_DIR
 }
@@ -74,8 +75,8 @@ function install_freezer_api {
     git_clone $FREEZER_API_REPO $FREEZER_API_DIR $FREEZER_API_BRANCH
 
     if [[ "${FREEZER_BACKEND}" != "sqlalchemy" ]]; then
-       ${TOP_DIR}/pkg/elasticsearch.sh download
-       ${TOP_DIR}/pkg/elasticsearch.sh install
+       download_elasticsearch
+       install_elasticsearch
     fi
 
     setup_develop $FREEZER_API_DIR
@@ -166,7 +167,7 @@ function init_freezer_api {
     else
 
        # this also waits for elasticsearch to start
-        ${TOP_DIR}/pkg/elasticsearch.sh start
+        start_elasticsearch
         # put elasticsearch mappings
         freezer-manage db update
         freezer-manage db show
@@ -201,7 +202,7 @@ function start_freezer_api {
 function stop_freezer_api {
 
     if [[ "${FREEZER_BACKEND}" != "sqlalchemy" ]]; then
-        ${TOP_DIR}/pkg/elasticsearch.sh stop
+        stop_elasticsearch
     fi
 
     if [[ "${FREEZER_API_SERVER_TYPE}" == "uwsgi" ]]; then
