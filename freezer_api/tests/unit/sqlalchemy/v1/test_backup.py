@@ -110,6 +110,13 @@ class DbBackupTestCase(base.DbTestCase):
             backupmap = result[index]
             self.assertEqual(backupids[index], backupmap['backup_id'])
 
+    @patch('freezer_api.db.sqlalchemy.api.get_backup')
+    def test_raise_add_backup_exist(self, mock_get_backup):
+        mock_get_backup.return_value = mock.MagicMock()
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.add_backup, self.fake_user_id,
+                          '12343', self.fake_backup_metadata)
+
     @patch('freezer_api.common.elasticv2_utils.BackupMetadataDoc')
     @patch('freezer_api.common.utils.BackupMetadataDoc')
     def test_raise_add_backup(self, mock1_BackupMetadataDoc,

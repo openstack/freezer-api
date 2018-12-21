@@ -16,8 +16,11 @@
 """Tests for manipulating Action via the DB API"""
 
 import copy
+import mock
+from mock import patch
 from oslo_config import cfg
 
+from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.tests.unit import common
 from freezer_api.tests.unit.sqlalchemy import base
 
@@ -33,6 +36,7 @@ class DbActionTestCase(base.DbTestCase):
         self.fake_action_3 = common.get_fake_action_3()
         self.freezer_action_0 = self.fake_action_0.get('freezer_action')
         self.freezer_action_2 = self.fake_action_2.get('freezer_action')
+        self.fake_user_id = self.fake_action_0.get('user_id')
         self.fake_action_id = common.get_fake_action_id()
         CONF.enable_v1_api = True
 
@@ -414,3 +418,10 @@ class DbActionTestCase(base.DbTestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
+
+    @patch('freezer_api.db.sqlalchemy.api.get_action')
+    def test_raise_add_action(self, mock_get_action):
+        mock_get_action.return_value = mock.MagicMock()
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.add_action, self.fake_user_id,
+                          self.fake_action_0)
