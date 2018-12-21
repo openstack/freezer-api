@@ -18,8 +18,11 @@
 """Tests for manipulating job via the DB API"""
 
 import copy
+import mock
+from mock import patch
 from oslo_config import cfg
 
+from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.tests.unit import common
 from freezer_api.tests.unit.sqlalchemy import base
 
@@ -37,6 +40,7 @@ class DbJobTestCase(base.DbTestCase):
         self.fake_job_3 = common.get_fake_job_3()
         self.fake_job_3.pop('job_id')
         self.fake_job_id = common.get_fake_job_id()
+        self.fake_user_id = self.fake_job_0.get('user_id')
         CONF.enable_v1_api = True
 
     def tearDown(self):
@@ -403,3 +407,10 @@ class DbJobTestCase(base.DbTestCase):
         for index in range(len(result)):
             jobmap = result[index]
             self.assertEqual('node1', jobmap['client_id'])
+
+    @patch('freezer_api.db.sqlalchemy.api.get_job')
+    def test_raise_add_job(self, mock_get_job):
+        mock_get_job.return_value = mock.MagicMock()
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.add_job, self.fake_user_id,
+                          self.fake_job_0)

@@ -17,8 +17,11 @@
 
 
 import copy
+import mock
+from mock import patch
 from oslo_config import cfg
 
+from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.tests.unit import common
 from freezer_api.tests.unit.sqlalchemy import base
 
@@ -106,3 +109,14 @@ class DbBackupTestCase(base.DbTestCase):
         for index in range(len(result)):
             backupmap = result[index]
             self.assertEqual(backupids[index], backupmap['backup_id'])
+
+    @patch('freezer_api.common.elasticv2_utils.BackupMetadataDoc')
+    @patch('freezer_api.common.utils.BackupMetadataDoc')
+    def test_raise_add_backup(self, mock1_BackupMetadataDoc,
+                              mock_BackupMetadataDoc):
+        mock1_BackupMetadataDoc().is_valid.return_value = None
+        mock_BackupMetadataDoc().is_valid.return_value = None
+        mock_doc = mock.MagicMock()
+        self.assertRaises(freezer_api_exc.BadDataFormat,
+                          self.dbapi.add_backup, self.fake_user_id, '12343',
+                          mock_doc)
