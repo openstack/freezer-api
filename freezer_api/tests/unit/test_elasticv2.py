@@ -20,10 +20,14 @@ import unittest
 import elasticsearch
 import mock
 from mock import patch
+from oslo_config import cfg
 
 from freezer_api.common import exceptions
+from freezer_api.db.elasticsearch.driver import ElasticSearchDB
 from freezer_api.storage import elasticv2 as elastic
 from freezer_api.tests.unit import common
+
+CONF = cfg.CONF
 
 
 class TypeManagerV2(unittest.TestCase):
@@ -675,3 +679,130 @@ class SessionTypeManagerV2(unittest.TestCase):
                           self.session_manager.update,
                           session_id='pepepepepe2321',
                           session_update_doc={'status': 'sleepy'})
+
+
+class TestElasticSearchEngineV2_backup(unittest.TestCase, ElasticSearchDB):
+
+    @patch('freezer_api.storage.elasticv2.logging')
+    @patch('freezer_api.storage.elasticv2.elasticsearch')
+    def setUp(self, mock_logging, mock_elasticsearch):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
+        mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngineV2(backend=backend)
+        self.eng.init(index='freezer', **kwargs)
+        self.eng.backup_manager = mock.Mock()
+
+    def test_get_backup_userid_and_backup_id_return_ok(self):
+        self.eng.backup_manager.get.return_value = (
+            common.fake_data_0_wrapped_backup_metadata
+        )
+        res = self.eng.get_backup(project_id='tecs',
+                                  user_id=common.fake_data_0_user_id,
+                                  backup_id=common.fake_data_0_backup_id)
+
+        self.assertEqual(common.fake_data_0_wrapped_backup_metadata, res)
+        self.eng.backup_manager.get.assert_called_with(
+            project_id=common.fake_data_0_wrapped_backup_metadata
+            ['project_id'],
+            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
+            doc_id=common.fake_data_0_wrapped_backup_metadata['backup_id']
+        )
+
+    def test_get_backup_list_with_userid_and_search_return_list(self):
+        self.eng.backup_manager.search.return_value = [
+            common.fake_data_0_wrapped_backup_metadata,
+            common.fake_data_1_wrapped_backup_metadata]
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.search_backup(project_id='tecs',
+                                     user_id=common.fake_data_0_user_id,
+                                     offset=3, limit=7,
+                                     search=my_search)
+        self.assertEqual(
+            [
+                common.fake_data_0_wrapped_backup_metadata,
+                common.fake_data_1_wrapped_backup_metadata
+            ], res
+        )
+        self.eng.backup_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
+            search=my_search,
+            limit=7, offset=3)
+
+    def test_get_backup_list_with_userid_and_search_return_empty(self):
+        self.eng.backup_manager.search.return_value = []
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.search_backup(project_id='tecs',
+                                     user_id=common.fake_data_0_user_id,
+                                     offset=3, limit=7,
+                                     search=my_search)
+        self.assertEqual([], res)
+        self.eng.backup_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
+            search=my_search,
+            limit=7, offset=3)
+
+    def test_get_backup_userid_and_backup_id_not_found_returns_empty(self):
+        self.eng.backup_manager.get.return_value = None
+        res = self.eng.get_backup(project_id='tecs',
+                                  user_id=common.fake_data_0_user_id,
+                                  backup_id=common.fake_data_0_backup_id)
+        self.assertIsNone(res)
+        self.eng.backup_manager.get.assert_called_with(
+            project_id=common.fake_data_0_wrapped_backup_metadata
+            ['project_id'],
+            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
+            doc_id=common.fake_data_0_wrapped_backup_metadata['backup_id']
+        )
+
+    def test_add_backup_raises_when_data_is_malformed(self):
+        self.assertRaises(exceptions.BadDataFormat, self.eng.add_backup,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_id,
+                          user_name=common.fake_data_0_user_name,
+                          doc=common.fake_malformed_data_0_backup_metadata)
+
+    def test_add_backup_ok(self):
+        self.eng.backup_manager.search.return_value = []
+        res = self.eng.add_backup(project_id='tecs',
+                                  user_id=common.fake_data_0_user_id,
+                                  user_name=common.fake_data_0_user_name,
+                                  doc=common.fake_data_0_backup_metadata)
+        self.assertTrue(res)
+
+    def test_add_backup_raises_when_manager_insert_raises(self):
+        self.eng.backup_manager.search.return_value = []
+        self.eng.backup_manager.insert.side_effect = (
+            exceptions.StorageEngineError('regular test failure')
+        )
+        self.assertRaises(exceptions.StorageEngineError, self.eng.add_backup,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_id,
+                          user_name=common.fake_data_0_user_name,
+                          doc=common.fake_data_0_backup_metadata)
+
+    def test_delete_backup_ok(self):
+        self.eng.backup_manager.delete.return_value = (
+            common.fake_data_0_backup_id
+        )
+        res = self.eng.delete_backup(project_id='tecs',
+                                     user_id=common.fake_data_0_user_id,
+                                     backup_id=common.fake_data_0_backup_id)
+        self.assertEqual(common.fake_data_0_backup_id, res)
+
+    def test_delete_backup_raises_when_es_delete_raises(self):
+        self.eng.backup_manager.delete.side_effect = (
+            exceptions.StorageEngineError()
+        )
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.eng.delete_backup,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_id,
+                          backup_id=common.fake_data_0_backup_id)
