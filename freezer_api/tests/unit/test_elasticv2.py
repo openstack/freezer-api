@@ -98,6 +98,21 @@ class TypeManagerV2(unittest.TestCase):
                           user_id=common.fake_job_0_user_id,
                           doc_id=common.fake_job_0_job_id)
 
+    def test_raise_get_search_query(self):
+        my_search_error = ['a', 'b']
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.type_manager.get_search_query,
+                          project_id='tecs',
+                          user_id=common.fake_job_0_user_id,
+                          doc_id=common.fake_job_0_job_id,
+                          search=my_search_error)
+
+    def test_get_raises_AccessForbidden_when_project_id_not_match(self):
+        self.mock_es.get.return_value = common.fake_job_0_elasticsearch_found
+        self.assertRaises(exceptions.AccessForbidden, self.type_manager.get,
+                          project_id='tecs1',
+                          doc_id=common.fake_job_0_job_id)
+
     def test_get_raises_AccessForbidden_when_user_id_not_match(self):
         self.mock_es.get.return_value = common.fake_job_0_elasticsearch_found
         self.assertRaises(exceptions.AccessForbidden, self.type_manager.get,
@@ -155,6 +170,15 @@ class TypeManagerV2(unittest.TestCase):
 
     def test_search_raise_StorageEngineError_when_search_raises(self):
         self.mock_es.search.side_effect = Exception('regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.type_manager.search, project_id='tecs',
+                          user_id='my_user_id', doc_id='mydocid')
+
+    @patch('freezer_api.storage.elasticv2.elasticsearch.Elasticsearch')
+    def test_search_raise_StorageEngineError_when_ConnectionError(self,
+                                                                  mock_es):
+        self.mock_es.search.side_effect = elasticsearch.ConnectionError(
+            'regular test failure')
         self.assertRaises(exceptions.StorageEngineError,
                           self.type_manager.search, project_id='tecs',
                           user_id='my_user_id', doc_id='mydocid')
@@ -218,6 +242,17 @@ class TypeManagerV2(unittest.TestCase):
         mock_elasticsearch.search.return_value = [
             {'_id': 'cicciopassamilolio'}]
         self.mock_es.delete.side_effect = Exception('regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.type_manager.delete, project_id='tecs',
+                          user_id='my_user_id', doc_id=doc_id)
+
+    def test_delete_raises_StorageEngineError_on_es_delete(
+            self):
+        results = {'hits': {'hits': [{'_id': mock.Mock}]}}
+        self.mock_es.search.return_value = results
+        doc_id = 'mydocid345'
+        self.mock_es.delete.side_effect = Exception(
+            'regular test failure')
         self.assertRaises(exceptions.StorageEngineError,
                           self.type_manager.delete, project_id='tecs',
                           user_id='my_user_id', doc_id=doc_id)

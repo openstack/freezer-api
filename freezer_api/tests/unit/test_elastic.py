@@ -79,6 +79,14 @@ class TypeManager(unittest.TestCase):
                           user_id=common.fake_job_0_user_id,
                           doc_id=common.fake_job_0_job_id)
 
+    def test_raise_get_search_query(self):
+        my_search_error = ['a', 'b']
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.type_manager.get_search_query,
+                          user_id=common.fake_job_0_user_id,
+                          doc_id=common.fake_job_0_job_id,
+                          search=my_search_error)
+
     def test_get_raise_StorageEngineError_when_db_raises(self):
         self.mock_es.get.side_effect = Exception('regular test failure')
         self.assertRaises(exceptions.StorageEngineError, self.type_manager.get,
@@ -137,6 +145,15 @@ class TypeManager(unittest.TestCase):
         self.assertRaises(exceptions.StorageEngineError,
                           self.type_manager.search, user_id='my_user_id',
                           doc_id='mydocid')
+
+    @patch('freezer_api.storage.elastic.elasticsearch.Elasticsearch')
+    def test_search_raise_StorageEngineError_when_ConnectionError(self,
+                                                                  mock_es):
+        self.mock_es.search.side_effect = elasticsearch.ConnectionError(
+            'regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.type_manager.search,
+                          user_id='my_user_id', doc_id='mydocid')
 
     def test_insert_ok(self):
         self.mock_es.index.return_value = {'created': True, '_version': 15}
@@ -200,6 +217,17 @@ class TypeManager(unittest.TestCase):
         self.assertRaises(exceptions.StorageEngineError,
                           self.type_manager.delete, user_id='my_user_id',
                           doc_id=doc_id)
+
+    def test_delete_raises_StorageEngineError_on_es_delete(
+            self):
+        results = {'hits': {'hits': [{'_id': mock.Mock}]}}
+        self.mock_es.search.return_value = results
+        doc_id = 'mydocid345'
+        self.mock_es.delete.side_effect = Exception(
+            'regular test failure')
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.type_manager.delete,
+                          user_id='my_user_id', doc_id=doc_id)
 
     def test_delete_return_none_when_nothing_is_deleted(self):
         doc_id = 'mydocid345'
