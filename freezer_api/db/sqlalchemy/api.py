@@ -159,10 +159,8 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
                          '{0} not found in Table {1}'.
                          format(tuple_id, tablename))
         except Exception as e:
-            session.close()
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-    session.close()
     return tuple_id
 
 
@@ -186,11 +184,8 @@ def add_tuple(tuple):
         try:
             tuple.save(session=session)
         except Exception as e:
-            session.close()
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-
-    session.close()
 
 
 def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):

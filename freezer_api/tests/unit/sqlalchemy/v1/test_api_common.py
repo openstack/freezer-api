@@ -18,6 +18,8 @@
 """Tests for manipulating job via the DB API"""
 
 import copy
+import mock
+from mock import patch
 from oslo_config import cfg
 
 from freezer_api.common import exceptions as freezer_api_exc
@@ -89,3 +91,58 @@ class ApiTestCase(base.DbTestCase):
                 raise freezer_api_exc.StorageEngineError(
                     message='sqlalchemy operation failed {0}'.format(e))
         session.close()
+
+    @ patch('oslo_db.sqlalchemy.utils.model_query')
+    def test_raises_delete_tuple(self, mock_model_query):
+        mock_model_query.side_effect = Exception('regular test failure')
+        self.assertRaises(freezer_api_exc.StorageEngineError,
+                          api.delete_tuple, models.Job, self.fake_user_id,
+                          self.fake_job_id)
+
+    def test_delete_tuple(self):
+        job_doc1 = copy.deepcopy(self.fake_job_0)
+        job_doc2 = copy.deepcopy(self.fake_job_0)
+        self.dbapi.add_job(user_id=self.fake_user_id,
+                           doc=job_doc1)
+        job_id2 = self.dbapi.add_job(user_id=self.fake_user_id,
+                                     doc=job_doc2)
+
+        result = self.dbapi.delete_job(user_id=self.fake_user_id,
+                                       job_id=job_id2)
+        session = api.get_db_session()
+        with session.begin():
+            try:
+                query = api.model_query(session, models.Job,
+                                        read_deleted='no')
+                query = query.filter_by(user_id=self.fake_user_id)
+                result = query.all()
+                self.assertEqual(len(result), 1)
+
+                query = api.model_query(session, models.Job,
+                                        read_deleted='only')
+                query = query.filter_by(user_id=self.fake_user_id)
+                result = query.all()
+                self.assertEqual(len(result), 1)
+
+                query = api.model_query(session, models.Job,
+                                        read_deleted='yes')
+                query = query.filter_by(user_id=self.fake_user_id)
+                result = query.all()
+                self.assertEqual(len(result), 2)
+            except Exception as e:
+                raise freezer_api_exc.StorageEngineError(
+                    message='sqlalchemy operation failed {0}'.format(e))
+        session.close()
+
+    @patch('oslo_db.sqlalchemy.utils.model_query')
+    def test_raises_get_tuple(self, mock_model_query):
+        mock_model_query.side_effect = Exception('regular test failure')
+        self.assertRaises(freezer_api_exc.StorageEngineError,
+                          api.get_tuple, models.Job, self.fake_user_id,
+                          self.fake_job_id)
+
+    def test_raises_add_tuple(self):
+        mock_tuple = mock.MagicMock()
+        mock_tuple.save.side_effect = Exception('regular test failure')
+        self.assertRaises(freezer_api_exc.StorageEngineError,
+                          api.add_tuple, mock_tuple)
