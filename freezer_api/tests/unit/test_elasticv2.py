@@ -806,3 +806,303 @@ class TestElasticSearchEngineV2_backup(unittest.TestCase, ElasticSearchDB):
                           project_id='tecs',
                           user_id=common.fake_data_0_user_id,
                           backup_id=common.fake_data_0_backup_id)
+
+
+class TestElasticSearchEngine_client(unittest.TestCase, ElasticSearchDB):
+    @patch('freezer_api.storage.elasticv2.logging')
+    @patch('freezer_api.storage.elasticv2.elasticsearch')
+    def setUp(self, mock_logging, mock_elasticsearch):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
+        mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngineV2(backend=backend)
+        self.eng.init(index='freezer', **kwargs)
+        self.eng.client_manager = mock.Mock()
+
+    def test_get_client_userid_and_client_id_return_1elem_list_(self):
+        self.eng.client_manager.search.return_value = [
+            common.fake_client_entry_0]
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.get_client(
+            project_id='tecs',
+            user_id=common.fake_client_entry_0['user_id'],
+            client_id=common.fake_client_info_0['client_id'],
+            offset=6, limit=15,
+            search=my_search)
+        self.assertEqual([common.fake_client_entry_0], res)
+        self.eng.client_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_client_entry_0['user_id'],
+            doc_id=common.fake_client_info_0['client_id'],
+            search=my_search,
+            limit=15, offset=6)
+
+    def test_get_client_list_with_userid_and_search_return_list(self):
+        self.eng.client_manager.search.return_value = [
+            common.fake_client_entry_0, common.fake_client_entry_1]
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.get_client(
+            project_id='tecs',
+            user_id=common.fake_client_entry_0['user_id'],
+            offset=6, limit=15,
+            search=my_search)
+        self.assertEqual(
+            [
+                common.fake_client_entry_0,
+                common.fake_client_entry_1
+            ], res)
+        self.eng.client_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_client_entry_0['user_id'],
+            doc_id=None,
+            search=my_search,
+            limit=15, offset=6)
+
+    def test_get_client_list_with_userid_and_search_return_empty_list(self):
+        self.eng.client_manager.search.return_value = []
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.get_client(
+            project_id='tecs',
+            user_id=common.fake_client_entry_0['user_id'],
+            offset=6, limit=15,
+            search=my_search)
+        self.assertEqual([], res)
+        self.eng.client_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_client_entry_0['user_id'],
+            doc_id=None,
+            search=my_search,
+            limit=15, offset=6)
+
+    def test_add_client_raises_when_data_is_malformed(self):
+        doc = common.fake_client_info_0.copy()
+        doc.pop('client_id')
+        self.assertRaises(exceptions.BadDataFormat, self.eng.add_client,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_name,
+                          doc=doc)
+
+    def test_add_client_raises_when_doc_exists(self):
+        self.eng.client_manager.search.return_value = [
+            common.fake_client_entry_0]
+        self.assertRaises(exceptions.DocumentExists, self.eng.add_client,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_id,
+                          doc=common.fake_client_info_0)
+
+    def test_add_client_ok(self):
+        self.eng.client_manager.search.return_value = []
+        res = self.eng.add_client(project_id='tecs',
+                                  user_id=common.fake_data_0_user_id,
+                                  doc=common.fake_client_info_0)
+        self.assertEqual(common.fake_client_info_0['client_id'], res)
+        self.eng.client_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_data_0_user_id,
+            doc_id=common.fake_client_info_0['client_id'])
+
+    def test_add_client_raises_when_manager_insert_raises(self):
+        self.eng.client_manager.search.return_value = []
+        self.eng.client_manager.insert.side_effect = (
+            exceptions.StorageEngineError('regular test failure')
+        )
+        self.assertRaises(exceptions.StorageEngineError, self.eng.add_client,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_id,
+                          doc=common.fake_client_info_0)
+
+    def test_delete_client_ok(self):
+        self.eng.client_manager.delete.return_value = (
+            common.fake_client_info_0['client_id']
+        )
+        res = self.eng.delete_client(project_id='tecs',
+                                     user_id=common.fake_data_0_user_id,
+                                     client_id=common.fake_client_info_0[
+                                         'client_id'])
+        self.assertEqual(common.fake_client_info_0['client_id'], res)
+
+    def test_delete_client_raises_when_es_delete_raises(self):
+        self.eng.client_manager.delete.side_effect = (
+            exceptions.StorageEngineError()
+        )
+        self.assertRaises(exceptions.StorageEngineError,
+                          self.eng.delete_client,
+                          project_id='tecs',
+                          user_id=common.fake_data_0_user_id,
+                          client_id=common.fake_client_info_0['client_id'])
+
+
+class TestElasticSearchEngine_job(unittest.TestCase, ElasticSearchDB):
+    @patch('freezer_api.storage.elasticv2.logging')
+    @patch('freezer_api.storage.elasticv2.elasticsearch')
+    def setUp(self, mock_elasticsearch, mock_logging):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
+        mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngineV2(backend=backend)
+        self.eng.init(index='freezer', **kwargs)
+        self.eng.job_manager = mock.Mock()
+
+    def test_get_job_userid_and_job_id_return_doc(self):
+        self.eng.job_manager.get.return_value = common.get_fake_job_0()
+        res = self.eng.get_job(project_id='tecs',
+                               user_id=common.fake_job_0['user_id'],
+                               job_id=common.fake_job_0['job_id'])
+        self.assertEqual(common.fake_job_0, res)
+        self.eng.job_manager.get.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_job_0['user_id'],
+            doc_id=common.fake_job_0['job_id'])
+
+    def test_get_job_userid_and_job_id_return_none(self):
+        self.eng.job_manager.get.return_value = None
+        res = self.eng.get_job(project_id='tecs',
+                               user_id=common.fake_job_0['user_id'],
+                               job_id=common.fake_job_0['job_id'])
+        self.assertIsNone(res)
+        self.eng.job_manager.get.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_job_0['user_id'],
+            doc_id=common.fake_job_0['job_id'])
+
+    def test_get_job_with_userid_and_search_return_list(self):
+        self.eng.job_manager.search.return_value = \
+            [common.fake_job_0, common.fake_job_0]
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.search_job(project_id='tecs',
+                                  user_id=common.fake_job_0['user_id'],
+                                  offset=6, limit=15,
+                                  search=my_search)
+        self.assertEqual([common.fake_job_0, common.fake_job_0], res)
+        self.eng.job_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_job_0['user_id'],
+            search=my_search,
+            limit=15, offset=6)
+
+    def test_get_job_with_userid_and_search_return_empty_list(self):
+        self.eng.job_manager.search.return_value = []
+        my_search = {'match': [{'some_field': 'some text'},
+                               {'description': 'some other text'}]}
+        res = self.eng.search_job(project_id='tecs',
+                                  user_id=common.fake_job_0['user_id'],
+                                  offset=6, limit=15,
+                                  search=my_search)
+        self.assertEqual([], res)
+        self.eng.job_manager.search.assert_called_with(
+            project_id='tecs',
+            user_id=common.fake_job_0['user_id'],
+            search=my_search,
+            limit=15, offset=6)
+
+    @patch('freezer_api.common.elasticv2_utils.JobDoc')
+    def test_add_job_ok(self, mock_jobdoc):
+        mock_jobdoc.create.return_value = common.get_fake_job_0()
+        self.eng.job_manager.insert.return_value = (True, 1)
+        res = self.eng.add_job(project_id='tecs',
+                               user_id=common.fake_job_0_user_id,
+                               doc=common.get_fake_job_0())
+        self.assertEqual(common.fake_job_0_job_id, res)
+        self.eng.job_manager.insert.assert_called_with(
+            common.fake_job_0, common.fake_job_0_job_id
+        )
+
+    def test_add_job_raises_StorageEngineError_when_manager_insert_raises(
+            self):
+        self.eng.job_manager.get.return_value = None
+        self.eng.job_manager.insert.side_effect = (
+            exceptions.StorageEngineError('regular test failure')
+        )
+        self.assertRaises(exceptions.StorageEngineError, self.eng.add_job,
+                          project_id='tecs',
+                          user_id=common.fake_job_0_user_id,
+                          doc=common.get_fake_job_0())
+
+    def test_delete_job_ok(self):
+        self.eng.job_manager.delete.return_value = common.fake_job_0['job_id']
+        res = self.eng.delete_job(project_id='tecs',
+                                  user_id=common.fake_job_0_user_id,
+                                  job_id=common.fake_job_0_job_id)
+        self.assertEqual(common.fake_job_0_job_id, res)
+
+    def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
+            self):
+        self.eng.job_manager.delete.side_effect = (
+            exceptions.StorageEngineError()
+        )
+        self.assertRaises(exceptions.StorageEngineError, self.eng.delete_job,
+                          project_id='tecs',
+                          user_id=common.fake_job_0_user_id,
+                          job_id=common.fake_job_0_job_id)
+
+    def test_update_job_raises_DocumentNotFound_when_doc_not_exists(self):
+        self.eng.job_manager.get.side_effect = exceptions.DocumentNotFound(
+            'regular test failure')
+        patch = {'job_id': 'black_milk'}
+        self.assertRaises(exceptions.DocumentNotFound, self.eng.update_job,
+                          project_id='tecs',
+                          user_id=common.fake_job_0_user_id,
+                          job_id=common.fake_job_0_job_id,
+                          patch_doc=patch)
+
+    def test_update_job_raises_DocumentNotFound_when_update_raises(
+            self):
+        self.eng.job_manager.get.return_value = common.get_fake_job_0()
+        patch = {'job_id': 'black_milk'}
+        self.eng.job_manager.update.side_effect = exceptions.DocumentNotFound(
+            'regular test failure')
+        self.assertRaises(exceptions.DocumentNotFound, self.eng.update_job,
+                          project_id='tecs',
+                          user_id=common.fake_job_0_user_id,
+                          job_id=common.fake_job_0_job_id,
+                          patch_doc=patch)
+
+    def test_update_job_returns_new_doc_version(self):
+        self.eng.job_manager.get.return_value = common.get_fake_job_0()
+        patch = {'job_id': 'group_four'}
+        self.eng.job_manager.update.return_value = 11
+        res = self.eng.update_job(project_id='tecs',
+                                  user_id=common.fake_job_0_user_id,
+                                  job_id=common.fake_job_0_job_id,
+                                  patch_doc=patch)
+        self.assertEqual(11, res)
+
+    def test_replace_job_raises_AccessForbidden_when_job_manager_raises(
+            self):
+        self.eng.job_manager.get.side_effect = exceptions.AccessForbidden(
+            'regular test failure')
+        self.eng.job_manager.insert.return_value = (True, 3)
+        self.assertRaises(exceptions.AccessForbidden, self.eng.replace_job,
+                          project_id='tecs',
+                          user_id=common.fake_job_0_user_id,
+                          job_id=common.fake_job_0_job_id,
+                          doc=common.get_fake_job_0())
+
+    def test_replace_job_returns_ok_when_doc_is_new(self):
+        self.eng.job_manager.get.side_effect = exceptions.DocumentNotFound(
+            'regular test failure')
+        self.eng.job_manager.insert.return_value = (True, 1)
+        res = self.eng.replace_job(project_id='tecs',
+                                   user_id=common.fake_job_0_user_id,
+                                   job_id=common.fake_job_0_job_id,
+                                   doc=common.get_fake_job_0())
+        self.assertEqual(1, res)
+
+    def test_replace_job_returns_version_1_when_doc_is_overwritten(self):
+        self.eng.job_manager.get.return_value = common.get_fake_job_0()
+        self.eng.job_manager.insert.return_value = (False, 3)
+        res = self.eng.replace_job(project_id='tecs',
+                                   user_id=common.fake_job_0_user_id,
+                                   job_id=common.fake_job_0_job_id,
+                                   doc=common.get_fake_job_0())
+        self.assertEqual(3, res)
