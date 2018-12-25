@@ -197,11 +197,8 @@ def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
             result = query.update(tuple_values)
         except Exception as e:
-            session.close()
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-
-    session.close()
 
     if not result:
         raise freezer_api_exc.DocumentNotFound(

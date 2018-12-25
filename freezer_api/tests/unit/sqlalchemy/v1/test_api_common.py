@@ -146,3 +146,25 @@ class ApiTestCase(base.DbTestCase):
         mock_tuple.save.side_effect = Exception('regular test failure')
         self.assertRaises(freezer_api_exc.StorageEngineError,
                           api.add_tuple, mock_tuple)
+
+    @patch('oslo_db.sqlalchemy.utils.model_query')
+    def test_raises_update_tuple(self, mock_model_query):
+        mock_tuple_values = mock.MagicMock()
+        mock_model_query.side_effect = Exception('regular test failure')
+        self.assertRaises(freezer_api_exc.StorageEngineError,
+                          api.update_tuple, models.Job, self.fake_user_id,
+                          self.fake_job_id, mock_tuple_values)
+
+    def test_raises_update_tuple_notfound(self):
+        mock_tuple_values = mock.MagicMock()
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          api.update_tuple, models.Job, self.fake_user_id,
+                          self.fake_job_id, mock_tuple_values)
+
+    @patch('oslo_db.sqlalchemy.utils.model_query')
+    def test_raises_replace_tuple(self, mock_model_query):
+        mock_tuple_values = mock.MagicMock()
+        mock_model_query.side_effect = Exception('regular test failure')
+        self.assertRaises(freezer_api_exc.StorageEngineError,
+                          api.replace_tuple, models.Job, self.fake_user_id,
+                          self.fake_job_id, mock_tuple_values)
