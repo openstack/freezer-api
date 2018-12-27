@@ -168,3 +168,30 @@ class ApiTestCase(base.DbTestCase):
         self.assertRaises(freezer_api_exc.StorageEngineError,
                           api.replace_tuple, models.Job, self.fake_user_id,
                           self.fake_job_id, mock_tuple_values)
+
+    @patch('oslo_db.sqlalchemy.utils.model_query')
+    def test_raises_search_tuple(self, mock_model_query):
+        mock_tablename = mock.MagicMock()
+        mock_tablename = mock.MagicMock()
+        mock_search = mock.MagicMock()
+        mock_model_query.side_effect = Exception('regular test failure')
+        self.assertRaises(freezer_api_exc.StorageEngineError,
+                          api.search_tuple, mock_tablename, self.fake_user_id,
+                          offset=0, limit=100,
+                          search=mock_search)
+
+    def test_valid_and_get_search_option(self):
+        search = {'error_key': 'search_info_error'}
+        result = api.valid_and_get_search_option(search)
+        self.assertEqual({}, result)
+
+    def test_get_recursively_list_include_dict(self):
+        dict1 = {'key1': [{'key11': {'key111': 111}},
+                          {'key12': {'key121': 121}}],
+                 'key2': 2
+                 }
+        search_key = {'key111': 111,
+                      'key121': 121,
+                      'key2': 2}
+        search_keys_found = api.get_recursively(dict1, search_key)
+        self.assertEqual(search_key, search_keys_found)
