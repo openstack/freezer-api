@@ -336,10 +336,6 @@ class ElasticSearchEngineV2(object):
         self.init(**self.conf)
 
     def _validate_opts(self):
-        if not 'hosts' or 'endpoint' in self.conf.keys():
-            raise ValueError("Couldn't find hosts in {0} section".format(
-                self.backend)
-            )
         if self.conf.get('ca_certs'):
             if not os.path.isfile(self.conf.get('ca_certs')):
                 raise Exception("File not found: ca_certs file ({0}) not "
