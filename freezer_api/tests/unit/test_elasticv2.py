@@ -1499,3 +1499,23 @@ class TestElasticSearchEngine_session(unittest.TestCase, ElasticSearchDB):
             session_id=common.fake_session_0['session_id'],
             doc=common.get_fake_session_0())
         self.assertEqual(3, res)
+
+
+class TestElasticSearchEngineV2(unittest.TestCase, ElasticSearchDB):
+
+    @patch('freezer_api.storage.elasticv2.logging')
+    @patch('freezer_api.storage.elasticv2.elasticsearch')
+    def setUp(self, mock_logging, mock_elasticsearch):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
+        mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
+        kwargs = {'hosts': 'http://elasticservaddr:1997'}
+        self.eng = elastic.ElasticSearchEngineV2(backend=backend)
+        self.eng.init(index='freezer', **kwargs)
+
+    def test_raise_validate_opts_when_ca_certs_file_not_exist(self):
+        self.eng.conf.update({'ca_certs': 'invalid_ca_certs_file'})
+        self.assertRaises(Exception,
+                          self.eng._validate_opts)
