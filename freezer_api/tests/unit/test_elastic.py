@@ -21,10 +21,14 @@ import unittest
 import elasticsearch
 import mock
 from mock import patch
+from oslo_config import cfg
 
 from freezer_api.common import exceptions
+from freezer_api.db.elasticsearch.driver import ElasticSearchDB
 from freezer_api.storage import elastic
 from freezer_api.tests.unit import common
+
+CONF = cfg.CONF
 
 
 class TypeManager(unittest.TestCase):
@@ -651,13 +655,17 @@ class SessionTypeManager(unittest.TestCase):
                           session_update_doc={'status': 'sleepy'})
 
 
-class TestElasticSearchEngine_backup(unittest.TestCase):
+class TestElasticSearchEngine_backup(unittest.TestCase, ElasticSearchDB):
     @patch('freezer_api.storage.elastic.logging')
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
         mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
         kwargs = {'hosts': 'http://elasticservaddr:1997'}
-        self.eng = elastic.ElasticSearchEngine(backend='elasticsearch')
+        self.eng = elastic.ElasticSearchEngine(backend=backend)
         self.eng.init(index='freezer', **kwargs)
         self.eng.backup_manager = mock.Mock()
 
@@ -758,13 +766,17 @@ class TestElasticSearchEngine_backup(unittest.TestCase):
                           backup_id=common.fake_data_0_backup_id)
 
 
-class TestElasticSearchEngine_client(unittest.TestCase):
+class TestElasticSearchEngine_client(unittest.TestCase, ElasticSearchDB):
     @patch('freezer_api.storage.elastic.logging')
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
         mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
         kwargs = {'hosts': 'http://elasticservaddr:1997'}
-        self.eng = elastic.ElasticSearchEngine(backend="elasticsearch")
+        self.eng = elastic.ElasticSearchEngine(backend=backend)
         self.eng.init(index='freezer', **kwargs)
         self.eng.client_manager = mock.Mock()
 
@@ -871,13 +883,17 @@ class TestElasticSearchEngine_client(unittest.TestCase):
                           client_id=common.fake_client_info_0['client_id'])
 
 
-class TestElasticSearchEngine_job(unittest.TestCase):
+class TestElasticSearchEngine_job(unittest.TestCase, ElasticSearchDB):
     @patch('freezer_api.storage.elastic.logging')
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
         mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
         kwargs = {'hosts': 'http://elasticservaddr:1997'}
-        self.eng = elastic.ElasticSearchEngine(backend="elasticsearch")
+        self.eng = elastic.ElasticSearchEngine(backend=backend)
         self.eng.init(index='freezer', **kwargs)
         self.eng.job_manager = mock.Mock()
 
@@ -1019,13 +1035,17 @@ class TestElasticSearchEngine_job(unittest.TestCase):
         self.assertEqual(3, res)
 
 
-class TestElasticSearchEngine_action(unittest.TestCase):
+class TestElasticSearchEngine_action(unittest.TestCase, ElasticSearchDB):
     @patch('freezer_api.storage.elastic.logging')
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
         mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
         kwargs = {'hosts': 'http://elasticservaddr:1997'}
-        self.eng = elastic.ElasticSearchEngine(backend="elasticsearch")
+        self.eng = elastic.ElasticSearchEngine(backend=backend)
         self.eng.init(index='freezer', **kwargs)
         self.eng.action_manager = mock.Mock()
 
@@ -1176,13 +1196,17 @@ class TestElasticSearchEngine_action(unittest.TestCase):
     #     self.assertEqual(res, 3)
 
 
-class TestElasticSearchEngine_session(unittest.TestCase):
+class TestElasticSearchEngine_session(unittest.TestCase, ElasticSearchDB):
     @patch('freezer_api.storage.elastic.logging')
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
         mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
         kwargs = {'hosts': 'http://elasticservaddr:1997'}
-        self.eng = elastic.ElasticSearchEngine(backend="elasticsearch")
+        self.eng = elastic.ElasticSearchEngine(backend=backend)
         self.eng.init(index='freezer', **kwargs)
         self.eng.session_manager = mock.Mock()
 
@@ -1333,14 +1357,18 @@ class TestElasticSearchEngine_session(unittest.TestCase):
         self.assertEqual(3, res)
 
 
-class TestElasticSearchEngine(unittest.TestCase):
+class TestElasticSearchEngine(unittest.TestCase, ElasticSearchDB):
 
     @patch('freezer_api.storage.elastic.logging')
     @patch('freezer_api.storage.elastic.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        backend = 'elasticsearch'
+        grp = cfg.OptGroup(backend)
+        CONF.register_group(grp)
+        CONF.register_opts(self._ES_OPTS, group=backend)
         mock_elasticsearch.Elasticsearch.return_value = mock.Mock()
         kwargs = {'hosts': 'http://elasticservaddr:1997'}
-        self.eng = elastic.ElasticSearchEngine(backend="elasticsearch")
+        self.eng = elastic.ElasticSearchEngine(backend=backend)
         self.eng.init(index='freezer', **kwargs)
 
     def test_raise_validate_opts_when_ca_certs_file_not_exist(self):
