@@ -341,9 +341,6 @@ class ElasticSearchEngineV2(object):
                 raise Exception("File not found: ca_certs file ({0}) not "
                                 "found".format(self.conf.get('ca_certs')))
 
-    def get_opts(self):
-        return self._OPTS
-
     def init(self, index='freezer', **kwargs):
         self.index = index
         self.es = elasticsearch.Elasticsearch(**kwargs)
