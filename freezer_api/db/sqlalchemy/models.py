@@ -122,7 +122,7 @@ class Job(BASE, FreezerBase):
     schedule = Column(Text)
     client_id = Column(String(255), ForeignKey('clients.id'), nullable=False)
     session_id = Column(String(36), ForeignKey('sessions.id'), nullable=False)
-    session_tag = Column(String(255))
+    session_tag = Column(Integer, default=0)
     description = Column(String(255))
     job_actions = Column(Text)
     client = relationship(Client, backref='jobs',
