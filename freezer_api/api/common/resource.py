@@ -16,9 +16,8 @@ Base resource with utility functions
 
 """
 
-import json
-
 import falcon
+from oslo_serialization import jsonutils as json
 
 from freezer_api.common import exceptions as freezer_api_exc
 

@@ -16,9 +16,9 @@ limitations under the License.
 
 """
 
-import json
-
 import mock
+
+from oslo_serialization import jsonutils as json
 
 from freezer_api.api import v1
 from freezer_api.tests.unit import common
