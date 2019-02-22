@@ -15,11 +15,11 @@ limitations under the License.
 
 """
 from __future__ import print_function
-import json
 import sys
 
 from oslo_config import cfg
 from oslo_log import log
+from oslo_serialization import jsonutils as json
 
 from freezer_api import __version__ as FREEZER_API_VERSION
 from freezer_api.common import config

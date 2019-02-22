@@ -16,7 +16,7 @@ limitations under the License.
 http://tools.ietf.org/html/draft-nottingham-json-home-03
 """
 
-import json
+from oslo_serialization import jsonutils as json
 
 HOME_DOC = {
     'resources': {

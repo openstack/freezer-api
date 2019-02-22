@@ -16,9 +16,9 @@ limitations under the License.
 """
 
 import falcon
-import json
 from oslo_config import cfg
 from oslo_log import log
+from oslo_serialization import jsonutils as json
 
 
 from freezer_api.api.common import middleware

@@ -16,10 +16,10 @@ limitations under the License.
 
 """
 
-import json
-
 import falcon
 import mock
+
+from oslo_serialization import jsonutils as json
 
 from freezer_api.api import v2
 from freezer_api.api import versions
