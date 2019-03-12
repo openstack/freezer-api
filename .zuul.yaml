@@ -9,7 +9,9 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - freezer-api-ubuntu-xenial
+        # making n-v till story#2005227
+        - freezer-api-ubuntu:
+            voting: false
         - freezer-api-centos-7:
             voting: false
         - openstack-tox-pylint
@@ -17,7 +19,8 @@
         - freezer-tempest-basic-sqlalchemy
     gate:
       jobs:
-        - freezer-api-ubuntu-xenial
+        # Commenting as this is n-v job till story#2005227
+        #- freezer-api-ubuntu
         - openstack-tox-pylint
         - freezer-tempest-basic
         - freezer-tempest-basic-sqlalchemy
@@ -26,10 +29,10 @@
         - freezer-api-opensuse-423
 
 - job:
-    name: freezer-api-ubuntu-xenial
+    name: freezer-api-ubuntu
     parent: legacy-dsvm-base
-    run: playbooks/legacy/freezer-api-ubuntu-xenial/run.yaml
-    post-run: playbooks/legacy/freezer-api-ubuntu-xenial/post.yaml
+    run: playbooks/legacy/freezer-api-ubuntu/run.yaml
+    post-run: playbooks/legacy/freezer-api-ubuntu/post.yaml
     timeout: 7800
     required-projects:
       - openstack-infra/devstack-gate
