@@ -85,7 +85,11 @@ function install_elasticsearch {
         return
     fi
     if is_ubuntu; then
-        is_package_installed default-jre-headless || install_package default-jre-headless
+        if [[ ${DISTRO} == "bionic" ]]; then
+            is_package_installed openjdk-8-jre-headless || install_package openjdk-8-jre-headless
+        else
+            is_package_installed default-jre-headless || install_package default-jre-headless
+        fi
 
         sudo dpkg -i ${FREEZER_API_FILES}/elasticsearch-${ELASTICSEARCH_VERSION}.deb
         sudo update-rc.d elasticsearch defaults 95 10
