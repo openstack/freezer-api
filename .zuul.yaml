@@ -9,9 +9,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        # making n-v till story#2005227
-        - freezer-api-ubuntu:
-            voting: false
+        - freezer-api-ubuntu
         - freezer-api-centos-7:
             voting: false
         - openstack-tox-pylint
@@ -19,8 +17,7 @@
         - freezer-tempest-basic-sqlalchemy
     gate:
       jobs:
-        # Commenting as this is n-v job till story#2005227
-        #- freezer-api-ubuntu
+        - freezer-api-ubuntu
         - openstack-tox-pylint
         - freezer-tempest-basic
         - freezer-tempest-basic-sqlalchemy
