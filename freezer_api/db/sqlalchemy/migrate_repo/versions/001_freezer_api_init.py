@@ -17,7 +17,7 @@ from sqlalchemy import BLOB, TIMESTAMP
 CLASS_NAME = 'default'
 
 
-def define_tables(meta):
+def define_tables(meta, sqlite):
     clients = Table(
         'clients', meta,
         Column('created_at', DateTime(timezone=False)),
@@ -94,6 +94,11 @@ def define_tables(meta):
     # The field metadata is json, including :
     # nova_inst_id, engine_name, storage, remove_older_than, restore_from_date,
     # command, incremental, restore_abs_path, etc
+    if sqlite:
+        column_name = 'actionmode'
+    else:
+        column_name = 'mode'
+
     actions = Table(
         'actions', meta,
         Column('created_at', DateTime(timezone=False)),
@@ -104,7 +109,7 @@ def define_tables(meta):
         Column('action', String(255), nullable=False),
         Column('project_id', String(36)),
         Column('user_id', String(36), nullable=False),
-        Column('mode', String(255)),
+        Column(column_name, String(255)),
         Column('src_file', String(255)),
         Column('backup_name', String(255)),
         Column('container', String(255)),
@@ -154,7 +159,6 @@ def define_tables(meta):
         mysql_engine='InnoDB',
         mysql_charset='utf8'
     )
-
     return [clients, sessions, jobs, actions, action_reports, backups]
 
 
@@ -164,7 +168,11 @@ def upgrade(migrate_engine):
 
     # create all tables
     # Take care on create order for those with FK dependencies
-    tables = define_tables(meta)
+    if migrate_engine.name == 'sqlite':
+        sqlite = True
+    else:
+        sqlite = False
 
+    tables = define_tables(meta, sqlite)
     for table in tables:
         table.create()

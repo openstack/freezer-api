@@ -209,7 +209,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             'action',
             'project_id',
             'user_id',
-            'mode',
+            'actionmode',
             'src_file',
             'backup_name',
             'container',

@@ -79,7 +79,7 @@ class Action(BASE, FreezerBase):
     action = Column(String(255), nullable=False)
     project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
-    mode = Column(String(255))
+    actionmode = Column(String(255))
     src_file = Column(String(255))
     backup_name = Column(String(255))
     container = Column(String(255))

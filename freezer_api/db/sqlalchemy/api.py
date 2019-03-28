@@ -464,7 +464,7 @@ def add_action(user_id, doc, project_id=None):
     else:
         action_doc = utilsv2.ActionDoc.create(doc, user_id, project_id)
 
-    keyt = ['action', 'mode', 'backup_name',
+    keyt = ['action', 'backup_name',
             'container', 'src_file', 'timeout',
             'priority', 'mandatory', 'log_file']
     freezer_action = action_doc.get('freezer_action', {})
@@ -487,6 +487,7 @@ def add_action(user_id, doc, project_id=None):
     actionvalue['max_retries'] = action_doc.get('max_retries', 5)
     actionvalue['max_retries_interval'] = action_doc.\
         get('max_retries_interval', 6)
+    actionvalue['actionmode'] = freezer_action.get('mode', None)
 
     for key in freezer_action.keys():
         if key in keyt:
@@ -537,7 +538,7 @@ def get_action(user_id, action_id, project_id=None):
         values['freezer_action']['backup_name'] = result[0].\
             get('backup_name')
         values['freezer_action']['action'] = result[0].get('action')
-        values['freezer_action']['mode'] = result[0].get('mode')
+        values['freezer_action']['mode'] = result[0].get('actionmode')
         values['freezer_action']['container'] = result[0].\
             get('container')
         values['freezer_action']['timeout'] = result[0].get('timeout')
@@ -569,7 +570,7 @@ def search_action(user_id, project_id=None, offset=0,
             json_decode(action.get('backup_metadata'))
         actionmap['freezer_action']['backup_name'] = action.\
             get('backup_name')
-        actionmap['freezer_action']['mode'] = action.get('mode')
+        actionmap['freezer_action']['mode'] = action.get('actionmode')
         actionmap['freezer_action']['action'] = action.get('action')
         actionmap['freezer_action']['container'] = action.\
             get('container')
@@ -593,7 +594,7 @@ def update_action(user_id, action_id, patch_doc, project_id=None):
     else:
         valid_patch = utilsv2.ActionDoc.create_patch(patch_doc)
 
-    keyt = ['action', 'mode', 'backup_name', 'container',
+    keyt = ['action', 'backup_name', 'container',
             'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
 
     values = {}
@@ -612,6 +613,7 @@ def update_action(user_id, action_id, patch_doc, project_id=None):
         if key in keyt:
             values[key] = freezer_action.get(key)
 
+    values['actionmode'] = freezer_action.get('mode', None)
     values['backup_metadata'] = json_utils.json_encode(freezer_action)
 
     update_tuple(tablename=models.Action, user_id=user_id, tuple_id=action_id,
@@ -627,7 +629,7 @@ def replace_action(user_id, action_id, doc, project_id=None):
         valid_doc = utilsv2.ActionDoc.update(doc, user_id, action_id,
                                              project_id)
     values = {}
-    keyt = ['action', 'mode', 'backup_name', 'container',
+    keyt = ['action', 'backup_name', 'container',
             'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
 
     freezer_action = valid_doc.get('freezer_action', {})
@@ -643,6 +645,7 @@ def replace_action(user_id, action_id, doc, project_id=None):
     for key in freezer_action.keys():
         if key in keyt:
             values[key] = freezer_action.get(key)
+    values['actionmode'] = freezer_action.get('mode', None)
     values['backup_metadata'] = json_utils.json_encode(freezer_action)
     replace_tuple(tablename=models.Action, user_id=user_id,
                   tuple_id=action_id, tuple_values=values,
