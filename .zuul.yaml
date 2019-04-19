@@ -31,7 +31,7 @@
     post-run: playbooks/legacy/freezer-api-ubuntu/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/freezer
       - openstack/freezer-api
       - openstack/freezer-web-ui
@@ -46,7 +46,7 @@
     timeout: 7800
     nodeset: legacy-centos-7
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/freezer
       - openstack/freezer-api
       - openstack/freezer-web-ui
@@ -61,7 +61,7 @@
     timeout: 7800
     nodeset: legacy-opensuse-423
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/freezer
       - openstack/freezer-api
       - openstack/freezer-web-ui
@@ -74,7 +74,7 @@
     parent: devstack-tempest
     timeout: 7200
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/python-openstackclient
       - openstack/python-freezerclient
       - openstack/freezer
@@ -83,7 +83,7 @@
       - openstack/tempest
     vars:
       devstack_plugins:
-        freezer-api: https://git.openstack.org/openstack/freezer-api
+        freezer-api: https://opendev.org/openstack/freezer-api
       devstack_services:
         tls-proxy: false
         freezer-api: true
