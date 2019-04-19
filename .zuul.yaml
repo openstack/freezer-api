@@ -25,7 +25,7 @@
     post-run: playbooks/legacy/freezer-api-ubuntu-xenial/post.yaml
     timeout: 7800
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/freezer
       - openstack/freezer-api
       - openstack/freezer-web-ui
@@ -40,7 +40,7 @@
     timeout: 7800
     nodeset: legacy-centos-7
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/freezer
       - openstack/freezer-api
       - openstack/freezer-web-ui
@@ -55,7 +55,7 @@
     timeout: 7800
     nodeset: legacy-opensuse-423
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/freezer
       - openstack/freezer-api
       - openstack/freezer-web-ui
