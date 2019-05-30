@@ -109,6 +109,10 @@ def build_app_v1():
     # The signature of falcon.API() differs between versions, suppress pylint:
     # pylint: disable=unexpected-keyword-arg
     app = falcon.API(middleware=middleware_list)
+    # Set options to keep behavior compatible to pre-2.0.0 falcon
+    app.req_options.auto_parse_qs_csv = True
+    app.req_options.keep_blank_qs_values = False
+    app.req_options.strip_url_path_trailing_slash = True
 
     app = configure_app(app)
     return app
@@ -131,6 +135,11 @@ def build_app_v2():
     db_driver = manager.get_db_driver(CONF.storage.driver,
                                       backend=CONF.storage.backend)
     db = db_driver.get_api()
+
+    # Set options to keep behavior compatible to pre-2.0.0 falcon
+    app.req_options.auto_parse_qs_csv = True
+    app.req_options.keep_blank_qs_values = False
+    app.req_options.strip_url_path_trailing_slash = True
 
     # setup freezer policy
     policy.setup_policy(CONF)
