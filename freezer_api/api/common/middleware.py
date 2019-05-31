@@ -138,7 +138,7 @@ class RequireJSON(HookableMiddlewareMixin, object):
 
 
 class JSONTranslator(HookableMiddlewareMixin, object):
-    def process_response(self, req, resp, resource):
+    def process_response(self, req, resp, resource, req_succeeded=True):
         if not hasattr(resp, 'body'):
             return
         if isinstance(resp.data, dict):
