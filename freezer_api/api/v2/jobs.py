@@ -76,8 +76,8 @@ class JobsCollectionResource(JobsBaseResource):
     def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/jobs(?limit,offset)     Lists jobs
         user_id = req.get_header('X-User-ID')
-        offset = req.get_param_as_int('offset', min=0) or 0
-        limit = req.get_param_as_int('limit', min=1) or 10
+        offset = req.get_param_as_int('offset') or 0
+        limit = req.get_param_as_int('limit') or 10
         search = self.json_body(req)
         obj_list = self.db.search_job(project_id=project_id,
                                       user_id=user_id, offset=offset,
