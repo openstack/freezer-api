@@ -8,24 +8,18 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - freezer-api-ubuntu:
-            voting: false
+        - freezer-api-ubuntu
         - freezer-api-centos-7:
             voting: false
         - openstack-tox-pylint
-        - freezer-tempest-basic:
-            voting: false
-        - freezer-tempest-basic-sqlalchemy:
-            voting: false
+        - freezer-tempest-basic
+        - freezer-tempest-basic-sqlalchemy
     gate:
       jobs:
-        - freezer-api-ubuntu:
-            voting: false
+        - freezer-api-ubuntu
         - openstack-tox-pylint
-        - freezer-tempest-basic:
-            voting: false
-        - freezer-tempest-basic-sqlalchemy:
-            voting: false
+        - freezer-tempest-basic
+        - freezer-tempest-basic-sqlalchemy
     experimental:
       jobs:
         - freezer-api-opensuse-423
