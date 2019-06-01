@@ -16,20 +16,14 @@ limitations under the License.
 """
 import sys
 
-import falcon
 from oslo_config import cfg
 from paste import deploy
 from paste import urlmap
-import pkg_resources
 
 from freezer_api.cmd import api
 from freezer_api.common import config
 
 CONF = cfg.CONF
-# Define the minimum version of falcon at which we can use the "new" invocation
-# style for middleware (aka v1), i.e. the "middleware" named argument for
-# falcon.API.
-FALCON_MINVERSION_MIDDLEWARE = pkg_resources.parse_version('0.2.0b1')
 
 
 def root_app_factory(loader, global_conf, **local_conf):
@@ -47,16 +41,7 @@ def root_app_factory(loader, global_conf, **local_conf):
 
 
 def freezer_appv1_factory(global_conf, **local_conf):
-    current_version = pkg_resources.parse_version(
-        falcon.__version__ if hasattr(falcon,
-                                      '__version__') else falcon.version)
-
-    # Check the currently installed version of falcon in order to invoke it
-    # correctly.
-    if current_version < FALCON_MINVERSION_MIDDLEWARE:
-        return api.build_app_v0()
-    else:
-        return api.build_app_v1()
+    return api.build_app_v1()
 
 
 def freezer_appv2_factory(global_conf, **local_conf):
