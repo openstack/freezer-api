@@ -52,7 +52,7 @@ Further developer focused documentation is available at:
 - `Official Freezer Documentation <https://docs.openstack.org/freezer/>`__
 - `Official Client Documentation
   <https://docs.openstack.org/python-freezerclient/>`__
-- `Source Code Repository <https://git.openstack.org/cgit/openstack/freezer-api>`__
+- `Source Code Repository <https://opendev.org/openstack/freezer-api>`__
 
 Other Information
 -----------------
