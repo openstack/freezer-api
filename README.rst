@@ -17,7 +17,7 @@ organized and maintain the status of the backups.
 To learn how to use Freezer's API, consult the documentation available online
 at:
 
-- `Backup API Reference <https://developer.openstack.org/api-ref/backup/>`__
+- `Backup API Reference <https://docs.openstack.org/api-ref/backup/>`__
 
 For more information on OpenStack APIs, SDKs and CLIs in general, refer to:
 
