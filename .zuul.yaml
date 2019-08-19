@@ -21,7 +21,7 @@
         - freezer-tempest-basic-sqlalchemy
     experimental:
       jobs:
-        - freezer-api-opensuse-423
+        - freezer-api-opensuse-15
 
 - job:
     name: freezer-api-ubuntu
@@ -53,12 +53,12 @@
       - openstack/freezer-tempest-plugin
 
 - job:
-    name: freezer-api-opensuse-423
+    name: freezer-api-opensuse-15
     parent: legacy-dsvm-base
-    run: playbooks/legacy/freezer-api-opensuse-423/run.yaml
-    post-run: playbooks/legacy/freezer-api-opensuse-423/post.yaml
+    run: playbooks/legacy/freezer-api-opensuse-15/run.yaml
+    post-run: playbooks/legacy/freezer-api-opensuse-15/post.yaml
     timeout: 7800
-    nodeset: legacy-opensuse-423
+    nodeset: legacy-opensuse-15
     required-projects:
       - openstack/devstack-gate
       - openstack/freezer
