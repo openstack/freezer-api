@@ -74,7 +74,7 @@ class ClientsResource(resource.BaseResource):
 
     @policy.enforce('clients:delete')
     def on_delete(self, req, resp, client_id):
-        # DELETE /v1/clients/{client_id}     Deletes the specified backup
+        # DELETE /v1/clients/{client_id}     Deletes the specified client
         user_id = req.get_header('X-User-ID')
         obj = self.db.get_client(user_id=user_id,
                                  client_id=client_id)
