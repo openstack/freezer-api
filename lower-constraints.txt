@@ -62,7 +62,7 @@ reno==2.5.0
 requests==2.18.4
 rfc3986==1.1.0
 snowballstemmer==1.2.1
-Sphinx==1.6.2
+Sphinx==1.8.0
 sphinxcontrib-websupport==1.0.1
 sqlalchemy-migrate==0.11.0
 SQLAlchemy==1.2.5
