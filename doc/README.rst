@@ -53,7 +53,15 @@ edit config file
 setup/configure the db
 ----------------------
 
-The currently supported db is Elasticsearch.
+The currently supported DB include Elasticsearch and sqlalchemy. You can 
+config backend DB in ``freezer-api.conf`` file. If use sqlalchemy::
+
+    [storage]   
+    driver = sqlalchemy
+    backend = sqlalchemy
+
+Use  Elasticsearch
+------------------
 
 In case you are using a dedicated instance of the server, you'll need to
 install Elasticsearch and start it.
@@ -75,11 +83,21 @@ and started:
 
   # systemctl start elasticsearch
 
-Elasticsearch needs to know what type of data each document's field contains.
-This information is contained in the `mapping`, or schema definition.
-Elasticsearch will use dynamic mapping to try to guess the field type from
+Use Sqlalchemy
+--------------
+
+You can use pip to install sqlalchemy:
+
+.. code-block ::
+
+   # sudo pip install sqlalchemy
+
+Freezer-api DB needs to know what type of data each document's(table's) field
+contains. This information is contained in the `mapping`, or schema definition.
+Freezer-api DB will use dynamic mapping to try to guess the field type from
 the basic datatypes available in JSON, but some field's properties have to be
 explicitly declared to tune the indexing engine.
+
 To do that, use the freezer-manage command:
 ::
 
