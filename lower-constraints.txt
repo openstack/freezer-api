@@ -66,7 +66,6 @@ PyYAML==3.12
 reno==2.5.0
 requests==2.18.4
 rfc3986==1.1.0
-six==1.10.0
 snowballstemmer==1.2.1
 Sphinx==1.6.2
 sphinxcontrib-websupport==1.0.1
