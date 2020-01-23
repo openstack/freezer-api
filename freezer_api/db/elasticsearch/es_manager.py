@@ -16,7 +16,6 @@
 import elasticsearch
 from oslo_config import cfg
 from oslo_log import log
-import six
 
 from freezer_api.common import db_mappings
 
@@ -224,7 +223,7 @@ class ElasticSearchManager(object):
         if self.conf['yes']:
             return self.conf['yes']
         while True:
-            ans = six.input(message)
+            ans = input(message)
             if ans.lower() == 'y':
                 return True
             elif ans.lower() == 'n':

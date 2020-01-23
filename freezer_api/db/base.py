@@ -15,14 +15,12 @@ limitations under the License.
 import abc
 from oslo_config import cfg
 from oslo_log import log
-import six
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DBDriver(object):
+class DBDriver(metaclass=abc.ABCMeta):
 
     _OPTS = [
         cfg.StrOpt('host',
