@@ -6,21 +6,14 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - freezer-api-ubuntu
-        - freezer-api-centos-7:
-            voting: false
         - openstack-tox-pylint
-        - freezer-tempest-basic
-        - freezer-tempest-basic-sqlalchemy
+        - freezer-api-tempest
+        - freezer-api-tempest-sqlalchemy
     gate:
       jobs:
-        - freezer-api-ubuntu
         - openstack-tox-pylint
-        - freezer-tempest-basic
-        - freezer-tempest-basic-sqlalchemy
-    experimental:
-      jobs:
-        - freezer-api-opensuse-15
+        - freezer-api-tempest
+        - freezer-api-tempest-sqlalchemy
 
 - job:
     name: freezer-api-ubuntu
@@ -37,7 +30,7 @@
       - openstack/freezer-tempest-plugin
 
 - job:
-    name: freezer-api-centos-7
+    name: freezer-api-centos-7-old
     parent: legacy-dsvm-base
     run: playbooks/legacy/freezer-api-centos-7/run.yaml
     post-run: playbooks/legacy/freezer-api-centos-7/post.yaml
@@ -68,7 +61,40 @@
 
 
 - job:
-    name: freezer-tempest-basic-sqlalchemy
+    name: freezer-api-tempest
+    parent: devstack-tempest
+    timeout: 7200
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/python-openstackclient
+      - openstack/python-freezerclient
+      - openstack/freezer
+      - openstack/freezer-api
+      - openstack/freezer-tempest-plugin
+      - openstack/tempest
+    vars:
+      devstack_plugins:
+        freezer-api: https://opendev.org/openstack/freezer-api
+      devstack_services:
+        tls-proxy: false
+        freezer-api: true
+        tempest: true
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+      devstack_localrc:
+        TEMPEST_PLUGINS: '/opt/stack/freezer-tempest-plugin'
+      tempest_test_regex: '^(freezer_tempest_plugin.tests.freezer_api)'
+      tox_envlist: all
+      tox_environment:
+        PYTHONUNBUFFERED: 'true'
+      zuul_copy_output:
+        /etc/hosts: logs
+
+
+- job:
+    name: freezer-api-tempest-sqlalchemy
     parent: devstack-tempest
     timeout: 7200
     required-projects:
