@@ -33,8 +33,8 @@ freezer_action_properties = {
         "pattern": "^[\w-]+$",
         "type": "string"
     },
-    "src_file": {
-        "id": "src_file",
+    "path_to_backup": {
+        "id": "path_to_backup",
         "type": "string"
     },
     "backup_name": {

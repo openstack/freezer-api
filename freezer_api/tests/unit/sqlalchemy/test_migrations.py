@@ -94,7 +94,7 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
         # Insight on how to drop things from the DB in a backward-compatible
         # manner is provided in Cinder's developer documentation.
         # Reviewers: DO NOT ALLOW THINGS TO BE ADDED HERE WITHOUT CARE
-        exceptions = []
+        exceptions = [3]
 
         if version not in exceptions:
             banned = ['Table', 'Column']
@@ -262,8 +262,58 @@ class MigrationsMixin(test_migrations.WalkVersionsMixin):
             engine, 'backups', backups_columns)
 
     def _check_002(self, engine, data):
-        """To be added for the future."""
-        pass
+        actions_columns = [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'deleted',
+            'id',
+            'action',
+            'project_id',
+            'user_id',
+            'actionmode',
+            'src_file',
+            'backup_name',
+            'container',
+            'timeout',
+            'priority',
+            'max_retries_interval',
+            'max_retries',
+            'mandatory',
+            'log_file',
+            'backup_metadata',
+        ]
+        self.assertColumnsExist(
+            engine, 'actions', actions_columns)
+        self.assertColumnCount(
+            engine, 'actions', actions_columns)
+
+    def _check_003(self, engine, data):
+        actions_columns = [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'deleted',
+            'id',
+            'action',
+            'project_id',
+            'user_id',
+            'actionmode',
+            'path_to_backup',
+            'backup_name',
+            'container',
+            'timeout',
+            'priority',
+            'max_retries_interval',
+            'max_retries',
+            'mandatory',
+            'log_file',
+            'backup_metadata',
+        ]
+        self.assertColumnsExist(
+            engine, 'actions', actions_columns)
+        self.assertColumnCount(
+            engine, 'actions', actions_columns)
 
     def get_table_names(self, engine):
         inspector = reflection.Inspector.from_engine(engine)

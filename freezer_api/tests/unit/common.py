@@ -199,7 +199,7 @@ fake_job_0 = {
             "freezer_action": {
                 "action": "backup",
                 "mode": "fs",
-                "src_file": "/home/tylerdurden/project_mayhem",
+                "path_to_backup": "/home/tylerdurden/project_mayhem",
                 "backup_name": "project_mayhem_backup",
                 "container": "my_backup_container"
             },
@@ -244,7 +244,7 @@ fake_job_2 = {
             "freezer_action": {
                 "action": "backup",
                 "mode": "fs",
-                "src_file": "/home/tylerdurden/project_mayhem",
+                "path_to_backup": "/home/tylerdurden/project_mayhem",
                 "backup_name": "project_mayhem_backup",
                 "container": "my_backup_container1"
             },
@@ -288,7 +288,7 @@ fake_job_3 = {
             "freezer_action": {
                 "action": "backup",
                 "mode": "fs",
-                "src_file": "/home/tylerdurden/project_mayhem",
+                "path_to_backup": "/home/tylerdurden/project_mayhem",
                 "backup_name": "project_mayhem_backup",
                 "container": "my_backup_container1"
             },
@@ -429,7 +429,7 @@ fake_action_0 = {
         {
             "action": "backup",
             "mode": "fs",
-            "src_file": "/home/tylerdurden/project_mayhem",
+            "path_to_backup": "/home/tylerdurden/project_mayhem",
             "backup_name": "project_mayhem_backup",
             "container": "my_backup_container",
         },
@@ -448,7 +448,7 @@ fake_action_1 = {
         {
             "action": "backup",
             "mode": "fs",
-            "src_file": "/home/tylerdurden/project_mayhem",
+            "path_to_backup": "/home/tylerdurden/project_mayhem",
             "backup_name": "project_mayhem_backup",
             "container": "my_backup_container",
         },
@@ -467,7 +467,7 @@ fake_action_2 = {
         {
             "action": "restore",
             "mode": "fs",
-            "src_file": "/home/tecs/project_tecs",
+            "path_to_backup": "/home/tecs/project_tecs",
             "backup_name": "project_tecs_restore",
             "container": "my_restore_container",
         },
@@ -485,7 +485,7 @@ fake_action_3 = {
         {
             "action": "restore",
             "mode": "fs",
-            "src_file": "/home/tecs/project_tecs",
+            "path_to_backup": "/home/tecs/project_tecs",
             "backup_name": "project_tecs_restore",
             "container": "my_restore_container",
         },

@@ -80,7 +80,7 @@ class Action(BASE, FreezerBase):
     project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
     actionmode = Column(String(255))
-    src_file = Column(String(255))
+    path_to_backup = Column(String(255))
     backup_name = Column(String(255))
     container = Column(String(255))
     timeout = Column(Integer)

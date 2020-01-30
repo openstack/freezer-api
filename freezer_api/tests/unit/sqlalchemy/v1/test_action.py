@@ -74,8 +74,8 @@ class DbActionTestCase(base.DbTestCase):
         self.assertEqual(freezer_action.get('container'),
                          self.freezer_action_0.get('container'))
 
-        self.assertEqual(freezer_action.get('src_file'),
-                         self.freezer_action_0.get('src_file'))
+        self.assertEqual(freezer_action.get('path_to_backup'),
+                         self.freezer_action_0.get('path_to_backup'))
 
         self.assertEqual(freezer_action.get('mode'),
                          self.freezer_action_0.get('mode'))

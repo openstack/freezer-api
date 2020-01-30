@@ -280,6 +280,7 @@ def valid_and_get_search_option(search=None):
         return {}
     match_opt = search.get('match', {})
     match_not_opt = search.get('match_not', {})
+
     if not match_opt and not match_not_opt:
         return {}
     if len(match_opt) and '_all' in match_opt[0].keys():
@@ -465,7 +466,7 @@ def add_action(user_id, doc, project_id=None):
         action_doc = utilsv2.ActionDoc.create(doc, user_id, project_id)
 
     keyt = ['action', 'backup_name',
-            'container', 'src_file', 'timeout',
+            'container', 'path_to_backup', 'timeout',
             'priority', 'mandatory', 'log_file']
     freezer_action = action_doc.get('freezer_action', {})
 
@@ -543,7 +544,8 @@ def get_action(user_id, action_id, project_id=None):
             get('container')
         values['freezer_action']['timeout'] = result[0].get('timeout')
         values['freezer_action']['priority'] = result[0].get('priority')
-        values['freezer_action']['src_file'] = result[0].get('src_file')
+        values['freezer_action']['path_to_backup'] = result[0].\
+            get('path_to_backup')
         values['freezer_action']['log_file'] = result[0].get('log_file')
     return values
 
@@ -576,7 +578,8 @@ def search_action(user_id, project_id=None, offset=0,
             get('container')
         actionmap['freezer_action']['timeout'] = action.get('timeout')
         actionmap['freezer_action']['priority'] = action.get('priority')
-        actionmap['freezer_action']['src_file'] = action.get('src_file')
+        actionmap['freezer_action']['path_to_backup'] = action.\
+            get('path_to_backup')
         actionmap['freezer_action']['log_file'] = action.get('log_file')
 
         actions.append(actionmap)
@@ -595,7 +598,7 @@ def update_action(user_id, action_id, patch_doc, project_id=None):
         valid_patch = utilsv2.ActionDoc.create_patch(patch_doc)
 
     keyt = ['action', 'backup_name', 'container',
-            'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
+            'path_to_backup', 'timeout', 'priority', 'mandatory', 'log_file']
 
     values = {}
 
@@ -630,7 +633,7 @@ def replace_action(user_id, action_id, doc, project_id=None):
                                              project_id)
     values = {}
     keyt = ['action', 'backup_name', 'container',
-            'src_file', 'timeout', 'priority', 'mandatory', 'log_file']
+            'path_to_backup', 'timeout', 'priority', 'mandatory', 'log_file']
 
     freezer_action = valid_doc.get('freezer_action', {})
 
