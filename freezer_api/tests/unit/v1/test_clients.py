@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import falcon
-import mock
+from unittest import mock
 
 from freezer_api.api.v1 import clients as v1_clients
 from freezer_api.common import exceptions

@@ -15,7 +15,7 @@
 import unittest
 
 import falcon
-import mock
+from unittest import mock
 
 from freezer_api.common import exceptions
 from freezer_api.tests.unit import common

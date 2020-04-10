@@ -10,10 +10,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
-from oslo_config import cfg
 import sys
 import unittest
+from unittest import mock
+
+from oslo_config import cfg
 
 from freezer_api.cmd import manage as freezer_manage
 

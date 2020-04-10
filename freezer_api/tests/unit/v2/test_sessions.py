@@ -18,8 +18,8 @@ limitations under the License.
 import random
 
 import falcon
-import mock
-from mock import patch
+from unittest import mock
+from unittest.mock import patch
 
 from freezer_api.api.v2 import sessions as v2_sessions
 from freezer_api.common import exceptions

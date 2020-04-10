@@ -18,7 +18,7 @@ limitations under the License.
 import random
 
 import falcon
-import mock
+from unittest import mock
 
 from freezer_api.api.v1 import actions as v1_actions
 from freezer_api.common import exceptions

@@ -19,8 +19,9 @@ limitations under the License.
 import unittest
 
 import elasticsearch
-import mock
-from mock import patch
+from unittest import mock
+from unittest.mock import patch
+
 from oslo_config import cfg
 
 from freezer_api.common import exceptions

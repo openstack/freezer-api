@@ -14,12 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Tests for manipulating job via the DB API"""
 
 import copy
-import mock
-from mock import patch
+from unittest import mock
+from unittest.mock import patch
 
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.tests.unit import common
