@@ -34,8 +34,6 @@ repository_name = 'openstack/freezer-api'
 bug_project = 'freezer'
 bug_tag = 'release notes'
 
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
