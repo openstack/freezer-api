@@ -97,6 +97,7 @@ fake_data_0_backup_metadata = {
 def get_fake_backup_metadata():
     return copy.deepcopy(fake_data_0_backup_metadata)
 
+
 fake_malformed_data_0_backup_metadata = {
     "hostname": "alpha",
     "backup_name": "important_data_backup",
@@ -424,6 +425,7 @@ def get_fake_client_1():
 def get_fake_client_id():
     return uuid.uuid4().hex
 
+
 fake_action_0 = {
     "freezer_action":
         {
@@ -516,6 +518,7 @@ def get_fake_action_id():
 
 def get_fake_action_3():
     return copy.deepcopy(fake_action_3)
+
 
 fake_session_0 = {
     "session_id": 'turistidellademocrazia',

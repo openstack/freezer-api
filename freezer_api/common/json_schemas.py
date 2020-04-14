@@ -18,19 +18,19 @@ limitations under the License.
 fqdn_regex = "([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d])" \
              "(\\.([a-zA-Z\\d]|[a-zA-Z\\d][a-zA-Z\\d\\-]{0,61}[a-zA-Z\\d]))*"
 # Allow alphanumeric, underscore and minus
-project_regex = "(?:([\\w\\-]+)\_)?"
-client_id_regex = "^{project}{host}$".format(project=project_regex,
-                                             host=fqdn_regex)
+project_regex = r"(?:([\w\-]+)\_)?"
+client_id_regex = r"^{project}{host}$".format(project=project_regex,
+                                              host=fqdn_regex)
 
 freezer_action_properties = {
     "action": {
         "id": "action",
-        "pattern": "^[\w-]+$",
+        "pattern": r"^[\w-]+$",
         "type": "string"
     },
     "mode": {
         "id": "mode",
-        "pattern": "^[\w-]+$",
+        "pattern": r"^[\w-]+$",
         "type": "string"
     },
     "path_to_backup": {
@@ -83,37 +83,37 @@ schedule_properties = {
     "schedule_date": {
         "id": "schedule_date",
         "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
-                   "-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])"
-                   ":([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
-                   "(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
+        "pattern": r"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
+                   r"-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])"
+                   r":([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
+                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
     },
     "schedule_interval": {
         "id": "schedule_interval",
         "type": "string",
-        "pattern": "^(continuous|(\d+ +(weeks|days|"
-                   "hours|minutes|seconds)))$"
+        "pattern": r"^(continuous|(\d+ +(weeks|days|"
+                   r"hours|minutes|seconds)))$"
     },
     "schedule_start_date": {
         "id": "schedule_start_date",
         "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
-                   "-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):"
-                   "([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
-                   "(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
+        "pattern": r"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
+                   r"-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):"
+                   r"([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
+                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
     },
     "schedule_end_date": {
         "id": "schedule_end_date",
         "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
-                   "-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])"
-                   ":([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
-                   "(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
+        "pattern": r"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
+                   r"-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])"
+                   r":([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
+                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
     },
     "schedule_year": {
         "id": "schedule_year",
         "type": "string",
-        "pattern": "^\d{4}$"
+        "pattern": r"^\d{4}$"
     },
     "schedule_month": {
         "id": "schedule_month",
@@ -192,7 +192,7 @@ job_schema = {
         },
         "job_id": {
             "id": "job_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "client_id": {
@@ -202,7 +202,7 @@ job_schema = {
         },
         "session_id": {
             "id": "session_id",
-            "pattern": "^[\w-]*$",
+            "pattern": r"^[\w-]*$",
             "type": "string"
         },
         "session_tag": {
@@ -215,12 +215,12 @@ job_schema = {
         },
         "user_id": {
             "id": "user_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "project_id": {
             "id": "project_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "description": {
@@ -288,7 +288,7 @@ job_patch_schema = {
         },
         "job_id": {
             "id": "job_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "client_id": {
@@ -298,7 +298,7 @@ job_patch_schema = {
         },
         "session_id": {
             "id": "session_id",
-            "pattern": "^[\w-]*$",
+            "pattern": r"^[\w-]*$",
             "type": "string"
         },
         "session_tag": {
@@ -311,12 +311,12 @@ job_patch_schema = {
         },
         "user_id": {
             "id": "user_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "project_id": {
             "id": "project_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "description": {
@@ -338,17 +338,17 @@ job_patch_schema = {
 additional_action_properties = {
     "action_id": {
         "id": "action_id",
-        "pattern": "^[\w-]+$",
+        "pattern": r"^[\w-]+$",
         "type": "string"
     },
     "user_id": {
         "id": "user_id",
-        "pattern": "^[\w-]+$",
+        "pattern": r"^[\w-]+$",
         "type": "string"
     },
     "project_id": {
         "id": "project_id",
-        "pattern": "^[\w-]+$",
+        "pattern": r"^[\w-]+$",
         "type": "string"
     }
 }
@@ -392,17 +392,17 @@ session_schema = {
         },
         "session_id": {
             "id": "session_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "user_id": {
             "id": "user_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "project_id": {
             "id": "project_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "session_tag": {
@@ -439,17 +439,17 @@ session_patch_schema = {
         },
         "session_id": {
             "id": "session_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "user_id": {
             "id": "user_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "project_id": {
             "id": "project_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "session_tag": {
@@ -504,12 +504,12 @@ client_schema = {
         },
         "user_id": {
             "id": "user_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         },
         "project_id": {
             "id": "project_id",
-            "pattern": "^[\w-]+$",
+            "pattern": r"^[\w-]+$",
             "type": "string"
         }
     },

@@ -40,12 +40,12 @@ class BackupMetadataDoc(object):
 
     def is_valid(self):
         try:
-            assert (self.project_id is not '')
-            assert (self.backup_id is not '')
-            assert (self.user_id is not '')
-            assert (self.data['container'] is not '')
-            assert (self.data['hostname'] is not '')
-            assert (self.data['backup_name'] is not '')
+            assert (self.project_id != '')
+            assert (self.backup_id != '')
+            assert (self.user_id != '')
+            assert (self.data['container'] != '')
+            assert (self.data['hostname'] != '')
+            assert (self.data['backup_name'] != '')
         except Exception:
             return False
         return True

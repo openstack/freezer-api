@@ -48,5 +48,6 @@ def main():
     return upgradecheck.main(
         cfg.CONF, project='freezer-api', upgrade_command=Checks())
 
+
 if __name__ == '__main__':
     sys.exit(main())

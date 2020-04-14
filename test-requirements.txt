@@ -1,9 +1,10 @@
 # The order of packages is significant, because pip processes them in the order
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
-flake8<2.6.0,>=2.5.4 # MIT
-#pylint==1.9.2 # GPLv2
-hacking!=0.13.0,<0.14,>=0.12.0 # Apache-2.0
+
+# hacking already pins flake8
+hacking>=3.0,<=3.1.0 # Apache-2.0
+pylint==2.3.1 # GPLv2
 coverage!=4.4,>=4.0 # Apache-2.0
 fixtures>=3.0.0 # Apache-2.0/BSD
 oslotest>=3.3.0 # Apache-2.0
@@ -14,5 +15,4 @@ os-api-ref>=1.4.0 # Apache-2.0
 reno>=2.5.0 # Apache-2.0
 openstackdocstheme>=1.31.2 # Apache-2.0
 astroid==2.1.0 # LGPLv2.1
-pylint==2.3.1 # GPLv2
 PyMySQL>=0.7.6 # MIT License
