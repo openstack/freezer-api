@@ -3,7 +3,7 @@
 # process, which may cause wedges in the gate later.
 elasticsearch<3.0.0,>=2.0.0 # Apache-2.0
 falcon>=1.0.0 # Apache-2.0
-jsonschema>=2.6.0 # MIT
+jsonschema>=3.2.0 # MIT
 keystonemiddleware>=4.17.0 # Apache-2.0
 Paste>=2.0.2 # MIT
 PasteDeploy>=1.5.0 # MIT
