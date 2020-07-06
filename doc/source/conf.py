@@ -45,6 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
+openstackdocs_auto_name = False
 project = u'freezer-api'
 copyright = u'2016, OpenStack'
 
