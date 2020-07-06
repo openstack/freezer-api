@@ -252,6 +252,6 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 # openstackdocstheme options
-repository_name = 'openstack/freezer-api'
-bug_project = 'freezer'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/freezer-api'
+openstackdocs_bug_project = 'freezer'
+openstackdocs_bug_tag = ''
