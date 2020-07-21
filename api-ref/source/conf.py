@@ -106,7 +106,7 @@ add_module_names = False
 show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # html_context allows us to pass arbitrary values into the html template
 html_context = {'bug_tag': 'api-ref',
