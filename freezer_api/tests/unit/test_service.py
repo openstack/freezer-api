@@ -15,9 +15,9 @@ limitations under the License.
 
 """
 
+from unittest.mock import patch
 
 import falcon
-from mock import patch
 
 from freezer_api import service
 from freezer_api.tests.unit import common

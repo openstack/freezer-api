@@ -17,8 +17,7 @@ limitations under the License.
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from freezer_api.common import exceptions
 from freezer_api.common import utils
