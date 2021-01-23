@@ -31,11 +31,11 @@ class FreezerContext(context.RequestContext):
                  resource_uuid=None, overwrite=True, roles=None):
         super(FreezerContext, self).__init__(
             auth_token=auth_token,
-            user=user,
-            tenant=tenant,
-            domain=domain,
-            user_domain=user_domain,
-            project_domain=project_domain,
+            # user=user,
+            # tenant=tenant,
+            # domain=domain,
+            # user_domain=user_domain,
+            # project_domain=project_domain,
             is_admin=is_admin,
             read_only=read_only,
             show_deleted=show_deleted,
