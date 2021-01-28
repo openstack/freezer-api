@@ -49,6 +49,8 @@ class Database(fixtures.Fixture):
         db_options.set_defaults(
             CONF,
             connection=connection_str)
+        CONF.set_override('connection', IN_MEM_DB_CONN_STRING,
+                          group='database')
 
     def setup_sqlite(self):
         models.register_models(self.engine)
