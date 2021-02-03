@@ -383,12 +383,12 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
 
     for client in result:
         clientmap = {}
-        clientmap[u'project_id'] = client.project_id
-        clientmap[u'user_id'] = client.user_id
-        clientmap[u'client'] = {u'uuid': client.uuid,
-                                u'hostname': client.hostname,
-                                u'client_id': client.client_id,
-                                u'description': client.description}
+        clientmap['project_id'] = client.project_id
+        clientmap['user_id'] = client.user_id
+        clientmap['client'] = {'uuid': client.uuid,
+                               'hostname': client.hostname,
+                               'client_id': client.client_id,
+                               'description': client.description}
         clients.append(clientmap)
 
     # If search opt is wrong, filter will not work,
