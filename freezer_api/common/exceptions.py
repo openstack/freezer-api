@@ -70,7 +70,7 @@ class DocumentNotFound(FreezerAPIException):
     @staticmethod
     def handle(ex, req, resp, params):
         raise falcon.HTTPError(
-            status=falcon.status.HTTP_404,
+            status=falcon.HTTP_404,
             title=_("Not Found"),
             description=ex.message)
 
