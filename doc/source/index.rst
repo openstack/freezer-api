@@ -13,6 +13,16 @@ Contents:
 
    cli/index
 
+For Contributors
+================
+
+* If you are a new contributor to freezer-api please refer: :doc:`contributor/contributing`
+
+  .. toctree::
+     :hidden:
+
+     contributor/contributing
+
 Indices and tables
 ==================
 
