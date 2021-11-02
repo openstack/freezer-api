@@ -66,27 +66,27 @@ def configure_app(app, db=None):
     return app
 
 
-def build_app_v0():
-    """Instantiate the root freezer-api app
+# def build_app_v0():
+#     """Instantiate the root freezer-api app
 
-    Old versions of falcon (< 0.2.0) don't have a named 'middleware' argument.
-    This was introduced in version 0.2.0b1, so before that we need to instead
-    provide "before" hooks (request processing) and "after" hooks (response
-    processing).
+#  Old versions of falcon (< 0.2.0) don't have a named 'middleware' argument.
+#  This was introduced in version 0.2.0b1, so before that we need to instead
+#  provide "before" hooks (request processing) and "after" hooks (response
+#  processing).
 
-    :return: falcon WSGI app
-    """
+#     :return: falcon WSGI app
+#     """
 
-    # injecting FreezerContext & hooks
-    before_hooks = utils.before_hooks() + [
-        middleware.RequireJSON().as_before_hook()]
-    after_hooks = [middleware.JSONTranslator().as_after_hook()]
-    # The signature of falcon.API() differs between versions, suppress pylint:
-    # pylint: disable=unexpected-keyword-arg
-    app = falcon.API(before=before_hooks, after=after_hooks)
+#     # injecting FreezerContext & hooks
+#     before_hooks = utils.before_hooks() + [
+#         middleware.RequireJSON().as_before_hook()]
+#     after_hooks = [middleware.JSONTranslator().as_after_hook()]
+#   # The signature of falcon.API() differs between versions, suppress pylint:
+#   # pylint: disable=unexpected-keyword-arg
+#     app = falcon.API(before=before_hooks, after=after_hooks)
 
-    app = configure_app(app)
-    return app
+#     app = configure_app(app)
+#     return app
 
 
 def build_app_v1():
