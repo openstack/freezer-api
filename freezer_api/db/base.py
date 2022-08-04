@@ -44,7 +44,8 @@ class DBDriver(metaclass=abc.ABCMeta):
     def connect(self):
         pass
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self):
         """Name of the database driver"""
         pass
