@@ -229,12 +229,8 @@ function create_freezer_api_accounts {
     SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
     local admin_role=$(get_or_create_role "admin")
 
-    local freezer_user=$(openstack user create \
-                            --password "$SERVICE_PASSWORD" \
-                            --project "$SERVICE_TENANT_NAME" \
-                            --email "freezer@example.com" \
-                            freezer \
-                            | grep " id " | get_field 2)
+    local freezer_user=$(get_or_create_user freezer \
+                            "$SERVICE_PASSWORD" "default" "freezer@example.com")
 
     get_or_add_user_project_role $admin_role $freezer_user $SERVICE_TENANT_NAME
 

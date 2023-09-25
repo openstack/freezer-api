@@ -30,3 +30,6 @@ ChangeLog
 # Coverage data
 .coverage.*
 releasenotes/build
+
+# Alembic test db
+freezer.db
