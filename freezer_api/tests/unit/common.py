@@ -28,6 +28,7 @@ import testtools
 
 from freezer_api.common import config
 from freezer_api import policy
+from freezer_api.tests.unit import fixtures as freezer_fixtures
 
 CONF = cfg.CONF
 
@@ -696,6 +697,8 @@ class FreezerBaseTestCase(testtools.TestCase):
                 policy.setup_policy(CONF)
         elif self.REGISTER_POLICY:
             raise Exception('You need to register config to register policy')
+
+        self.useFixture(freezer_fixtures.WarningsFixture())
 
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
