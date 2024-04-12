@@ -680,17 +680,26 @@ class FakeReqResp(object):
 
 
 class FreezerBaseTestCase(testtools.TestCase):
-    def setUp(self):
-        super(FreezerBaseTestCase, self).setUp()
+    REGISTER_CONFIG = True
+    REGISTER_POLICY = True
 
-        self._config_fixture = self.useFixture(cfg_fixture.Config())
-        config.parse_args(args=[])
-        self.addCleanup(CONF.reset)
+    def setUp(self):
+        super().setUp()
+
+        if self.REGISTER_CONFIG:
+            self._config_fixture = self.useFixture(cfg_fixture.Config())
+            config.parse_args(args=[])
+            self.addCleanup(CONF.reset)
+
+            if self.REGISTER_POLICY:
+                policy.ENFORCER = None
+                policy.setup_policy(CONF)
+        elif self.REGISTER_POLICY:
+            raise Exception('You need to register config to register policy')
+
         self.test_dir = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
         os.makedirs(self.conf_dir)
-        policy.ENFORCER = None
-        policy.setup_policy(CONF)
 
 
 class FakeContext(object):

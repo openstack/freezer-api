@@ -29,7 +29,7 @@ from freezer_api.tests.unit.sqlalchemy import base
 class DbJobTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbJobTestCase, self).setUp()
+        super().setUp()
         self.fake_job_0 = common.get_fake_job_0()
         self.fake_job_0.pop('job_id')
         self.fake_job_2 = common.get_fake_job_2()

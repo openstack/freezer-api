@@ -28,7 +28,7 @@ from freezer_api.tests.unit.sqlalchemy import base
 class DbBackupTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbBackupTestCase, self).setUp()
+        super().setUp()
         self.fake_backup_metadata = common.get_fake_backup_metadata()
         self.fake_user_id = common.fake_data_0_user_id
         self.fake_user_name = common.fake_data_0_user_name

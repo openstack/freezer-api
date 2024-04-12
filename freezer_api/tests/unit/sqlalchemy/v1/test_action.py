@@ -31,7 +31,7 @@ CONF = cfg.CONF
 class DbActionTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbActionTestCase, self).setUp()
+        super().setUp()
         self.fake_action_0 = common.get_fake_action_0()
         self.fake_action_2 = common.get_fake_action_2()
         self.fake_action_3 = common.get_fake_action_3()
@@ -42,8 +42,8 @@ class DbActionTestCase(base.DbTestCase):
         CONF.enable_v1_api = True
 
     def tearDown(self):
-        super(DbActionTestCase, self).tearDown()
         CONF.enable_v1_api = False
+        super().tearDown()
 
     def test_add_and_get_action(self):
         action_doc = copy.deepcopy(self.fake_action_0)

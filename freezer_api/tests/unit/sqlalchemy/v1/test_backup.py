@@ -32,14 +32,14 @@ CONF = cfg.CONF
 class DbBackupTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbBackupTestCase, self).setUp()
+        super().setUp()
         self.fake_backup_metadata = common.get_fake_backup_metadata()
         self.fake_user_id = common.fake_data_0_user_id
         self.fake_user_name = common.fake_data_0_user_name
         CONF.enable_v1_api = True
 
     def tearDown(self):
-        super(DbBackupTestCase, self).tearDown()
+        super().tearDown()
         CONF.enable_v1_api = False
 
     def test_add_and_get_backup(self):

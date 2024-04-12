@@ -31,7 +31,7 @@ from freezer_api.tests.unit import common
 
 class TestJobsBaseResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestJobsBaseResource, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.resource = v1_jobs.JobsBaseResource(self.mock_db)
 
@@ -132,7 +132,7 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
 
 class TestJobsCollectionResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestJobsCollectionResource, self).setUp()
+        super().setUp()
         self.mock_json_body = mock.Mock()
         self.mock_json_body.return_value = {}
         self.mock_db = mock.Mock()
@@ -173,7 +173,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
 
 class TestJobsResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestJobsResource, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
@@ -255,7 +255,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
 
 class TestJobsEvent(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestJobsEvent, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
@@ -294,8 +294,6 @@ class TestJobsEvent(common.FreezerBaseTestCase):
 
 
 class TestJobs(common.FreezerBaseTestCase):
-    def setUp(self):
-        super(TestJobs, self).setUp()
 
     def _test_job_start(self, status, event, response, need_update):
         job_schedule = {}

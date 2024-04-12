@@ -31,7 +31,7 @@ from freezer_api.tests.unit.sqlalchemy import base
 class ApiTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(ApiTestCase, self).setUp()
+        super().setUp()
         self.fake_job_0 = common.get_fake_job_0()
         self.fake_client_0 = common.get_fake_client_0()
         self.fake_project_id = self.fake_job_0.get('project_id')

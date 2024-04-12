@@ -28,7 +28,7 @@ from freezer_api.tests.unit import common
 
 class TestSessionsCollectionResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestSessionsCollectionResource, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
@@ -80,7 +80,7 @@ class TestSessionsCollectionResource(common.FreezerBaseTestCase):
 
 class TestSessionsResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestSessionsResource, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
@@ -172,7 +172,7 @@ class TestSessionsResource(common.FreezerBaseTestCase):
 
 class TestSessionsAction(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestSessionsAction, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
@@ -361,7 +361,7 @@ class TestSessionsAction(common.FreezerBaseTestCase):
 
 class TestSessions(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestSessions, self).setUp()
+        super().setUp()
         self.session_doc = {}
         self.session = v2_sessions.Session(self.session_doc)
 
@@ -395,7 +395,7 @@ class TestSessions(common.FreezerBaseTestCase):
 
 class TestSessionsJobs(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestSessionsJobs, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items

@@ -35,7 +35,7 @@ CONF = cfg.CONF
 class ApiTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(ApiTestCase, self).setUp()
+        super().setUp()
         self.fake_job_0 = common.get_fake_job_0()
         self.fake_client_0 = common.get_fake_client_0()
         self.fake_user_id = self.fake_job_0.get('user_id')
@@ -47,7 +47,7 @@ class ApiTestCase(base.DbTestCase):
         CONF.enable_v1_api = True
 
     def tearDown(self):
-        super(ApiTestCase, self).tearDown()
+        super().tearDown()
         CONF.enable_v1_api = False
 
     def test_raises_model_query(self):

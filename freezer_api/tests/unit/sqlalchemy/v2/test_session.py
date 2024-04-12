@@ -28,7 +28,7 @@ from freezer_api.tests.unit.sqlalchemy import base
 class DbSessionTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbSessionTestCase, self).setUp()
+        super().setUp()
         self.fake_session_0 = common.get_fake_session_0()
         self.fake_project_id = self.fake_session_0.get('project_id')
         self.fake_user_id = self.fake_session_0.get('user_id')

@@ -33,7 +33,7 @@ CONF = cfg.CONF
 class DbSessionTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbSessionTestCase, self).setUp()
+        super().setUp()
         self.fake_session_0 = common.get_fake_session_0()
         self.fake_user_id = self.fake_session_0.get('user_id')
         self.fake_session_0.pop('session_id')
@@ -45,7 +45,7 @@ class DbSessionTestCase(base.DbTestCase):
         CONF.enable_v1_api = True
 
     def tearDown(self):
-        super(DbSessionTestCase, self).tearDown()
+        super().tearDown()
         CONF.enable_v1_api = False
 
     def test_add_and_get_session(self):

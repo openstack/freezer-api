@@ -11,25 +11,26 @@
 #    under the License.
 
 import sys
-import unittest
 from unittest import mock
 
 from oslo_config import cfg
 
 from freezer_api.cmd import manage as freezer_manage
+from freezer_api.tests.unit import common
 
 CONF = cfg.CONF
 
 
-class TestFreezerApiCmd(unittest.TestCase):
+class TestFreezerApiCmd(common.FreezerBaseTestCase):
     """Unit test cases for python modules under freezer/cmd."""
-    def setUp(self):
-        super(TestFreezerApiCmd, self).setUp()
+
+    REGISTER_CONFIG = False
+    REGISTER_POLICY = False
 
     def tearDown(self):
-        super(TestFreezerApiCmd, self).tearDown()
         CONF.reset()
         CONF.unregister_opt(cfg.StrOpt('db'))
+        super().tearDown()
 
     @mock.patch("freezer_api.db.manager.get_db_driver")
     def test_db_sync(self, mock_get_db_driver):

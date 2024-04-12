@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # (c) Copyright 2018 ZTE Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import unittest
-
 import elasticsearch
 from unittest import mock
 from unittest.mock import patch
@@ -31,8 +27,9 @@ from freezer_api.tests.unit import common
 CONF = cfg.CONF
 
 
-class TypeManagerV2(unittest.TestCase):
+class TypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.mock_es = mock.Mock()
         self.type_manager = elastic.TypeManagerV2(self.mock_es,
                                                   'base_doc_type',
@@ -279,8 +276,9 @@ class TypeManagerV2(unittest.TestCase):
         )
 
 
-class TestBackupManagerV2(unittest.TestCase):
+class TestBackupManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.mock_es = mock.Mock()
         self.backup_manager = elastic.BackupTypeManagerV2(self.mock_es,
                                                           'backups')
@@ -358,8 +356,9 @@ class TestBackupManagerV2(unittest.TestCase):
         self.assertEqual(expected_q, q)
 
 
-class ClientTypeManagerV2(unittest.TestCase):
+class ClientTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.mock_es = mock.Mock()
         self.client_manager = elastic.ClientTypeManagerV2(self.mock_es,
                                                           'clients')
@@ -422,8 +421,9 @@ class ClientTypeManagerV2(unittest.TestCase):
         self.assertEqual(expected_q, q)
 
 
-class JobTypeManagerV2(unittest.TestCase):
+class JobTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.mock_es = mock.Mock()
         self.job_manager = elastic.JobTypeManagerV2(self.mock_es, 'clients')
 
@@ -518,8 +518,9 @@ class JobTypeManagerV2(unittest.TestCase):
                           job_update_doc={'status': 'sleepy'})
 
 
-class ActionTypeManagerV2(unittest.TestCase):
+class ActionTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.mock_es = mock.Mock()
         self.action_manager = elastic.ActionTypeManagerV2(self.mock_es,
                                                           'actions')
@@ -617,8 +618,9 @@ class ActionTypeManagerV2(unittest.TestCase):
                           action_update_doc={'status': 'sleepy'})
 
 
-class SessionTypeManagerV2(unittest.TestCase):
+class SessionTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.mock_es = mock.Mock()
         self.session_manager = elastic.SessionTypeManagerV2(self.mock_es,
                                                             'sessions')
@@ -717,11 +719,14 @@ class SessionTypeManagerV2(unittest.TestCase):
                           session_update_doc={'status': 'sleepy'})
 
 
-class TestElasticSearchEngineV2_backup(unittest.TestCase, ElasticSearchDB):
+class TestElasticSearchEngineV2_backup(
+    common.FreezerBaseTestCase, ElasticSearchDB
+):
 
     @patch('freezer_api.storage.elasticv2.logging')
     @patch('freezer_api.storage.elasticv2.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
+        super().setUp()
         backend = 'elasticsearch'
         grp = cfg.OptGroup(backend)
         CONF.register_group(grp)
@@ -844,10 +849,13 @@ class TestElasticSearchEngineV2_backup(unittest.TestCase, ElasticSearchDB):
                           backup_id=common.fake_data_0_backup_id)
 
 
-class TestElasticSearchEngine_client(unittest.TestCase, ElasticSearchDB):
+class TestElasticSearchEngine_client(
+    common.FreezerBaseTestCase, ElasticSearchDB
+):
     @patch('freezer_api.storage.elasticv2.logging')
     @patch('freezer_api.storage.elasticv2.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
+        super().setUp()
         backend = 'elasticsearch'
         grp = cfg.OptGroup(backend)
         CONF.register_group(grp)
@@ -974,10 +982,11 @@ class TestElasticSearchEngine_client(unittest.TestCase, ElasticSearchDB):
                           client_id=common.fake_client_info_0['client_id'])
 
 
-class TestElasticSearchEngine_job(unittest.TestCase, ElasticSearchDB):
+class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
     @patch('freezer_api.storage.elasticv2.logging')
     @patch('freezer_api.storage.elasticv2.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        super().setUp()
         backend = 'elasticsearch'
         grp = cfg.OptGroup(backend)
         CONF.register_group(grp)
@@ -1144,10 +1153,13 @@ class TestElasticSearchEngine_job(unittest.TestCase, ElasticSearchDB):
         self.assertEqual(3, res)
 
 
-class TestElasticSearchEngine_action(unittest.TestCase, ElasticSearchDB):
+class TestElasticSearchEngine_action(
+    common.FreezerBaseTestCase, ElasticSearchDB
+):
     @patch('freezer_api.storage.elasticv2.logging')
     @patch('freezer_api.storage.elasticv2.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        super().setUp()
         backend = 'elasticsearch'
         grp = cfg.OptGroup(backend)
         CONF.register_group(grp)
@@ -1321,10 +1333,13 @@ class TestElasticSearchEngine_action(unittest.TestCase, ElasticSearchDB):
     #     self.assertEqual(res, 3)
 
 
-class TestElasticSearchEngine_session(unittest.TestCase, ElasticSearchDB):
+class TestElasticSearchEngine_session(
+    common.FreezerBaseTestCase, ElasticSearchDB
+):
     @patch('freezer_api.storage.elasticv2.logging')
     @patch('freezer_api.storage.elasticv2.elasticsearch')
     def setUp(self, mock_elasticsearch, mock_logging):
+        super().setUp()
         backend = 'elasticsearch'
         grp = cfg.OptGroup(backend)
         CONF.register_group(grp)
@@ -1502,11 +1517,12 @@ class TestElasticSearchEngine_session(unittest.TestCase, ElasticSearchDB):
         self.assertEqual(3, res)
 
 
-class TestElasticSearchEngineV2(unittest.TestCase, ElasticSearchDB):
+class TestElasticSearchEngineV2(common.FreezerBaseTestCase, ElasticSearchDB):
 
     @patch('freezer_api.storage.elasticv2.logging')
     @patch('freezer_api.storage.elasticv2.elasticsearch')
     def setUp(self, mock_logging, mock_elasticsearch):
+        super().setUp()
         backend = 'elasticsearch'
         grp = cfg.OptGroup(backend)
         CONF.register_group(grp)

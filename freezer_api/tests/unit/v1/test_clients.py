@@ -22,7 +22,7 @@ from freezer_api.tests.unit import common
 
 class TestClientsCollectionResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestClientsCollectionResource, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
@@ -69,7 +69,7 @@ class TestClientsCollectionResource(common.FreezerBaseTestCase):
 
 class TestClientsResource(common.FreezerBaseTestCase):
     def setUp(self):
-        super(TestClientsResource, self).setUp()
+        super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
         self.mock_req.env.__getitem__.side_effect = common.get_req_items

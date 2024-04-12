@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 from freezer_api import context
+from freezer_api.tests.unit import common
 
 
-class TestFreezerContext(unittest.TestCase):
+class TestFreezerContext(common.FreezerBaseTestCase):
 
     def setUp(self):
+        super().setUp()
         self.ctxt = context.FreezerContext('token01', 'user01', 'tenant01',
                                            is_admin=False,
                                            roles=['_member', 'backup_admin'])

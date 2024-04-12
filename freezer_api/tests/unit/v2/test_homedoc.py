@@ -28,10 +28,10 @@ from freezer_api.tests.unit import common
 class TestHomedocResource(common.FreezerBaseTestCase):
 
     def setUp(self):
+        super().setUp()
         self.resource = v2.homedoc.Resource()
         self.req = mock.MagicMock()
         self.req.__getitem__.side_effect = common.get_req_items
-        super(TestHomedocResource, self).setUp()
 
     def test_on_get_return_resources_information(self):
         self.resource.on_get(self.req, self.req)

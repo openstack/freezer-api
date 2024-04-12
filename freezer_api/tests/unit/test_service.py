@@ -25,16 +25,16 @@ from freezer_api.tests.unit import common
 
 class TestService(common.FreezerBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.falcon_versions_hooks = ['0.1.6', '0.1.7', '0.1.8', '0.1.9',
                                       '0.1.10']
         self.falcon_versions_middleware = ['0.2.0', '0.3.0', '1.0.0']
-        super(TestService, self).setUp()
 
     @patch('freezer_api.cmd.api.v1')
     @patch('freezer_api.cmd.api.manager')
     @patch('freezer_api.cmd.api.falcon')
     def test_on_new_falcon_builds_v1(self, mock_falcon, mock_driver, mock_v1):
-        """Test that falcon versions that should use new middleware syntax do so
+        """Test that falcon versions that should use new middleware syntax do
 
         :param mock_falcon: The falcon import freezer-api will try to
         start up
@@ -68,7 +68,7 @@ class TestService(common.FreezerBaseTestCase):
     @patch('freezer_api.cmd.api.manager')
     @patch('freezer_api.cmd.api.falcon')
     def test_on_old_falcon_builds_v2(self, mock_falcon, mock_driver, mock_v2):
-        """Test that falcon versions that should use old middleware syntax do so
+        """Test that falcon versions that should use old middleware syntax do
 
         :param mock_falcon: The falcon import freezer-api will try to
         start up

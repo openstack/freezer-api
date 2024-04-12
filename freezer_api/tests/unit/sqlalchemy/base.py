@@ -56,7 +56,7 @@ class Database(fixtures.Fixture):
         models.register_models(self.engine)
 
     def setUp(self):
-        super(Database, self).setUp()
+        super().setUp()
 
         conn = self.engine.connect()
         conn.connection.executescript(self._DB)
@@ -66,9 +66,9 @@ class Database(fixtures.Fixture):
 class DbTestCase(common.FreezerBaseTestCase):
 
     def setUp(self):
+        super().setUp()
         dbbackend = "sqlalchemy"
         dbdriver = "sqlalchemy"
-        super(DbTestCase, self).setUp()
         db_driver = manager.get_db_driver(dbdriver,
                                           backend=dbbackend)
         self.dbapi = db_driver.IMPL

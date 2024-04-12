@@ -27,7 +27,7 @@ from freezer_api.tests.unit.sqlalchemy import base
 class DbActionTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbActionTestCase, self).setUp()
+        super().setUp()
         self.fake_action_0 = common.get_fake_action_0()
         self.fake_action_2 = common.get_fake_action_2()
         self.fake_action_3 = common.get_fake_action_3()

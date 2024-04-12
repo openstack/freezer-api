@@ -29,7 +29,7 @@ from freezer_api.tests.unit import common
 class TestVersionResource(common.FreezerBaseTestCase):
 
     def setUp(self):
-        super(TestVersionResource, self).setUp()
+        super().setUp()
         self.resource = versions.Resource()
         self.req = mock.Mock()
         self.req.url = "{0}"

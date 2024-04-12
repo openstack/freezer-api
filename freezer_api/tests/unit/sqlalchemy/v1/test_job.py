@@ -33,7 +33,7 @@ CONF = cfg.CONF
 class DbJobTestCase(base.DbTestCase):
 
     def setUp(self):
-        super(DbJobTestCase, self).setUp()
+        super().setUp()
         self.fake_job_0 = common.get_fake_job_0()
         self.fake_job_0.pop('job_id')
         self.fake_job_2 = common.get_fake_job_2()
@@ -45,8 +45,8 @@ class DbJobTestCase(base.DbTestCase):
         CONF.enable_v1_api = True
 
     def tearDown(self):
-        super(DbJobTestCase, self).tearDown()
         CONF.enable_v1_api = False
+        super().tearDown()
 
     def test_add_and_get_job(self):
         job_doc = copy.deepcopy(self.fake_job_0)

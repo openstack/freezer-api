@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 import falcon
 from unittest import mock
 
@@ -21,9 +19,10 @@ from freezer_api.common import exceptions
 from freezer_api.tests.unit import common
 
 
-class TestExceptions(unittest.TestCase):
+class TestExceptions(common.FreezerBaseTestCase):
 
     def setUp(self):
+        super().setUp()
         self.ex = mock.Mock()
         self.ex.message = 'test exception'
         self.mock_req = mock.MagicMock()
