@@ -17,7 +17,7 @@
 :tocdepth: 3
 
 ======================
-Backup Service API v1 
+Backup Service API v1
 ======================
 
 .. rest_expand_all::

@@ -47,15 +47,15 @@ Install DevStack  step by step
     cd devstack
 
 2. Add stack user and change devstack directory user group::
-   
+
     ./create_stack_user.sh
-    
+
     chown -R stack ./devstack/
     chown -R stack.stack ./devstack/
 
 
 3. Add this repo as an external repository.This is a sample local.conf file for freezer developer::
-    
+
     [[local|localrc]]
     ADMIN_PASSWORD=stack
     DATABASE_PASSWORD=stack
@@ -64,7 +64,7 @@ Install DevStack  step by step
 
     DEST=/opt/stack
     LOGFILE=$DEST/logs/stack.sh.log
-    
+
     # only install keystone/horizon/swift in devstack
     # disable_all_services
     # enable_service key mysql s-proxy s-object s-container s-account horizon
@@ -73,7 +73,7 @@ Install DevStack  step by step
     enable_plugin freezer-api http://git.openstack.org/openstack/freezer-api.git master
     enable_plugin freezer-tempest-plugin http://git.openstack.org/openstack/freezer-tempest-plugin.git master
     enable_plugin freezer-web-ui http://git.openstack.org/openstack/freezer-web-ui.git master
-    
+
     export FREEZER_BACKEND='sqlalchemy'
 
 4. Use stack user to run ``stack.sh``::
@@ -117,8 +117,8 @@ Running Freezer tempest tests
 
     cd /opt/stack/tempest
     tempest run  -r  freezer_tempest_plugin.tests.freezer_api.api.test_api_jobs.TestFreezerApiJobs.test_api_jobs_post
-    
-      
+
+
 For more information, see:
  https://docs.openstack.org/devstack/latest/index.html
  https://docs.openstack.org/tempest/latest/

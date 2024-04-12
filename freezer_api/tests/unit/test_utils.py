@@ -128,8 +128,8 @@ class TestJobDoc(common.FreezerBaseTestCase):
     def test_createpatch_pops_jobid_and_userid(self):
         job_doc = common.get_fake_job_0()
         res_doc = utils.JobDoc.create_patch(job_doc)
-        self.assertFalse('job_id' in res_doc)
-        self.assertFalse('user_id' in res_doc)
+        self.assertNotIn('job_id', res_doc)
+        self.assertNotIn('user_id', res_doc)
 
     def test_createpatch_raises_BadDataFormat_when_patch_has_invalid_state(
             self):
@@ -207,8 +207,8 @@ class TestActionDoc(common.FreezerBaseTestCase):
     def test_createpatch_pops_actionid_and_userid(self):
         action_doc = common.get_fake_action_0()
         res_doc = utils.ActionDoc.create_patch(action_doc)
-        self.assertFalse('action_id' in res_doc)
-        self.assertFalse('user_id' in res_doc)
+        self.assertNotIn('action_id', res_doc)
+        self.assertNotIn('user_id', res_doc)
 
     def test_createpatch_raises_BadDataFormat_when_patch_has_invalid_field(
             self):
@@ -269,8 +269,8 @@ class TestSessionDoc(common.FreezerBaseTestCase):
     def test_createpatch_pops_sessionid_and_userid(self):
         session_doc = common.get_fake_session_0()
         res_doc = utils.SessionDoc.create_patch(session_doc)
-        self.assertFalse('session_id' in res_doc)
-        self.assertFalse('user_id' in res_doc)
+        self.assertNotIn('session_id', res_doc)
+        self.assertNotIn('user_id', res_doc)
 
     def test_createpatch_raises_BadDataFormat_when_patch_has_invalid_field(
             self):

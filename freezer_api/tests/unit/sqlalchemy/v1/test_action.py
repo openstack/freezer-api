@@ -180,7 +180,7 @@ class DbActionTestCase(base.DbTestCase):
     def test_add_and_search_action(self):
         count = 0
         actionids = []
-        while(count < 20):
+        while (count < 20):
             doc = copy.deepcopy(self.fake_action_3)
             action_id = common.get_fake_action_id()
             doc['action_id'] = action_id

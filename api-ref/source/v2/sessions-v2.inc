@@ -130,7 +130,7 @@ Show sessions(v2)
 
 Shows sessions.
 
-This operation shows a certain session in a project. It displays 
+This operation shows a certain session in a project. It displays
 all session details with jobs included in this session.
 
 Normal response codes: 200

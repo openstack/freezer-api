@@ -53,10 +53,10 @@ edit config file
 setup/configure the db
 ----------------------
 
-The currently supported DB include Elasticsearch and sqlalchemy. You can 
+The currently supported DB include Elasticsearch and sqlalchemy. You can
 config backend DB in ``freezer-api.conf`` file. If use sqlalchemy::
 
-    [storage]   
+    [storage]
     driver = sqlalchemy
     backend = sqlalchemy
 

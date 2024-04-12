@@ -2,7 +2,7 @@
 features:
   - |
     Completely support sqlalchemy driver for freezer-api.
-    The previous version only implemented part one. In this patch, 
+    The previous version only implemented part one. In this patch,
     sqlalchemy driver has been completely implemented for freezer-api.
     See links in detail: https://storyboard.openstack.org/#!/story/2004132
     The configuration example is as follows:

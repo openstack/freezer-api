@@ -18,8 +18,8 @@
                 "log_file": "/home/saad/job0001.log",
                 "snapshot": false,
                 "action": "backup",
-                "remove_older_than": 365,
+                "remove_older_than": 365
             }
         }
-]
+    ]
 }

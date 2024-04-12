@@ -30,7 +30,7 @@
                             "log_file": "/home/saad/job0001.log",
                             "snapshot": false,
                             "action": "backup",
-                            "remove_older_than": 365,
+                            "remove_older_than": 365
                         },
                         "max_retries": 5,
                         "max_retries_interval": 6,

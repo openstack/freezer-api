@@ -17,8 +17,8 @@
                 "log_file": "/home/saad/job0001.log",
                 "snapshot": true,
                 "action": "backup",
-                "remove_older_than": 365,
+                "remove_older_than": 365
             }
         }
-]
+    ]
 }
