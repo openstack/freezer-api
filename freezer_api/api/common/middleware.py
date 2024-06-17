@@ -20,8 +20,6 @@ from oslo_log import log
 import webob.dec
 import webob.exc
 
-from oslo_serialization import jsonutils as json
-
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api import context
 
@@ -135,17 +133,6 @@ class RequireJSON(HookableMiddlewareMixin, object):
             raise falcon.HTTPNotAcceptable(
                 'Freezer-api only supports responses encoded as JSON.',
                 href='http://docs.examples.com/api/json')
-
-
-class JSONTranslator(HookableMiddlewareMixin, object):
-    def process_response(self, req, resp, resource, req_succeeded=True):
-        if not hasattr(resp, 'body'):
-            return
-        if isinstance(resp.data, dict):
-            resp.data = json.dumps(resp.data)
-
-        if isinstance(resp.body, dict):
-            resp.body = json.dumps(resp.body)
 
 
 class BaseContextMiddleware(Middleware):

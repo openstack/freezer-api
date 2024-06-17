@@ -39,7 +39,7 @@ class ActionsCollectionResource(resource.BaseResource):
         obj_list = self.db.search_action(project_id=project_id,
                                          user_id=user_id, offset=offset,
                                          limit=limit, search=search)
-        resp.body = {'actions': obj_list}
+        resp.media = {'actions': obj_list}
 
     @policy.enforce('actions:create')
     def on_post(self, req, resp, project_id):
@@ -53,7 +53,7 @@ class ActionsCollectionResource(resource.BaseResource):
                                        user_id=user_id,
                                        doc=doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'action_id': action_id}
+        resp.media = {'action_id': action_id}
 
 
 class ActionsResource(resource.BaseResource):
@@ -74,7 +74,7 @@ class ActionsResource(resource.BaseResource):
                                  user_id=user_id,
                                  action_id=action_id)
         if obj:
-            resp.body = obj
+            resp.media = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -86,7 +86,7 @@ class ActionsResource(resource.BaseResource):
         self.db.delete_action(project_id=project_id,
                               user_id=user_id,
                               action_id=action_id)
-        resp.body = {'action_id': action_id}
+        resp.media = {'action_id': action_id}
         resp.status = falcon.HTTP_204
 
     @policy.enforce('actions:update')
@@ -99,7 +99,7 @@ class ActionsResource(resource.BaseResource):
                                             user_id=user_id,
                                             action_id=action_id,
                                             patch_doc=doc)
-        resp.body = {'action_id': action_id, 'version': new_version}
+        resp.media = {'action_id': action_id, 'version': new_version}
 
     @policy.enforce('actions:replace')
     def on_post(self, req, resp, project_id, action_id):
@@ -112,4 +112,4 @@ class ActionsResource(resource.BaseResource):
                                              action_id=action_id,
                                              doc=doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'action_id': action_id, 'version': new_version}
+        resp.media = {'action_id': action_id, 'version': new_version}

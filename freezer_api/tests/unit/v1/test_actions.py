@@ -42,7 +42,7 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         self.mock_db.search_action.return_value = []
         expected_result = {'actions': []}
         self.resource.on_get(self.mock_req, self.mock_req)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -52,7 +52,7 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'actions': [common.get_fake_action_0(),
                                        common.get_fake_action_1()]}
         self.resource.on_get(self.mock_req, self.mock_req)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -69,7 +69,7 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'action_id': 'pjiofrdslaikfunr'}
         self.resource.on_post(self.mock_req, self.mock_req)
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
-        self.assertEqual(expected_result, self.mock_req.body)
+        self.assertEqual(expected_result, self.mock_req.media)
 
 
 class TestActionsResource(common.FreezerBaseTestCase):
@@ -90,24 +90,24 @@ class TestActionsResource(common.FreezerBaseTestCase):
 
     def test_on_get_return_no_result_and_404_when_not_found(self):
         self.mock_db.get_action.return_value = None
-        self.mock_req.body = None
+        self.mock_req.media = None
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_action_0['action_id'])
-        self.assertIsNone(self.mock_req.body)
+        self.assertIsNone(self.mock_req.media)
         self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
         self.mock_db.get_action.return_value = common.get_fake_action_0()
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_action_0['action_id'])
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(common.get_fake_action_0(), result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_delete_removes_proper_data(self):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_action_0['action_id'])
-        result = self.mock_req.body
+        result = self.mock_req.media
         expected_result = {'action_id': common.fake_action_0['action_id']}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
@@ -131,7 +131,7 @@ class TestActionsResource(common.FreezerBaseTestCase):
             action_id=common.fake_action_0['action_id'],
             patch_doc=patch_doc)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
 
     def test_on_post_ok(self):
@@ -145,7 +145,7 @@ class TestActionsResource(common.FreezerBaseTestCase):
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_action_0['action_id'])
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
-        self.assertEqual(expected_result, self.mock_req.body)
+        self.assertEqual(expected_result, self.mock_req.media)
 
     def test_on_post_raises_when_db_replace_action_raises(self):
         self.mock_db.replace_action.side_effect = exceptions.AccessForbidden(

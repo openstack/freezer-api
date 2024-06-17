@@ -40,7 +40,7 @@ class SessionsCollectionResource(resource.BaseResource):
         search = self.json_body(req)
         obj_list = self.db.search_session(user_id=user_id, offset=offset,
                                           limit=limit, search=search)
-        resp.body = {'sessions': obj_list}
+        resp.media = {'sessions': obj_list}
 
     @policy.enforce('sessions:create')
     def on_post(self, req, resp):
@@ -52,7 +52,7 @@ class SessionsCollectionResource(resource.BaseResource):
         user_id = req.get_header('X-User-ID')
         session_id = self.db.add_session(user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'session_id': session_id}
+        resp.media = {'session_id': session_id}
 
 
 class SessionsResource(resource.BaseResource):
@@ -70,7 +70,7 @@ class SessionsResource(resource.BaseResource):
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_session(user_id=user_id, session_id=session_id)
         if obj:
-            resp.body = obj
+            resp.media = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -86,7 +86,7 @@ class SessionsResource(resource.BaseResource):
                 format(session_id))
         else:
             self.db.delete_session(user_id=user_id, session_id=session_id)
-            resp.body = {'session_id': session_id}
+            resp.media = {'session_id': session_id}
             resp.status = falcon.HTTP_204
 
     @policy.enforce('sessions:update')
@@ -97,7 +97,7 @@ class SessionsResource(resource.BaseResource):
         new_version = self.db.update_session(user_id=user_id,
                                              session_id=session_id,
                                              patch_doc=doc)
-        resp.body = {'session_id': session_id, 'version': new_version}
+        resp.media = {'session_id': session_id, 'version': new_version}
 
     @policy.enforce('sessions:replace')
     def on_post(self, req, resp, session_id):
@@ -111,7 +111,7 @@ class SessionsResource(resource.BaseResource):
                                               session_id=session_id,
                                               doc=doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'session_id': session_id, 'version': new_version}
+        resp.media = {'session_id': session_id, 'version': new_version}
 
 
 class SessionsAction(resource.BaseResource):
@@ -145,8 +145,8 @@ class SessionsAction(resource.BaseResource):
                                    session_id=session_id,
                                    patch_doc=session.doc)
         resp.status = falcon.HTTP_202
-        resp.body = {'result': session.action_result,
-                     'session_tag': session.session_tag}
+        resp.media = {'result': session.action_result,
+                      'session_tag': session.session_tag}
 
 
 class Session(resource.BaseResource):

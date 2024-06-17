@@ -151,7 +151,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {'jobs': []}
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_job_0_project_id)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -162,7 +162,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             'jobs': [common.get_fake_job_0(), common.get_fake_job_1()]}
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_job_0_project_id)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -174,7 +174,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.resource.on_post(self.mock_req, self.mock_req,
                               common.fake_job_0_project_id)
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
-        self.assertEqual(expected_result, self.mock_req.body)
+        self.assertEqual(expected_result, self.mock_req.media)
 
 
 class TestJobsResource(common.FreezerBaseTestCase):
@@ -192,12 +192,12 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.assertIsInstance(self.resource, v2_jobs.JobsResource)
 
     def test_on_get_return_no_result_and_404_when_not_found(self):
-        self.mock_req.body = None
+        self.mock_req.media = None
         self.mock_db.get_job.return_value = None
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_job_0_project_id,
                              common.fake_job_0_job_id)
-        self.assertIsNone(self.mock_req.body)
+        self.assertIsNone(self.mock_req.media)
         self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
@@ -205,7 +205,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_job_0_project_id,
                              common.fake_job_0_job_id)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(common.get_fake_job_0(), result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -213,7 +213,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_job_0_project_id,
                                 common.fake_job_0_job_id)
-        result = self.mock_req.body
+        result = self.mock_req.media
         expected_result = {'job_id': common.fake_job_0_job_id}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
@@ -237,7 +237,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
             job_id=common.fake_job_0_job_id,
             patch_doc=patch_doc)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
 
     def test_on_post_ok(self):
@@ -252,7 +252,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
                               common.fake_job_0_project_id,
                               common.fake_job_0_job_id)
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
-        self.assertEqual(expected_result, self.mock_req.body)
+        self.assertEqual(expected_result, self.mock_req.media)
 
     def test_on_post_raises_when_db_replace_job_raises(self):
         self.mock_db.replace_job.side_effect = exceptions.AccessForbidden(
@@ -305,7 +305,7 @@ class TestJobsEvent(common.FreezerBaseTestCase):
         self.resource.on_post(self.mock_req, self.mock_req,
                               'my_project_id', 'my_job_id')
         self.assertEqual(falcon.HTTP_202, self.mock_req.status)
-        self.assertEqual(expected_result, self.mock_req.body)
+        self.assertEqual(expected_result, self.mock_req.media)
 
 
 class TestJobs(common.FreezerBaseTestCase):

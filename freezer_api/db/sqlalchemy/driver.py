@@ -122,7 +122,8 @@ class SQLDriver(db_base.DBDriver):
         # (by design) uses *python* interpolation to write the string out ...
         # where "%" is the special python interpolation character!
         # Avoid this mismatch by quoting all %'s for the set below.
-        engine_url = str(engine.url).replace('%', '%%')
+        engine_url = engine.url.render_as_string(
+            hide_password=False).replace('%', '%%')
         config.set_main_option('sqlalchemy.url', str(engine_url))
         LOG.info('Applying migration(s)')
         self._upgrade_alembic(engine, config, version)

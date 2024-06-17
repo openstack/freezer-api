@@ -41,7 +41,7 @@ class ClientsCollectionResource(resource.BaseResource):
                                       offset=offset,
                                       limit=limit,
                                       search=search)
-        resp.body = {'clients': obj_list}
+        resp.media = {'clients': obj_list}
 
     @policy.enforce('clients:create')
     def on_post(self, req, resp, project_id):
@@ -54,7 +54,7 @@ class ClientsCollectionResource(resource.BaseResource):
         client_id = self.db.add_client(
             project_id=project_id, user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'client_id': client_id}
+        resp.media = {'client_id': client_id}
 
 
 class ClientsResource(resource.BaseResource):
@@ -73,7 +73,7 @@ class ClientsResource(resource.BaseResource):
                                  user_id=user_id,
                                  client_id=client_id)
         if obj:
-            resp.body = obj[0]
+            resp.media = obj[0]
         else:
             resp.status = falcon.HTTP_404
 
@@ -85,5 +85,5 @@ class ClientsResource(resource.BaseResource):
         self.db.delete_client(project_id=project_id,
                               user_id=user_id,
                               client_id=client_id)
-        resp.body = {'client_id': client_id}
+        resp.media = {'client_id': client_id}
         resp.status = falcon.HTTP_204

@@ -42,7 +42,7 @@ class TestBackupsCollectionResource(common.FreezerBaseTestCase):
         self.mock_db.search_backup.return_value = []
         expected_result = {'backups': []}
         self.resource.on_get(self.mock_req, self.mock_req)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -51,7 +51,7 @@ class TestBackupsCollectionResource(common.FreezerBaseTestCase):
             common.fake_data_0_backup_metadata]
         expected_result = {'backups': [common.fake_data_0_backup_metadata]}
         self.resource.on_get(self.mock_req, self.mock_req)
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
@@ -70,7 +70,7 @@ class TestBackupsCollectionResource(common.FreezerBaseTestCase):
         expected_result = {
             'backup_id': common.fake_data_0_wrapped_backup_metadata[
                 'backup_id']}
-        self.assertEqual(expected_result, self.mock_req.body)
+        self.assertEqual(expected_result, self.mock_req.media)
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
 
 
@@ -90,11 +90,11 @@ class TestBackupsResource(common.FreezerBaseTestCase):
 
     def test_on_get_return_no_result_and_404_when_not_found(self):
         self.mock_db.get_backup.return_value = []
-        self.mock_req.body = None
+        self.mock_req.media = None
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_data_0_wrapped_backup_metadata[
                                  'backup_id'])
-        self.assertIsNone(self.mock_req.body)
+        self.assertIsNone(self.mock_req.media)
         self.assertEqual(falcon.HTTP_404, self.mock_req.status)
 
     def test_on_get_return_correct_data(self):
@@ -104,14 +104,14 @@ class TestBackupsResource(common.FreezerBaseTestCase):
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_data_0_wrapped_backup_metadata[
                                  'backup_id'])
-        result = self.mock_req.body
+        result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_delete_removes_proper_data(self):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_data_0_backup_id)
-        result = self.mock_req.body
+        result = self.mock_req.media
         expected_result = {'backup_id': common.fake_data_0_backup_id}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)

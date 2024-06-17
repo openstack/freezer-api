@@ -39,7 +39,7 @@ class BackupsCollectionResource(resource.BaseResource):
         obj_list = self.db.search_backup(project_id=project_id,
                                          user_id=user_id, offset=offset,
                                          limit=limit, search=search)
-        resp.body = {'backups': obj_list}
+        resp.media = {'backups': obj_list}
 
     @policy.enforce('backups:create')
     def on_post(self, req, resp, project_id):
@@ -55,7 +55,7 @@ class BackupsCollectionResource(resource.BaseResource):
                                        user_name=user_name,
                                        doc=doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'backup_id': backup_id}
+        resp.media = {'backup_id': backup_id}
 
 
 class BackupsResource(resource.BaseResource):
@@ -73,7 +73,7 @@ class BackupsResource(resource.BaseResource):
                                  user_id=user_id,
                                  backup_id=backup_id)
         if obj:
-            resp.body = obj
+            resp.media = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -85,5 +85,5 @@ class BackupsResource(resource.BaseResource):
         self.db.delete_backup(project_id=project_id,
                               user_id=user_id,
                               backup_id=backup_id)
-        resp.body = {'backup_id': backup_id}
+        resp.media = {'backup_id': backup_id}
         resp.status = falcon.HTTP_204

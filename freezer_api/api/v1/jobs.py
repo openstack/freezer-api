@@ -77,7 +77,7 @@ class JobsCollectionResource(JobsBaseResource):
         search = self.json_body(req)
         obj_list = self.db.search_job(user_id=user_id, offset=offset,
                                       limit=limit, search=search)
-        resp.body = {'jobs': obj_list}
+        resp.media = {'jobs': obj_list}
 
     @policy.enforce('jobs:create')
     def on_post(self, req, resp):
@@ -92,7 +92,7 @@ class JobsCollectionResource(JobsBaseResource):
         self.update_actions_in_job(user_id, job.doc)
         job_id = self.db.add_job(user_id=user_id, doc=job.doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'job_id': job_id}
+        resp.media = {'job_id': job_id}
 
 
 class JobsResource(JobsBaseResource):
@@ -107,7 +107,7 @@ class JobsResource(JobsBaseResource):
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_job(user_id=user_id, job_id=job_id)
         if obj:
-            resp.body = obj
+            resp.media = obj
         else:
             resp.status = falcon.HTTP_404
 
@@ -122,7 +122,7 @@ class JobsResource(JobsBaseResource):
                 format(job_id))
         else:
             self.db.delete_job(user_id=user_id, job_id=job_id)
-            resp.body = {'job_id': job_id}
+            resp.media = {'job_id': job_id}
             resp.status = falcon.HTTP_204
 
     @policy.enforce('jobs:update')
@@ -134,7 +134,7 @@ class JobsResource(JobsBaseResource):
         new_version = self.db.update_job(user_id=user_id,
                                          job_id=job_id,
                                          patch_doc=job.doc)
-        resp.body = {'job_id': job_id, 'version': new_version}
+        resp.media = {'job_id': job_id, 'version': new_version}
 
     @policy.enforce('jobs:create')
     def on_post(self, req, resp, job_id):
@@ -146,7 +146,7 @@ class JobsResource(JobsBaseResource):
                                           job_id=job_id,
                                           doc=job.doc)
         resp.status = falcon.HTTP_201
-        resp.body = {'job_id': job_id, 'version': new_version}
+        resp.media = {'job_id': job_id, 'version': new_version}
 
 
 class JobsEvent(resource.BaseResource):
@@ -184,7 +184,7 @@ class JobsEvent(resource.BaseResource):
                                 job_id=job_id,
                                 doc=job.doc)
         resp.status = falcon.HTTP_202
-        resp.body = {'result': result}
+        resp.media = {'result': result}
 
 
 class Action(object):

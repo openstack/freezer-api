@@ -42,7 +42,6 @@ def api_versions(conf=None):
     """
     middleware_list = list()
     middleware_list.append(middleware.RequireJSON())
-    middleware_list.append(middleware.JSONTranslator())
     app = falcon.API(middleware=middleware_list)
     app.add_route('/', Resource())
     return app

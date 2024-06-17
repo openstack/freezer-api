@@ -79,7 +79,6 @@ def build_app_v1():
     middleware_list = [utils.FuncMiddleware(hook) for hook in
                        utils.before_hooks()]
     middleware_list.append(middleware.RequireJSON())
-    middleware_list.append(middleware.JSONTranslator())
 
     # The signature of falcon.API() differs between versions, suppress pylint:
     # pylint: disable=unexpected-keyword-arg
@@ -104,7 +103,6 @@ def build_app_v2():
     middleware_list = [utils.FuncMiddleware(hook) for hook in
                        utils.before_hooks()]
     middleware_list.append(middleware.RequireJSON())
-    middleware_list.append(middleware.JSONTranslator())
 
     app = falcon.API(middleware=middleware_list)
     db_driver = manager.get_db_driver(CONF.storage.driver,
