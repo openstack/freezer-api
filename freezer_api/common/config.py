@@ -19,7 +19,6 @@ import os
 from keystonemiddleware import opts
 from oslo_config import cfg
 from oslo_log import log
-from oslo_policy import opts as policy_opts
 from oslo_policy import policy
 
 from freezer_api import __version__ as FREEZER_API_VERSION
@@ -168,18 +167,3 @@ def list_opts():
     # update the current list of opts with db backend drivers opts
     _OPTS.update({"storage": _DB_DRIVERS})
     return _OPTS.items()
-
-
-def set_lib_defaults():
-    """Update default value for configuration options from other namespace.
-
-    Example, oslo lib config options. This is needed for
-    config generator tool to pick these default value changes.
-    https://docs.openstack.org/oslo.config/latest/cli/
-    generator.html#modifying-defaults-from-other-namespaces
-    """
-
-    # TODO(gmann): Remove setting the default value of config policy_file
-    # once oslo_policy change the default value to 'policy.yaml'.
-    # https://github.com/openstack/oslo.policy/blob/a626ad12fe5a3abd49d70e3e5b95589d279ab578/oslo_policy/opts.py#L49
-    policy_opts.set_defaults(CONF, 'policy.yaml')
