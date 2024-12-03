@@ -70,16 +70,6 @@ Creates an action.
 
 This operation creates a new action in a project.
 
-The ``body`` attribute specifies contains a set of actions that gets created
- one the job is submitted.
-
-The ``description`` is the name that you give to the job. The name must not
-exceed 64 bytes in length.
-
-The ``job_schedule`` is very important to schedule the job or it will run only
-once. also you can provide ``event`` which can automatically start/stop the
-job.
-
 The ``freezer_action`` holds the actual action parameters. ``freezer_action``
 differs from action to another as it depends what this action is doing (backup,
 restore, admin, info)
