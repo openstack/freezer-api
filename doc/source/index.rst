@@ -13,6 +13,8 @@ Contents:
 
    cli/index
 
+* `API reference <https://docs.openstack.org/api-ref/backup/>`_
+
 For Contributors
 ================
 
