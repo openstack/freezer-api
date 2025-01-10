@@ -29,8 +29,22 @@ import warnings
 # ones.
 extensions = [
     'openstackdocstheme',
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
+    'oslo_config.sphinxconfiggen',
+    'oslo_config.sphinxext',
+    'oslo_policy.sphinxpolicygen',
+    'oslo_policy.sphinxext',
 ]
+
+config_generator_config_file = [
+    ('../../etc/freezer/freezer-config-generator.conf', '_static/freezer')
+]
+sample_config_basename = '_static/freezer'
+
+policy_generator_config_file = [
+    ('../../etc/freezer/freezer-policy-generator.conf', '_static/freezer'),
+]
+sample_policy_basename = '_static/freezer'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

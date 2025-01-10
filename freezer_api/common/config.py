@@ -61,26 +61,27 @@ def api_common_opts():
                     ),
         cfg.BoolOpt('enable_v1_api',
                     default=False,
-                    help="""Default False, That is the v2 Freezer API
-                    will be deployed. When this option is set
-                    to ``True``, Freezer-api service will respond
+                    help="""Default False, the v2 Freezer API will be deployed.
+                    When this option is set
+                    to ``True``, Freezer-API service will respond
                     to requests on registered endpoints conforming
                     to the v1 OpenStack Freezer api.
+
                     The v1 OpenStack Freezer API functions
                     as follows:
-                        * Multi-tenancy is not supported under this
-                         api version.
-                        * Everything is user based.
-                        * Freezer api v1 supports Oslo.db.
-                        * Use elasticsearch db with v1 api version
+
+                    * Multi-tenancy is not supported under this
+                      api version.
+                    * Everything is user based.
+                    * Freezer api v1 supports Oslo.db.
+                    * Use elasticsearch db with v1 api version
+
                     The v2 OpenStack Freezer API functions
                     as follows:
-                        * Multi-tenancy is supported under this api version.
-                        * Freezer api v2 supports Oslo.db.
-                        * Recommended to use oslo.db with api v2
-                    Possible values:
-                        * True
-                        * False
+
+                    * Multi-tenancy is supported under this api version.
+                    * Freezer api v2 supports Oslo.db.
+                    * Recommended to use oslo.db with api v2
                     """)
     ]
 
@@ -135,9 +136,11 @@ def find_paste_config():
     freezer's paste.deploy configuration file is specified in the
     ``[paste_deploy]`` section of the main freezer-api configuration file,
     ``freezer-api.conf``.
-    For example::
+
+    For example:
         [paste_deploy]
         config_file = freezer-paste.ini
+
     :returns: The selected configuration filename
     :raises: exception.ConfigFileNotFound
     """

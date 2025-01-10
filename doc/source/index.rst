@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    cli/index
+   configuration/index
 
 * `API reference <https://docs.openstack.org/api-ref/backup/>`_
 

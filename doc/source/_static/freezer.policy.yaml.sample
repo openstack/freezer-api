@@ -1,0 +1,120 @@
+# Creates action.
+# POST  /v1/actions
+#"actions:create": ""
+
+# Delete action.
+# DELETE  /v1/actions/{action_id}
+#"actions:delete": ""
+
+# Show actions.
+# GET  /v1/actions/{action_id}
+#"actions:get": ""
+
+# Lists actions.
+# GET  /v1/actions
+#"actions:get_all": ""
+
+# Updates actions.
+# PATCH  /v1/actions/{action_id}
+#"actions:update": ""
+
+# Creates/replaces the specified action.
+# PUT  /v1/actions/{action_id}
+#"actions:replace": ""
+
+# Creates backup entry.
+# POST  /v1/backups
+#"backups:create": ""
+
+# Delete backup.
+# DELETE  /v1/backups/{backup_id}
+#"backups:delete": ""
+
+# Show backups.
+# GET  /v1/backups/{backup_id}
+#"backups:get": ""
+
+# Lists backups.
+# GET  /v1/backups
+#"backups:get_all": ""
+
+#"context_is_admin": "role:admin"
+
+#"admin_or_owner": "is_admin:True or project_id:%(project_id)s"
+
+# Create client entry.
+# POST  /v1/clients
+#"clients:create": ""
+
+# Delete specified client.
+# DELETE  /v1/clients/{client_id}
+#"clients:delete": ""
+
+# Show clients.
+# GET  /v1/clients/{client_id}
+#"clients:get": ""
+
+# List clients.
+# GET  /v1/clients
+#"clients:get_all": ""
+
+# Creates job.
+# POST  /v1/jobs
+#"jobs:create": ""
+
+# Delete jobs.
+# DELETE  /v1/jobs/{job_id}
+#"jobs:delete": ""
+
+# Show jobs.
+# GET  /v1/jobs/{job_id}
+#"jobs:get": ""
+
+# Lists jobs.
+# GET  /v1/jobs
+#"jobs:get_all": ""
+
+# Updates jobs.
+# PATCH  /v1/jobs/{job_id}
+#"jobs:update": ""
+
+# Create an event on the specified job
+# POST  /v1/jobs/{job_id}/event
+#"jobs:event:create": ""
+
+# Creates session.
+# POST  /v1/sessions
+#"sessions:create": ""
+
+# Delete session.
+# DELETE  /v1/sessions/{session_id}
+#"sessions:delete": ""
+
+# Show sessions.
+# GET  /v1/sessions/{session_id}
+#"sessions:get": ""
+
+# Lists sessions.
+# GET  /v1/sessions
+#"sessions:get_all": ""
+
+# Updates sessions.
+# PATCH  /v1/sessions/{session_id}
+#"sessions:update": ""
+
+# Creates/replaces the specified session.
+# PUT  /v1/sessions/{session_id}
+#"sessions:replace": ""
+
+# Executes an action on the specified session.
+# POST  /v1/sessions/{session_id}/action
+#"sessions:action:create": ""
+
+# Adds a certain job to a session.
+# PUT  /v1/sessions/{session_id}/jobs/{job_id}
+#"sessions:job:add": ""
+
+# Remove a job from a session.
+# DELETE  /v1/sessions/{session_id}
+#"sessions:job:remove": ""
+
