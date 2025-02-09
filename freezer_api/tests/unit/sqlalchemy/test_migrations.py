@@ -18,6 +18,7 @@ from freezer_api.db import manager
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import test_fixtures
 from oslotest import base as test_base
+import sqlalchemy
 
 
 class DatabaseSanityChecks(
@@ -64,10 +65,15 @@ class MigrationsWalk(
 
     def setUp(self):
         super().setUp()
-        self.engine = enginefacade.writer.get_engine()
         self.db_driver = manager.get_db_driver('sqlalchemy',
                                                backend='sqlalchemy')
         self.config = self.db_driver._find_alembic_conf()
+        # Currently, alembic uses 'sqlite:///freezer.db'
+        # ignoring self.config.attributes['connection'] = connection
+        # (which connected to sqlite://)
+        # Use the same database as alembic until we can fix this.
+        self.engine = sqlalchemy.create_engine(
+            self.config.get_main_option('sqlalchemy.url'))
         self.init_versions = {'1333cef214d9', 'e74c32f034c5'}
 
     def _migrate_up(self, revision, connection):
@@ -87,6 +93,19 @@ class MigrationsWalk(
 
         if check_method:
             check_method(connection)
+
+    _23c8ad2655a6_added_columns = (
+        'supported_actions',
+        'supported_modes',
+        'supported_storages',
+        'supported_engines',
+    )
+
+    def _check_23c8ad2655a6(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        columns = [x['name'] for x in inspector.get_columns('clients')]
+        for added_column in self._23c8ad2655a6_added_columns:
+            self.assertIn(added_column, columns)
 
     def test_walk_versions(self):
         with self.engine.begin() as connection:

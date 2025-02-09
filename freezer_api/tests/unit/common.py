@@ -394,14 +394,18 @@ fake_client_info_0 = {
     "project_id": "tecs",
     "client_id": "test-tenant_5253_test-hostname_09544",
     "description": "some usefule text here",
-    "config_id": "config_id_contains_uuid_of_config"
+    "config_id": "config_id_contains_uuid_of_config",
+    "supported_actions": ["backup"],
+    "supported_modes": ["cindernative"],
+    "supported_storages": ["swift"],
+    "supported_engines": [],
 }
 
 fake_client_info_1 = {
     "project_id": "tecs",
     "client_id": "test-tenant_5253_test-hostname_6543",
     "description": "also some useful text here",
-    "config_id": "config_id_blablawhatever"
+    "config_id": "config_id_blablawhatever",
 }
 
 fake_client_entry_0 = {

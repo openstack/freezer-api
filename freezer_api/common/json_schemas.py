@@ -22,6 +22,13 @@ project_regex = r"(?:([\w\-]+)\_)?"
 client_id_regex = r"^{project}{host}$".format(project=project_regex,
                                               host=fqdn_regex)
 
+SUPPORTED_ACTIONS = ['backup', 'restore', 'info', 'admin', 'exec']
+SUPPORTED_MODES = ['fs', 'mongo', 'mysql', 'sqlserver', 'cinder',
+                   'glance', 'cindernative', 'nova']
+SUPPORTED_STORAGES = ['local', 'swift', 'ssh', 's3', 'ftp', 'ftps']
+SUPPORTED_ENGINES = ['tar', 'rsync', 'rsyncv2', 'nova', 'osbrick',
+                     'glance']
+
 freezer_action_properties = {
     "action": {
         "id": "action",
@@ -486,7 +493,39 @@ client_info = {
     "uuid": {
         "id": "uuid",
         "type": "string"
-    }
+    },
+    "supported_actions": {
+        "id": "supported_actions",
+        "type": "array",
+        "items": {
+            "type": "string",
+            "enum": SUPPORTED_ACTIONS,
+        },
+    },
+    "supported_modes": {
+        "id": "supported_modes",
+        "type": "array",
+        "items": {
+            "type": "string",
+            "enum": SUPPORTED_MODES,
+        },
+    },
+    "supported_storages": {
+        "id": "supported_storages",
+        "type": "array",
+        "items": {
+            "type": "string",
+            "enum": SUPPORTED_STORAGES,
+        },
+    },
+    "supported_engines": {
+        "id": "supported_engines",
+        "type": "array",
+        "items": {
+            "type": "string",
+            "enum": SUPPORTED_ENGINES,
+        },
+    },
 }
 
 client_schema = {

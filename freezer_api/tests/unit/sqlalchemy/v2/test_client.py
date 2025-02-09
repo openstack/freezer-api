@@ -31,6 +31,14 @@ class DbClientTestCase(base.DbTestCase):
         self.fake_user_id = self.fake_client_0.get('user_id')
         self.fake_project_id = self.fake_client_doc.get('project_id')
 
+    def test_decode_capability_none(self):
+        result = self.dbapi.decode_capability(None)
+        self.assertEqual([], result)
+
+    def test_decode_capability_value(self):
+        result = self.dbapi.decode_capability('["backup"]')
+        self.assertEqual(['backup'], result)
+
     def test_add_and_get_client(self):
         client_doc = copy.deepcopy(self.fake_client_doc)
         client_id = self.dbapi.add_client(user_id=self.fake_user_id,
@@ -56,6 +64,14 @@ class DbClientTestCase(base.DbTestCase):
 
         self.assertEqual(client.get('description'),
                          self.fake_client_doc.get('description'))
+        self.assertEqual(client.get('supported_actions'),
+                         self.fake_client_doc.get('supported_actions'))
+        self.assertEqual(client.get('supported_modes'),
+                         self.fake_client_doc.get('supported_modes'))
+        self.assertEqual(client.get('supported_storages'),
+                         self.fake_client_doc.get('supported_storages'))
+        self.assertEqual(client.get('supported_engines'),
+                         self.fake_client_doc.get('supported_engines'))
 
     def test_add_and_delete_client(self):
         client_doc = copy.deepcopy(self.fake_client_doc)

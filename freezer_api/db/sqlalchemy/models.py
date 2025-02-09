@@ -17,12 +17,18 @@
 #    under the License.
 
 from oslo_db.sqlalchemy import models
+from oslo_serialization import jsonutils as json
 from oslo_utils import timeutils
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP
 from sqlalchemy import BLOB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
+
+from freezer_api.common.json_schemas import SUPPORTED_ACTIONS
+from freezer_api.common.json_schemas import SUPPORTED_ENGINES
+from freezer_api.common.json_schemas import SUPPORTED_MODES
+from freezer_api.common.json_schemas import SUPPORTED_STORAGES
 
 
 BASE = declarative_base()
@@ -62,6 +68,22 @@ class Client(BASE, FreezerBase):
     hostname = Column(String(128))
     description = Column(String(255))
     uuid = Column(String(36), nullable=False)
+    supported_actions = Column(
+        String(255),
+        default=json.dumps(SUPPORTED_ACTIONS),
+    )
+    supported_modes = Column(
+        String(255),
+        default=json.dumps(SUPPORTED_MODES),
+    )
+    supported_storages = Column(
+        String(255),
+        default=json.dumps(SUPPORTED_STORAGES),
+    )
+    supported_engines = Column(
+        String(255),
+        default=json.dumps(SUPPORTED_ENGINES),
+    )
 
 
 class Action(BASE, FreezerBase):
