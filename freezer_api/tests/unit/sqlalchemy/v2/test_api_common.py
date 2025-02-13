@@ -41,6 +41,7 @@ class ApiTestCase(base.DbTestCase):
         self.fake_backup_0 = common.get_fake_backup_metadata()
         self.fake_session_0 = common.get_fake_session_0()
         self.fake_session_id = common.get_fake_session_id()
+        self.setup_fake_clients(self.fake_project_id)
 
     def test_raises_model_query(self):
         session = api.get_db_session()

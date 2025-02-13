@@ -996,6 +996,7 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng = elastic.ElasticSearchEngineV2(backend=backend)
         self.eng.init(index='freezer', **kwargs)
         self.eng.job_manager = mock.Mock()
+        self.eng.client_manager = mock.Mock()
 
     def test_get_job_userid_and_job_id_return_doc(self):
         self.eng.job_manager.get.return_value = common.get_fake_job_0()
@@ -1054,6 +1055,8 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
     def test_add_job_ok(self, mock_jobdoc):
         mock_jobdoc.create.return_value = common.get_fake_job_0()
         self.eng.job_manager.insert.return_value = (True, 1)
+        self.eng.client_manager.search.return_value = [
+            common.get_fake_client_job_0()]
         res = self.eng.add_job(project_id='tecs',
                                user_id=common.fake_job_0_user_id,
                                doc=common.get_fake_job_0())
@@ -1068,6 +1071,8 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng.job_manager.insert.side_effect = (
             exceptions.StorageEngineError('regular test failure')
         )
+        self.eng.client_manager.search.return_value = [
+            common.get_fake_client_job_0()]
         self.assertRaises(exceptions.StorageEngineError, self.eng.add_job,
                           project_id='tecs',
                           user_id=common.fake_job_0_user_id,
@@ -1137,6 +1142,8 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng.job_manager.get.side_effect = exceptions.DocumentNotFound(
             'regular test failure')
         self.eng.job_manager.insert.return_value = (True, 1)
+        self.eng.client_manager.search.return_value = [
+            common.get_fake_client_job_0()]
         res = self.eng.replace_job(project_id='tecs',
                                    user_id=common.fake_job_0_user_id,
                                    job_id=common.fake_job_0_job_id,
@@ -1146,6 +1153,8 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
     def test_replace_job_returns_version_1_when_doc_is_overwritten(self):
         self.eng.job_manager.get.return_value = common.get_fake_job_0()
         self.eng.job_manager.insert.return_value = (False, 3)
+        self.eng.client_manager.search.return_value = [
+            common.get_fake_client_job_0()]
         res = self.eng.replace_job(project_id='tecs',
                                    user_id=common.fake_job_0_user_id,
                                    job_id=common.fake_job_0_job_id,

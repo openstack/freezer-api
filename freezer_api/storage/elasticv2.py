@@ -19,6 +19,7 @@ import elasticsearch
 import logging
 import os
 
+from freezer_api.common.check import check_client_capabilities
 from freezer_api.common import elasticv2_utils as utils
 from freezer_api.common import exceptions as freezer_api_exc
 
@@ -420,6 +421,14 @@ class ElasticSearchEngineV2(object):
             user_id=user_id,
             doc_id=client_id)
 
+    def check_job_client(self, project_id, user_id, job_actions, client_id):
+        client_list = self.get_client(project_id, user_id, client_id)
+        if not client_list:
+            raise freezer_api_exc.UnprocessableEntity(
+                message='Client not found with ID {0}'.format(client_id))
+        client = client_list[0]
+        check_client_capabilities(job_actions, client)
+
     def get_job(self, project_id, user_id, job_id):
         return self.job_manager.get(
             project_id=project_id,
@@ -438,6 +447,11 @@ class ElasticSearchEngineV2(object):
     def add_job(self, user_id, doc, project_id):
         jobdoc = utils.JobDoc.create(doc, project_id, user_id)
         job_id = jobdoc['job_id']
+        self.check_job_client(
+            project_id=project_id,
+            user_id=user_id,
+            job_actions=jobdoc.get('job_actions'),
+            client_id=jobdoc['client_id'])
         self.job_manager.insert(jobdoc, job_id)
         logging.info('Job registered, job id: {0}'.format(job_id))
         return job_id
@@ -457,6 +471,21 @@ class ElasticSearchEngineV2(object):
                                      )
                 )
 
+        if 'job_actions' in valid_patch:
+            client_id = valid_patch.get(
+                'client_id',
+                self.get_job(
+                    project_id=project_id,
+                    user_id=user_id,
+                    job_id=job_id,
+                ).get('client_id')
+            )
+            self.check_job_client(
+                project_id=project_id,
+                user_id=user_id,
+                job_actions=valid_patch.get('job_actions', []),
+                client_id=client_id)
+
         version = self.job_manager.update(job_id, valid_patch)
         logging.info('Job id {0} updated to version'
                      ' {1}'.format(job_id, version))
@@ -473,6 +502,12 @@ class ElasticSearchEngineV2(object):
             pass
 
         valid_doc = utils.JobDoc.update(doc, project_id, user_id, job_id)
+
+        self.check_job_client(
+            project_id=project_id,
+            user_id=user_id,
+            job_actions=valid_doc.get('job_actions'),
+            client_id=valid_doc['client_id'])
 
         (created, version) = self.job_manager.insert(valid_doc, job_id)
         if created:

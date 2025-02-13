@@ -39,6 +39,7 @@ class DbJobTestCase(base.DbTestCase):
         self.fake_project_id = self.fake_job_0.get('project_id')
         self.fake_user_id = self.fake_job_0.get('user_id')
         self.fake_job_id = common.get_fake_job_id()
+        self.setup_fake_clients(self.fake_project_id)
 
     def test_add_and_get_job(self):
         job_doc = copy.deepcopy(self.fake_job_0)

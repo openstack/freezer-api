@@ -22,6 +22,7 @@ from oslo_log import log
 
 from freezer_api.api.common import utils as json_utils
 from freezer_api.common._i18n import _
+from freezer_api.common.check import check_client_capabilities
 from freezer_api.common import elasticv2_utils as utilsv2
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common.json_schemas import SUPPORTED_ACTIONS
@@ -685,6 +686,19 @@ def replace_action(user_id, action_id, doc, project_id=None):
     return action_id
 
 
+def check_job_client(user_id, project_id, job_actions, client_id):
+    client_list = get_client(
+        user_id=user_id,
+        project_id=project_id,
+        client_id=client_id,
+    )
+    if not client_list:
+        raise freezer_api_exc.UnprocessableEntity(
+            message='Client not found with ID {0}'.format(client_id))
+    client = client_list[0]
+    check_client_capabilities(job_actions, client)
+
+
 def delete_job(user_id, job_id, project_id=None):
 
     tupleid = delete_tuple(tablename=models.Job, user_id=user_id,
@@ -705,6 +719,12 @@ def add_job(user_id, doc, project_id=None):
         raise freezer_api_exc.\
             DocumentExists(message='Job already registered with ID {0}'.
                            format(job_id))
+
+    check_job_client(
+        user_id=user_id,
+        project_id=project_id,
+        job_actions=job_doc.get('job_actions', []),
+        client_id=job_doc.get('client_id'))
 
     job = models.Job()
     jobvalue = {}
@@ -781,6 +801,18 @@ def update_job(user_id, job_id, patch_doc, project_id=None):
     else:
         valid_patch = utilsv2.JobDoc.create_patch(patch_doc)
 
+    if 'job_actions' in valid_patch:
+        client_id = valid_patch.get(
+            'client_id',
+            get_job(user_id=user_id, project_id=project_id, job_id=job_id
+                    ).get('client_id')
+        )
+        check_job_client(
+            user_id=user_id,
+            project_id=project_id,
+            job_actions=valid_patch.get('job_actions', []),
+            client_id=client_id)
+
     values = {}
     for key in valid_patch.keys():
         if key == 'job_schedule':
@@ -802,6 +834,12 @@ def replace_job(user_id, job_id, doc, project_id=None):
         valid_doc = utilsv1.JobDoc.update(doc, user_id, job_id)
     else:
         valid_doc = utilsv2.JobDoc.update(doc, user_id, job_id, project_id)
+
+    check_job_client(
+        user_id=user_id,
+        project_id=project_id,
+        job_actions=valid_doc.get('job_actions', []),
+        client_id=valid_doc.get('client_id'))
 
     values = {}
     valuesnew = {}

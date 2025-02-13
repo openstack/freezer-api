@@ -41,6 +41,12 @@ class TestExceptions(common.FreezerBaseTestCase):
                           e.handle, self.ex, self.mock_req, self.mock_req,
                           None)
 
+    def test_UnprocessableEntity(self):
+        e = exceptions.UnprocessableEntity(message='testing')
+        self.assertRaises(falcon.HTTPUnprocessableEntity,
+                          e.handle, self.ex, self.mock_req, self.mock_req,
+                          None)
+
     def test_DocumentExists(self):
         e = exceptions.DocumentExists(message='testing')
         self.assertRaises(falcon.HTTPConflict,

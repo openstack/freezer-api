@@ -50,6 +50,14 @@ class BadDataFormat(FreezerAPIException):
             description=ex.message)
 
 
+class UnprocessableEntity(FreezerAPIException):
+    @staticmethod
+    def handle(ex, req, resp, params):
+        raise falcon.HTTPUnprocessableEntity(
+            title=_("Unprocessable Entity"),
+            description=ex.message)
+
+
 class DocumentExists(FreezerAPIException):
     @staticmethod
     def handle(ex, req, resp, params):

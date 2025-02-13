@@ -45,6 +45,7 @@ class ApiTestCase(base.DbTestCase):
         self.fake_session_0 = common.get_fake_session_0()
         self.fake_session_id = common.get_fake_session_id()
         CONF.enable_v1_api = True
+        self.setup_fake_clients()
 
     def tearDown(self):
         super().tearDown()
