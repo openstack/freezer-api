@@ -43,7 +43,7 @@ Install DevStack  step by step
 
 1. Download DevStack::
 
-    git clone https://git.openstack.org/openstack-dev/devstack.git
+    git clone https://opendev.org/openstack/devstack
     cd devstack
 
 2. Add stack user and change devstack directory user group::
@@ -69,10 +69,10 @@ Install DevStack  step by step
     # disable_all_services
     # enable_service key mysql s-proxy s-object s-container s-account horizon
 
-    enable_plugin freezer http://git.openstack.org/openstack/freezer master
-    enable_plugin freezer-api http://git.openstack.org/openstack/freezer-api.git master
-    enable_plugin freezer-tempest-plugin http://git.openstack.org/openstack/freezer-tempest-plugin.git master
-    enable_plugin freezer-web-ui http://git.openstack.org/openstack/freezer-web-ui.git master
+    enable_plugin freezer https://opendev.org/openstack/freezer master
+    enable_plugin freezer-api https://opendev.org/openstack/freezer-api master
+    enable_plugin freezer-tempest-plugin https://opendev.org/openstack/freezer-tempest-plugin master
+    enable_plugin freezer-web-ui https://opendev.org/openstack/freezer-web-ui master
 
     export FREEZER_BACKEND='sqlalchemy'
 
