@@ -233,15 +233,18 @@ def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
     return tuple_id
 
 
-def search_tuple(tablename, user_id, project_id=None, offset=0,
-                 limit=100, search=None):
+def search_tuple(tablename, user_id, project_id=None, all_projects=False,
+                 offset=0, limit=100, search=None):
     search = valid_and_get_search_option(search=search)
     session = get_db_session()
+    if all_projects:
+        project_id = None
     with session.begin():
         try:
             # TODO(gecong) search will be implemented in the future
             query = model_query(session, tablename, project_id=project_id)
-            query = query.filter_by(user_id=user_id)
+            if not all_projects:
+                query = query.filter_by(user_id=user_id)
             #  If search option isn't valid or set, we use limit and offset
             #  in sqlalchemy level
             if len(search) == 0:
@@ -768,12 +771,14 @@ def get_job(user_id, job_id, project_id=None):
     return values
 
 
-def search_job(user_id, project_id=None, offset=0,
+def search_job(user_id, project_id=None, all_projects=False, offset=0,
                limit=100, search=None):
     jobs = []
     result, search_key = search_tuple(tablename=models.Job, user_id=user_id,
-                                      project_id=project_id, offset=offset,
-                                      limit=limit, search=search)
+                                      project_id=project_id,
+                                      all_projects=all_projects,
+                                      offset=offset, limit=limit,
+                                      search=search)
     for job in result:
         jobmap = {}
         jobmap['job_id'] = job.get('id')

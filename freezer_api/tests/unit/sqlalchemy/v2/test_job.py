@@ -20,6 +20,7 @@
 import copy
 from unittest import mock
 from unittest.mock import patch
+from uuid import uuid4
 
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.tests.unit import common
@@ -192,6 +193,38 @@ class DbJobTestCase(base.DbTestCase):
         for index in range(len(result)):
             jobmap = result[index]
             self.assertEqual(jobids[index], jobmap['job_id'])
+
+    def test_job_list_all_projects_without_search(self):
+        fake_project_ids = [f"tjl-project-{x}" for x in range(0, 9)]
+        jobs = {}
+        for project_id in fake_project_ids:
+            user_id = str(uuid4())
+            client_doc = common.get_fake_client(project_id, user_id)
+            client_id = client_doc['client']['client_id']
+            self.dbapi.add_client(
+                project_id=project_id,
+                user_id=user_id,
+                doc=client_doc['client'],
+            )
+            job_doc = common.get_fake_job(project_id, user_id, client_id)
+            job_id = self.dbapi.add_job(user_id=user_id,
+                                        doc=job_doc,
+                                        project_id=project_id)
+            self.assertIsNotNone(job_id)
+            jobs[job_id] = project_id
+        result = self.dbapi.search_job(
+            project_id=self.fake_project_id,
+            user_id=user_id,
+            all_projects=True,
+            offset=0,
+            limit=1000,
+        )
+        self.assertIsNotNone(result)
+        # Find our jobs, ignore any others
+        for job in result:
+            if job['job_id'] in jobs:
+                jobs.pop(job['job_id'])
+        self.assertEqual(0, len(jobs))
 
     def test_job_list_with_search_match_and_match_not(self):
         count = 0

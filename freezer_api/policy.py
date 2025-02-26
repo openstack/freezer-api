@@ -34,14 +34,18 @@ def setup_policy(conf):
         ENFORCER.load_rules()
 
 
+def can(rule, ctx):
+    ENFORCER.enforce(rule, {}, ctx.to_dict(), do_raise=True,
+                     exc=exceptions.AccessForbidden)
+
+
 def enforce(rule):
 
     def decorator(func):
         @functools.wraps(func)
         def handler(*args, **kwargs):
             ctx = args[1].env['freezer.context']
-            ENFORCER.enforce(rule, {}, ctx.to_dict(), do_raise=True,
-                             exc=exceptions.AccessForbidden)
+            can(rule, ctx)
             return func(*args, **kwargs)
         return handler
 

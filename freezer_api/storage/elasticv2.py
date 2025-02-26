@@ -37,13 +37,16 @@ class TypeManagerV2(object):
         self.doc_type = doc_type
 
     @staticmethod
-    def get_base_search_filter(project_id, user_id=None, search=None):
+    def get_base_search_filter(project_id, user_id=None, all_projects=False,
+                               search=None):
         search = search or {}
         project_id_filter = {"term": {"project_id": project_id}}
         base_filter = [project_id_filter]
         if user_id:
             user_id_filter = {"term": {"user_id": user_id}}
             base_filter.append(user_id_filter)
+        if all_projects:
+            base_filter = []
 
         match_list = [{"match": m} for m in search.get('match', [])]
         match_not_list = [{"match": m} for m in search.get('match_not', [])]
@@ -52,12 +55,14 @@ class TypeManagerV2(object):
         return base_filter
 
     @staticmethod
-    def get_search_query(project_id, doc_id, user_id=None, search=None):
+    def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
+                         search=None):
         search = search or {}
         try:
             base_filter = TypeManagerV2.get_base_search_filter(
                 project_id=project_id,
                 user_id=user_id,
+                all_projects=all_projects,
                 search=search
             )
             query_filter = {"filter": {"bool": {"must": base_filter}}}
@@ -90,13 +95,14 @@ class TypeManagerV2(object):
             doc['_version'] = res['_version']
         return doc
 
-    def search(self, project_id, user_id=None, doc_id=None, search=None,
-               offset=0, limit=10):
+    def search(self, project_id, user_id=None, doc_id=None, all_projects=False,
+               search=None, offset=0, limit=10):
         search = search or {}
         query_dsl = self.get_search_query(
             project_id=project_id,
             user_id=user_id,
             doc_id=doc_id,
+            all_projects=all_projects,
             search=search
         )
         try:
@@ -436,10 +442,12 @@ class ElasticSearchEngineV2(object):
             doc_id=job_id
         )
 
-    def search_job(self, project_id, user_id, offset=0, limit=10, search=None):
+    def search_job(self, project_id, user_id, all_projects=False,
+                   offset=0, limit=10, search=None):
         search = search or {}
         return self.job_manager.search(project_id=project_id,
                                        user_id=user_id,
+                                       all_projects=all_projects,
                                        search=search,
                                        offset=offset,
                                        limit=limit)

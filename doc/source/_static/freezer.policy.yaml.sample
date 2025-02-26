@@ -42,6 +42,8 @@
 
 #"admin_or_owner": "is_admin:True or project_id:%(project_id)s"
 
+#"admin_or_service": "role:admin or role:service"
+
 # Create client entry.
 # POST  /v1/clients
 #"clients:create": ""
@@ -73,6 +75,10 @@
 # Lists jobs.
 # GET  /v1/jobs
 #"jobs:get_all": ""
+
+# Lists all projects jobs.
+# GET  /v1/jobs
+#"jobs:get_all_projects": "rule:admin_or_service"
 
 # Updates jobs.
 # PATCH  /v1/jobs/{job_id}

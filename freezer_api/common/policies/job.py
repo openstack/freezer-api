@@ -63,6 +63,17 @@ rules = [
         ]
     ),
     policy.DocumentedRuleDefault(
+        name=JOBS % 'get_all_projects',
+        check_str=base.ADMIN_OR_SERVICE,
+        description='Lists all projects jobs.',
+        operations=[
+            {
+                'path': '/v1/jobs',
+                'method': 'GET'
+            }
+        ]
+    ),
+    policy.DocumentedRuleDefault(
         name=JOBS % 'update',
         check_str=base.UNPROTECTED,
         description='Updates jobs.',
