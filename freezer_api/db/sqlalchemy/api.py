@@ -24,6 +24,10 @@ from freezer_api.api.common import utils as json_utils
 from freezer_api.common._i18n import _
 from freezer_api.common import elasticv2_utils as utilsv2
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.common.json_schemas import SUPPORTED_ACTIONS
+from freezer_api.common.json_schemas import SUPPORTED_ENGINES
+from freezer_api.common.json_schemas import SUPPORTED_MODES
+from freezer_api.common.json_schemas import SUPPORTED_STORAGES
 from freezer_api.common import utils as utilsv1
 from freezer_api.db.sqlalchemy import models
 
@@ -368,6 +372,13 @@ def get_client_byid(user_id, client_id, project_id=None):
     return result
 
 
+def decode_capability(db_field):
+    decoded = []
+    if db_field:
+        decoded = json_utils.json_decode(db_field)
+    return decoded
+
+
 def get_client(user_id, project_id=None, client_id=None, offset=0,
                limit=100, search=None):
 
@@ -388,7 +399,15 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
         clientmap['client'] = {'uuid': client.uuid,
                                'hostname': client.hostname,
                                'client_id': client.client_id,
-                               'description': client.description}
+                               'description': client.description,
+                               'supported_actions': decode_capability(
+                                   client.supported_actions),
+                               'supported_modes': decode_capability(
+                                   client.supported_modes),
+                               'supported_storages': decode_capability(
+                                   client.supported_storages),
+                               'supported_engines': decode_capability(
+                                   client.supported_engines)}
         clients.append(clientmap)
 
     # If search opt is wrong, filter will not work,
@@ -423,6 +442,14 @@ def add_client(user_id, doc, project_id=None):
     values['hostname'] = client_json.get('hostname', None)
     values['uuid'] = client_json.get('uuid', None)
     values['description'] = client_json.get('description', None)
+    values['supported_actions'] = json_utils.json_encode(
+        client_json.get('supported_actions', SUPPORTED_ACTIONS))
+    values['supported_modes'] = json_utils.json_encode(
+        client_json.get('supported_modes', SUPPORTED_MODES))
+    values['supported_storages'] = json_utils.json_encode(
+        client_json.get('supported_storages', SUPPORTED_STORAGES))
+    values['supported_engines'] = json_utils.json_encode(
+        client_json.get('supported_engines', SUPPORTED_ENGINES))
     client.update(values)
 
     add_tuple(tuple=client)

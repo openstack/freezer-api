@@ -62,6 +62,15 @@ class DbClientTestCase(base.DbTestCase):
         self.assertEqual(client.get('description'),
                          self.fake_client_doc.get('description'))
 
+        self.assertEqual(client.get('supported_actions'),
+                         self.fake_client_doc.get('supported_actions'))
+        self.assertEqual(client.get('supported_modes'),
+                         self.fake_client_doc.get('supported_modes'))
+        self.assertEqual(client.get('supported_storages'),
+                         self.fake_client_doc.get('supported_storages'))
+        self.assertEqual(client.get('supported_engines'),
+                         self.fake_client_doc.get('supported_engines'))
+
     def test_add_and_delete_client(self):
         client_doc = copy.deepcopy(self.fake_client_doc)
         client_id = self.dbapi.add_client(user_id=self.fake_user_id,
