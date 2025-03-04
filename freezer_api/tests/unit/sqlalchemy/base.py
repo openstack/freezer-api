@@ -15,6 +15,7 @@
 
 """Freezer-api DB test base class."""
 
+import copy
 import fixtures
 from oslo_config import cfg
 from oslo_db import options as db_options
@@ -76,3 +77,20 @@ class DbTestCase(common.FreezerBaseTestCase):
         if not _DB_CACHE:
             _DB_CACHE = Database(sqla_api)
         self.useFixture(_DB_CACHE)
+
+    def setup_fake_clients(self, project_id=None):
+        client_node1 = copy.deepcopy(common.get_fake_client_job_3())
+        client_node1["client"]["client_id"] = "node1"
+        fake_clients = [
+            common.get_fake_client_job_0(),
+            common.get_fake_client_job_2(),
+            common.get_fake_client_job_3(),
+            client_node1,
+        ]
+        for fake_client in fake_clients:
+            client_doc = copy.deepcopy(fake_client.get('client'))
+            self.dbapi.add_client(
+                user_id=fake_client.get('user_id'),
+                doc=client_doc,
+                project_id=project_id,
+            )

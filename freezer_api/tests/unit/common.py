@@ -27,6 +27,10 @@ from oslo_config import fixture as cfg_fixture
 import testtools
 
 from freezer_api.common import config
+from freezer_api.common.json_schemas import SUPPORTED_ACTIONS
+from freezer_api.common.json_schemas import SUPPORTED_ENGINES
+from freezer_api.common.json_schemas import SUPPORTED_MODES
+from freezer_api.common.json_schemas import SUPPORTED_STORAGES
 from freezer_api import policy
 from freezer_api.tests.unit import fixtures as freezer_fixtures
 
@@ -408,6 +412,25 @@ fake_client_info_1 = {
     "config_id": "config_id_blablawhatever",
 }
 
+fake_client_info_job_0 = {
+    "client_id": fake_job_0["client_id"],
+    # "client_id": "test-tenant_5253_test-hostname_6543123",
+    "user_id": fake_job_0["user_id"],
+    "project_id": fake_job_0["project_id"],
+    "description": "some usefule text here",
+    "config_id": "config_id_contains_uuid_of_config",
+    "supported_actions": SUPPORTED_ACTIONS,
+    "supported_modes": SUPPORTED_MODES,
+    "supported_storages": SUPPORTED_STORAGES,
+    "supported_engines": SUPPORTED_ENGINES,
+}
+
+fake_client_info_job_2 = copy.deepcopy(fake_client_info_job_0)
+fake_client_info_job_2["client_id"] = fake_job_2["client_id"]
+
+fake_client_info_job_3 = copy.deepcopy(fake_client_info_job_0)
+fake_client_info_job_3["client_id"] = fake_job_3["client_id"]
+
 fake_client_entry_0 = {
     "client": fake_client_info_0,
     "user_id": "user_id-is-provided-keystone"
@@ -418,6 +441,21 @@ fake_client_entry_1 = {
     "user_id": "user_id-is-provided-keystone"
 }
 
+fake_client_entry_job_0 = {
+    "client": fake_client_info_job_0,
+    "user_id": fake_job_0["user_id"],
+}
+
+fake_client_entry_job_2 = {
+    "client": fake_client_info_job_2,
+    "user_id": fake_job_2["user_id"],
+}
+
+fake_client_entry_job_3 = {
+    "client": fake_client_info_job_3,
+    "user_id": fake_job_3["user_id"],
+}
+
 
 def get_fake_client_0():
     return copy.deepcopy(fake_client_entry_0)
@@ -425,6 +463,18 @@ def get_fake_client_0():
 
 def get_fake_client_1():
     return copy.deepcopy(fake_client_entry_1)
+
+
+def get_fake_client_job_0():
+    return copy.deepcopy(fake_client_entry_job_0)
+
+
+def get_fake_client_job_2():
+    return copy.deepcopy(fake_client_entry_job_2)
+
+
+def get_fake_client_job_3():
+    return copy.deepcopy(fake_client_entry_job_3)
 
 
 def get_fake_client_id():

@@ -43,6 +43,7 @@ class DbJobTestCase(base.DbTestCase):
         self.fake_job_id = common.get_fake_job_id()
         self.fake_user_id = self.fake_job_0.get('user_id')
         CONF.enable_v1_api = True
+        self.setup_fake_clients()
 
     def tearDown(self):
         CONF.enable_v1_api = False

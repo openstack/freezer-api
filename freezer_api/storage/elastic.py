@@ -20,6 +20,7 @@ import logging
 import os
 
 from freezer_api.common import _i18n
+from freezer_api.common.check import check_client_capabilities
 from freezer_api.common import exceptions as freezer_api_exc
 from freezer_api.common import utils
 
@@ -360,6 +361,14 @@ class ElasticSearchEngine(object):
     def delete_client(self, user_id, client_id):
         return self.client_manager.delete(user_id, client_id)
 
+    def check_job_client(self, user_id, job_actions, client_id):
+        client_list = self.get_client(user_id, client_id)
+        if not client_list:
+            raise freezer_api_exc.UnprocessableEntity(
+                message='Client not found with ID {0}'.format(client_id))
+        client = client_list[0]
+        check_client_capabilities(job_actions, client)
+
     def get_job(self, user_id, job_id):
         return self.job_manager.get(user_id, job_id)
 
@@ -373,6 +382,10 @@ class ElasticSearchEngine(object):
     def add_job(self, user_id, doc):
         jobdoc = utils.JobDoc.create(doc, user_id)
         job_id = jobdoc['job_id']
+        self.check_job_client(
+            user_id=user_id,
+            job_actions=jobdoc.get('job_actions'),
+            client_id=jobdoc.get('client_id'))
         self.job_manager.insert(jobdoc, job_id)
         logging.info('Job registered, job id: %s' % job_id)
         return job_id
@@ -385,6 +398,16 @@ class ElasticSearchEngine(object):
 
         # check that document exists
         assert (self.job_manager.get(user_id, job_id))
+
+        if 'job_actions' in valid_patch:
+            client_id = valid_patch.get(
+                'client_id',
+                self.get_job(user_id, job_id).get('client_id')
+            )
+            self.check_job_client(
+                user_id=user_id,
+                job_actions=valid_patch.get('job_actions', []),
+                client_id=client_id)
 
         version = self.job_manager.update(job_id, valid_patch)
         logging.info('Job %(id)s updated to version %(version)s' %
@@ -400,6 +423,11 @@ class ElasticSearchEngine(object):
             pass
 
         valid_doc = utils.JobDoc.update(doc, user_id, job_id)
+
+        self.check_job_client(
+            user_id=user_id,
+            job_actions=valid_doc.get('job_actions'),
+            client_id=valid_doc.get('client_id'))
 
         (created, version) = self.job_manager.insert(valid_doc, job_id)
         if created:
