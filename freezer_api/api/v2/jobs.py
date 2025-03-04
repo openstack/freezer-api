@@ -73,15 +73,19 @@ class JobsCollectionResource(JobsBaseResource):
     """
 
     @policy.enforce('jobs:get_all')
-    def on_get(self, req, resp, project_id):
+    def on_get(self, req, resp, project_id, all_projects=False):
         # GET /v2/{project_id}/jobs(?limit,offset)     Lists jobs
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         search = self.json_body(req)
+        if all_projects:
+            policy.can('jobs:get_all_projects', req.env['freezer.context'])
         obj_list = self.db.search_job(project_id=project_id,
-                                      user_id=user_id, offset=offset,
-                                      limit=limit, search=search)
+                                      user_id=user_id,
+                                      all_projects=all_projects,
+                                      offset=offset, limit=limit,
+                                      search=search)
         resp.media = {'jobs': obj_list}
 
     @policy.enforce('jobs:create')

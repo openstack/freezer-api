@@ -18,6 +18,7 @@
 from oslo_policy import policy
 
 UNPROTECTED = ''
+ADMIN_OR_SERVICE = 'rule:admin_or_service'
 
 rules = [
     policy.RuleDefault(
@@ -25,7 +26,10 @@ rules = [
         "role:admin"),
     policy.RuleDefault(
         "admin_or_owner",
-        "is_admin:True or project_id:%(project_id)s")
+        "is_admin:True or project_id:%(project_id)s"),
+    policy.RuleDefault(
+        "admin_or_service",
+        "role:admin or role:service"),
 ]
 
 

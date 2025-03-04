@@ -355,6 +355,18 @@ def get_fake_job_id():
     return uuid.uuid4().hex
 
 
+def get_fake_job(project_id=None, user_id=None, client_id=None):
+    job = copy.deepcopy(fake_job_3)
+    if user_id:
+        job['user_id'] = user_id
+    if project_id:
+        job['project_id'] = project_id
+    if client_id:
+        job['client_id'] = client_id
+    job['job_id'] = get_fake_job_id()
+    return job
+
+
 fake_job_0_elasticsearch_found = {
     "_id": "e7181e5e-2c75-43f8-92c0-c037ae5f11e4",
     "_index": "freezer",
@@ -479,6 +491,17 @@ def get_fake_client_job_3():
 
 def get_fake_client_id():
     return uuid.uuid4().hex
+
+
+def get_fake_client(project_id=None, user_id=None):
+    client = copy.deepcopy(fake_client_entry_job_3)
+    client['client']['client_id'] = get_fake_client_id()
+    if project_id:
+        client['client']['project_id'] = project_id
+    if user_id:
+        client['user_id'] = user_id
+        client['client']['user_id'] = user_id
+    return client
 
 
 fake_action_0 = {

@@ -1033,6 +1033,7 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng.job_manager.search.assert_called_with(
             project_id='tecs',
             user_id=common.fake_job_0['user_id'],
+            all_projects=False,
             search=my_search,
             limit=15, offset=6)
 
@@ -1048,6 +1049,7 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng.job_manager.search.assert_called_with(
             project_id='tecs',
             user_id=common.fake_job_0['user_id'],
+            all_projects=False,
             search=my_search,
             limit=15, offset=6)
 
