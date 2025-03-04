@@ -31,7 +31,7 @@ Operators
 To learn how to deploy and configure OpenStack Freezer, consult the
 documentation available online at:
 
-- `OpenStack Freezer <https://docs.openstack.org/freezer/>`__
+- `OpenStack Freezer <https://docs.openstack.org/freezer/latest/>`__
 
 In the unfortunate event that bugs are discovered, they should be reported to
 the appropriate bug tracker. If you obtained the software from a 3rd party
@@ -39,7 +39,7 @@ operating system vendor, it is often wise to use their own bug tracker for
 reporting problems. In all other cases use the master OpenStack bug tracker,
 available at:
 
-- `Bug Tracker <https://storyboard.openstack.org/#!/project/openstack/freezer-api>`__
+- `Bug Tracker <https://launchpad.net/freezer>`__
 
 Developers
 ----------
@@ -49,9 +49,9 @@ file and OpenStack general development guidelines, and pass all unit tests.
 
 Further developer focused documentation is available at:
 
-- `Official Freezer Documentation <https://docs.openstack.org/freezer/>`__
+- `Official Freezer Documentation <https://docs.openstack.org/freezer/latest/>`__
 - `Official Client Documentation
-  <https://docs.openstack.org/python-freezerclient/>`__
+  <https://docs.openstack.org/python-freezerclient/latest/>`__
 - `Source Code Repository <https://opendev.org/openstack/freezer-api>`__
 
 Other Information
@@ -61,7 +61,7 @@ During each `Summit`_ and `Project Team Gathering`_, we agree on what the whole
 community wants to focus on for the upcoming release. The plans for freezer can
 be found at:
 
-- `Freezer Specs <http://specs.openstack.org/openstack/freezer-specs/>`__
+- `Freezer Specs <https://specs.openstack.org/openstack/freezer-specs/>`__
 
-.. _Summit: https://www.openstack.org/summit/
-.. _Project Team Gathering: https://www.openstack.org/ptg/
+.. _Summit: https://openinfra.org/summit/
+.. _Project Team Gathering: https://openinfra.org/ptg/
