@@ -1,16 +1,8 @@
-========================
-Team and repository tags
-========================
-
-.. image:: https://governance.openstack.org/tc/badges/freezer-api.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-
-.. Change things from this point on
-
+=====================
 OpenStack Freezer-API
 =====================
 
-OpenStack Freezer-api is a RESTFUL API to Store information and metadata about
+OpenStack Freezer-API is a RESTFUL API to Store information and metadata about
 Backups, Jobs, Clients, Sessions. It helps keeping backup/restore jobs
 organized and maintain the status of the backups.
 
