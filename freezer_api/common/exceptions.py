@@ -91,6 +91,14 @@ class AccessForbidden(FreezerAPIException):
             description="You are not allowed to access this resource")
 
 
+class MissingCredentialError(FreezerAPIException):
+    @staticmethod
+    def handle(ex, req, resp, params):
+        raise falcon.HTTPUnprocessableEntity(
+            title=_("Missing required credentials"),
+            description=ex.message)
+
+
 class MethodNotImplemented(FreezerAPIException):
     @staticmethod
     def handle(ex, req, resp, params):

@@ -107,6 +107,20 @@ class MigrationsWalk(
         for added_column in self._23c8ad2655a6_added_columns:
             self.assertIn(added_column, columns)
 
+    _29a2fd19eb86_credentials_columns = (
+        'id',
+        'trust_id',
+        'trustor_user_id',
+        'job_id',
+    )
+
+    def _check_29a2fd19eb86(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        columns = [
+            x['name'] for x in inspector.get_columns('user_credentials')]
+        for created_column in self._29a2fd19eb86_credentials_columns:
+            self.assertIn(created_column, columns)
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection

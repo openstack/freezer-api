@@ -18,10 +18,15 @@ limitations under the License.
 import uuid
 
 import falcon
+from oslo_config import cfg
 
 from freezer_api.api.common import resource
 from freezer_api.common import exceptions as freezer_api_exc
+from freezer_api.keystone_client import KeystoneClient
 from freezer_api import policy
+
+
+CONF = cfg.CONF
 
 
 class JobsBaseResource(resource.BaseResource):
@@ -96,9 +101,15 @@ class JobsCollectionResource(JobsBaseResource):
         except KeyError:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-
         user_id = req.get_header('X-User-ID')
         self.update_actions_in_job(project_id, user_id, job.doc)
+        if CONF.centralized_scheduler.enabled:
+            ks_client = req.env['freezer.context'].keystone_client
+            trust = ks_client.create_trust(user_id, project_id)
+            job.doc['user_credentials'] = {
+                'trust_id': trust.id,
+                'trustor_user_id': trust.trustor_user_id,
+            }
         job_id = self.db.add_job(project_id=project_id,
                                  user_id=user_id, doc=job.doc)
         resp.status = falcon.HTTP_201
@@ -126,8 +137,13 @@ class JobsResource(JobsBaseResource):
     def on_delete(self, req, resp, project_id, job_id):
         # DELETE /v2/{project_id}/jobs/{job_id}     Deletes the specified job
         user_id = req.get_header('X-User-ID')
-        self.db.delete_job(project_id=project_id,
-                           user_id=user_id, job_id=job_id)
+        job_id, trust_id = self.db.delete_job(project_id=project_id,
+                                              user_id=user_id, job_id=job_id)
+        if trust_id:
+            trust_in_use = self.db.trust_in_use(trust_id)
+            if not trust_in_use:
+                client = KeystoneClient(req.context)
+                client.delete_trust(trust_id, project_id)
         resp.media = {'job_id': job_id}
         resp.status = falcon.HTTP_204
 

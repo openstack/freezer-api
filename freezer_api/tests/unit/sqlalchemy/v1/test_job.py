@@ -83,11 +83,12 @@ class DbJobTestCase(base.DbTestCase):
                                     doc=job_doc)
         self.assertIsNotNone(job_id)
 
-        result = self.dbapi.delete_job(user_id=self.fake_job_0.get('user_id'),
-                                       job_id=job_id)
+        result, trust_id = self.dbapi.delete_job(
+            user_id=self.fake_job_0.get('user_id'), job_id=job_id)
 
         self.assertIsNotNone(result)
         self.assertEqual(result, job_id)
+        self.assertIsNone(trust_id)
         result = self.dbapi.get_job(user_id=self.fake_job_0.get('user_id'),
                                     job_id=job_id)
         self.assertEqual(len(result), 0)

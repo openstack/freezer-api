@@ -17,10 +17,14 @@ limitations under the License.
 
 import copy
 
+from oslo_config import cfg
 from oslo_context import context
 from oslo_log import log
 
+from freezer_api.keystone_client import KeystoneClient
+
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class FreezerContext(context.RequestContext):
@@ -28,7 +32,8 @@ class FreezerContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, show_deleted=False, request_id=None,
-                 resource_uuid=None, overwrite=True, roles=None):
+                 resource_uuid=None, overwrite=True, roles=None,
+                 auth_token_info=None):
         super(FreezerContext, self).__init__(
             auth_token=auth_token,
             # user=user,
@@ -43,6 +48,8 @@ class FreezerContext(context.RequestContext):
             resource_uuid=resource_uuid,
             overwrite=overwrite,
             roles=roles)
+        self.auth_token_info = auth_token_info
+        self._keystone_client = None
 
     @classmethod
     def from_dict(cls, values):
@@ -62,6 +69,12 @@ class FreezerContext(context.RequestContext):
     @property
     def view_deleted(self):
         return self.show_deleted or self.is_admin
+
+    @property
+    def keystone_client(self):
+        if not self._keystone_client:
+            self._keystone_client = KeystoneClient(context=self)
+        return self._keystone_client
 
 
 def get_admin_context(show_deleted="no"):

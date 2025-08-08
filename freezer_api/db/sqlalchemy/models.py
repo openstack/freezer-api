@@ -157,6 +157,23 @@ class Job(BASE, FreezerBase):
                            primaryjoin='and_('
                            'Job.session_id == Session.id,'
                            'Job.deleted == False)')
+    user_credentials = relationship("UserCredentials",
+                                    lazy='joined',
+                                    uselist=False,
+                                    foreign_keys="UserCredentials.job_id",
+                                    cascade="all, delete",
+                                    primaryjoin='and_('
+                                    'Job.id == UserCredentials.job_id,'
+                                    'Job.deleted == False)')
+
+
+class UserCredentials(BASE, FreezerBase):
+    __tablename__ = 'user_credentials'
+
+    id = Column(String(36), primary_key=True)
+    trust_id = Column(String(255), nullable=False)
+    trustor_user_id = Column(String(64), nullable=False)
+    job_id = Column(String(36), ForeignKey('jobs.id'), nullable=False)
 
 
 class ActionReport(BASE, FreezerBase):
@@ -187,14 +204,14 @@ class Backup(BASE, FreezerBase):
 
 def register_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionReport, Backup)
+               ActionReport, Backup, UserCredentials)
     for _model in _models:
         _model.metadata.create_all(engine)
 
 
 def unregister_models(engine):
     _models = (Client, Action, Job, Session,
-               ActionReport, Backup)
+               ActionReport, Backup, UserCredentials)
     for _model in _models:
         _model.metadata.drop_all(engine)
 

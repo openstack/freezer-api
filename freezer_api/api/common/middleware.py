@@ -172,6 +172,7 @@ class ContextMiddleware(BaseContextMiddleware):
         roles_header = req.headers.get('X-Roles', '')
         roles = [r.strip().lower() for r in roles_header.split(',')]
         is_admin = 'admin' in roles
+        auth_token_info = req.environ.get('keystone.token_info')
 
         return context.FreezerContext(auth_token=token,
                                       user=userid,
@@ -182,7 +183,8 @@ class ContextMiddleware(BaseContextMiddleware):
                                       is_admin=is_admin,
                                       request_id=request_id,
                                       resource_uuid=None,
-                                      roles=roles
+                                      roles=roles,
+                                      auth_token_info=auth_token_info,
                                       )
 
     def process_request(self, req):

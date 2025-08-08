@@ -33,11 +33,15 @@ def inject_context(req, resp, params):
     roles = req.get_header('X-ROLES')
     roles = roles and roles.split(',') or []
 
+    auth_token_info = req.env.get('keystone.token_info')
+
     ctxt = context.FreezerContext(auth_token=auth_token,
                                   user=user_id,
                                   tenant=tenant,
                                   request_id=request_id,
-                                  roles=roles)
+                                  roles=roles,
+                                  auth_token_info=auth_token_info,
+                                  )
 
     req.env['freezer.context'] = ctxt
     LOG.info('Request context set')

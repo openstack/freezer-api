@@ -20,6 +20,7 @@ from oslo_db import api as db_api
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
+import uuid
 
 from freezer_api.api.common import utils as json_utils
 from freezer_api.common._i18n import _
@@ -705,10 +706,20 @@ def check_job_client(user_id, project_id, job_actions, client_id):
 
 
 def delete_job(user_id, job_id, project_id=None):
-
-    tupleid = delete_tuple(tablename=models.Job, user_id=user_id,
-                           tuple_id=job_id, project_id=project_id)
-    return tupleid
+    trust_id = None
+    with session_for_write() as session:
+        try:
+            job = model_query(session, models.Job, project_id=project_id).\
+                filter_by(user_id=user_id, id=job_id).first()
+            if job:
+                if job.user_credentials:
+                    trust_id = job.user_credentials.trust_id
+                    job.user_credentials.delete(session)
+                job.delete(session)
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='MySQL operation failed {0}'.format(e))
+    return job_id, trust_id
 
 
 def add_job(user_id, doc, project_id=None):
@@ -746,6 +757,13 @@ def add_job(user_id, doc, project_id=None):
         json_encode(job_doc.pop('job_actions', ''))
     job.update(jobvalue)
 
+    if 'user_credentials' in job_doc:
+        job.user_credentials = models.UserCredentials(
+            id=uuid.uuid4().hex,
+            trust_id=job_doc['user_credentials']['trust_id'],
+            trustor_user_id=job_doc['user_credentials']['trustor_user_id'],
+            job_id=job_id)
+
     add_tuple(tuple=job)
 
     LOG.info('Job registered, job_id: {0}'.format(job_id))
@@ -770,7 +788,20 @@ def get_job(user_id, job_id, project_id=None):
         values['description'] = result[0].get('description')
         values['job_actions'] = json_utils.\
             json_decode(result[0].get('job_actions'))
+        user_credentials = result[0].get('user_credentials', None)
+        if user_credentials:
+            values['user_credentials'] = {
+                'trust_id': user_credentials.get('trust_id'),
+                'trustor_user_id': user_credentials.get('trustor_user_id'),
+            }
     return values
+
+
+def trust_in_use(trust_id):
+    with session_for_read() as session:
+        query = model_query(session, models.UserCredentials)
+        query = query.filter_by(trust_id=trust_id)
+        return query.count() > 0
 
 
 def search_job(user_id, project_id=None, all_projects=False, offset=0,
@@ -793,6 +824,12 @@ def search_job(user_id, project_id=None, all_projects=False, offset=0,
         jobmap['description'] = job.get('description')
         jobmap['job_actions'] = json_utils.json_decode(
             job.get('job_actions'))
+        user_credentials = job.get('user_credentials', None)
+        if user_credentials:
+            jobmap['user_credentials'] = {
+                'trust_id': user_credentials.get('trust_id'),
+                'trustor_user_id': user_credentials.get('trustor_user_id'),
+            }
 
         jobs.append(jobmap)
     # If search opt is wrong, filter will not work,

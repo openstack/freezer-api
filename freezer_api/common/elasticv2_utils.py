@@ -80,9 +80,10 @@ class JobDoc(object):
 
     @staticmethod
     def create_patch(doc):
-        # changes in user_id or job_id are not allowed
+        # changes in user_id, job_id or user_credentials are not allowed
         doc.pop('user_id', None)
         doc.pop('job_id', None)
+        doc.pop('user_credentials', None)
         JobDoc.validate_patch(doc)
         return doc
 

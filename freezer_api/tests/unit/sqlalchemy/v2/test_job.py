@@ -79,16 +79,50 @@ class DbJobTestCase(base.DbTestCase):
                                     project_id=self.fake_project_id)
         self.assertIsNotNone(job_id)
 
-        result = self.dbapi.delete_job(user_id=self.fake_job_0.get('user_id'),
-                                       job_id=job_id,
-                                       project_id=self.fake_project_id)
+        result, trust_id = self.dbapi.delete_job(
+            user_id=self.fake_job_0.get('user_id'),
+            job_id=job_id,
+            project_id=self.fake_project_id)
 
         self.assertIsNotNone(result)
         self.assertEqual(result, job_id)
+        self.assertIsNone(trust_id)
         result = self.dbapi.get_job(project_id=self.fake_project_id,
                                     user_id=self.fake_job_0.get('user_id'),
                                     job_id=job_id)
         self.assertEqual(len(result), 0)
+
+    def test_trust_rotation_with_multiple_jobs(self):
+        trust_id = 'fake_trust_id'
+        job_doc_0 = copy.deepcopy(self.fake_job_0)
+        job_doc_0['user_credentials'] = {
+            'trust_id': trust_id,
+            'trustor_user_id': self.fake_user_id
+        }
+        job_id_0 = self.dbapi.add_job(user_id=self.fake_user_id,
+                                      doc=job_doc_0,
+                                      project_id=self.fake_project_id)
+
+        job_doc_1 = copy.deepcopy(self.fake_job_2)
+        job_doc_1['user_credentials'] = {
+            'trust_id': trust_id,
+            'trustor_user_id': self.fake_user_id
+        }
+        job_id_1 = self.dbapi.add_job(user_id=self.fake_user_id,
+                                      doc=job_doc_1,
+                                      project_id=self.fake_project_id)
+
+        self.assertTrue(self.dbapi.trust_in_use(trust_id))
+
+        self.dbapi.delete_job(user_id=self.fake_user_id,
+                              job_id=job_id_0,
+                              project_id=self.fake_project_id)
+        self.assertTrue(self.dbapi.trust_in_use(trust_id))
+
+        self.dbapi.delete_job(user_id=self.fake_user_id,
+                              job_id=job_id_1,
+                              project_id=self.fake_project_id)
+        self.assertFalse(self.dbapi.trust_in_use(trust_id))
 
     def test_add_and_update_job(self):
         job_doc = copy.deepcopy(self.fake_job_0)

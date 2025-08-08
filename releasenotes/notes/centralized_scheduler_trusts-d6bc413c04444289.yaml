@@ -1,0 +1,18 @@
+---
+features:
+  - |
+    Added new configuration section ``[centralized_scheduler]`` which
+    contains options to enable centralized scheduler and following options:
+
+    * ``enabled`` - Enable centralized scheduler
+    * ``service_user`` (required) - Service user ID or name for centralized
+      scheduler
+    * ``service_user_domain`` (optional) - ID or Name of the domain where
+      "service_user" is located
+    * ``trusts_delegated_roles`` - List of roles to be delegated to the
+      service user. By default only ``member`` role will be delegated.
+
+    This allows to create trusts for service user to perform actions on behalf
+    of users, when ``freezer-scheduler`` runs in the centralized mode.
+    Users trust ID will be included in response to Jobs API calls, which will
+    allow centralized scheduler to act on behalf of the user.

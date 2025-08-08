@@ -185,7 +185,25 @@ job_schema = {
             "items": {
                 "$ref": "#/definitions/job_action"
             }
-        }
+        },
+        "user_credentials": {
+            "properties": {
+                "trust_id": {
+                    "id": "trust_id",
+                    "type": "string"
+                },
+                "trustor_user_id": {
+                    "id": "trustor_user_id",
+                    "pattern": r"^[\w-]+$",
+                    "type": "string"
+                },
+            },
+            "additionalProperties": True,
+            "required": [
+                "trust_id",
+                "trustor_user_id",
+            ]
+        },
     },
     "properties": {
         "job_actions": {
@@ -240,7 +258,10 @@ job_schema = {
         },
         "action_defaults": {
             "$ref": "#/definitions/freezer_action"
-        }
+        },
+        "user_credentials": {
+            "$ref": "#/definitions/user_credentials"
+        },
     },
     "additionalProperties": False,
     "required": [

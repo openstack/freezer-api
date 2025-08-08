@@ -24,6 +24,7 @@ from oslo_policy import policy
 from freezer_api import __version__ as FREEZER_API_VERSION
 
 CONF = cfg.CONF
+LOG = log.getLogger(__name__)
 
 AUTH_GROUP, AUTH_OPTS = opts.list_auth_token_opts()[0]
 
@@ -100,6 +101,45 @@ def api_common_opts():
     return _COMMON
 
 
+def centralized_scheduler_opts():
+    """Return a list of centralized scheduler options."""
+    options = [
+        cfg.BoolOpt('enabled',
+                    default=False,
+                    help="""Default False.
+                    When this option is set to ``True``, Freezer-API
+                    enables centralized scheduler mode and
+                    service will create keystone trusts to run jobs on
+                    behalf of the user.
+                    """),
+        cfg.StrOpt('service_user',
+                   help="""Required in centralized scheduler mode.
+                   ID or name of the service user (trustee) that will be used
+                   to create trusts for delegated authorization.
+                   """),
+        cfg.StrOpt('service_user_domain',
+                   default='default',
+                   help="""Required if "service_user" is a name.
+                   ID or Name of the domain where "service_user" is
+                   located.
+                   """),
+        cfg.ListOpt('trusts_delegated_roles',
+                    default=['member'],
+                    help=("""Subset of trustor roles to be delegated to
+                    freezer. If left unset, all roles of a user will be
+                    delegated to freezer when creating a job.""")),
+    ]
+    return options
+
+
+def register_centralized_scheduler_opts():
+    """Register centralized scheduler options."""
+    opt_group = cfg.OptGroup(name='centralized_scheduler',
+                             title='Centralized scheduler Options')
+    CONF.register_group(opt_group)
+    CONF.register_opts(centralized_scheduler_opts(), group=opt_group)
+
+
 def register_db_drivers_opt():
     """Register storage configuration options"""
     # storage backend options to be registered
@@ -113,6 +153,7 @@ def register_db_drivers_opt():
 def parse_args(args=[]):
     CONF.register_cli_opts(api_common_opts())
     register_db_drivers_opt()
+    register_centralized_scheduler_opts()
     # register paste configuration
     paste_grp = cfg.OptGroup('paste_deploy',
                              'Paste Configuration')
@@ -182,3 +223,31 @@ def list_opts():
     # update the current list of opts with db backend drivers opts
     _OPTS.update({"storage": _DB_DRIVERS})
     return _OPTS.items()
+
+
+def get_keystone_endpoint():
+    try:
+        # Prefer auth_url over www_authenticate_uri for internal service
+        # to service communication
+        auth_uri = getattr(CONF.keystone_authtoken, 'auth_url',
+                           CONF.keystone_authtoken.www_authenticate_uri)
+    except cfg.NoSuchOptError:
+        LOG.error('Keystone API endpoint not provided. Set '
+                  'auth_url or www_authenticate_uri in section '
+                  '[keystone_authtoken] of the configuration file.')
+        raise
+    return auth_uri
+
+
+def get_keystone_cert_options():
+    cacert = CONF.keystone_authtoken.cafile
+    insecure = CONF.keystone_authtoken.insecure
+    cert = CONF.keystone_authtoken.certfile
+    key = CONF.keystone_authtoken.keyfile
+    if insecure:
+        verify = False
+    else:
+        verify = cacert or True
+    if cert and key:
+        cert = (cert, key)
+    return {'verify': verify, 'cert': cert}

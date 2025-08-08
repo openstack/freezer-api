@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from freezer_api import context
+from freezer_api.keystone_client import KeystoneClient
 from freezer_api.tests.unit import common
 
 
@@ -46,3 +47,6 @@ class TestFreezerContext(common.FreezerBaseTestCase):
         self.assertFalse(ctxt.is_admin)
         # self.assertEqual('user02', ctxt.user)
         # self.assertEqual(ctxt_dict.get('tenant'), ctxt.tenant)
+
+    def test_keystone_client(self):
+        self.assertIsInstance(self.ctxt.keystone_client, KeystoneClient)

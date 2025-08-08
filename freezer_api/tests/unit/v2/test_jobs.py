@@ -140,7 +140,12 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.mock_json_body.return_value = {}
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
-        self.mock_req.env.__getitem__.side_effect = common.get_req_items
+        self.fake_context = common.FakeContext()
+        self.fake_context.keystone_client = mock.Mock()
+        self.mock_req.env.__getitem__.side_effect = (
+            lambda k: self.fake_context if k == 'freezer.context'
+            else common.get_req_items(k)
+        )
         self.mock_req.get_header.return_value = common.fake_job_0_user_id
         self.mock_req.status = falcon.HTTP_200
         self.resource = v2_jobs.JobsCollectionResource(self.mock_db)
@@ -176,6 +181,46 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
         self.assertEqual(expected_result, self.mock_req.media)
 
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_on_post_centralized_scheduler_success(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = True
+        job = common.get_fake_job_0()
+        self.mock_json_body.return_value = job
+        self.mock_db.add_job.return_value = 'job_id_123'
+
+        mock_ks_client = mock.Mock()
+        mock_trust = mock.Mock()
+        mock_trust.id = 'trust_123'
+        mock_trust.trustor_user_id = 'trustor_123'
+        mock_ks_client.create_trust.return_value = mock_trust
+        self.mock_req.env['freezer.context'].keystone_client = mock_ks_client
+
+        self.resource.on_post(self.mock_req, self.mock_req,
+                              common.fake_job_0_project_id)
+
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual({'job_id': 'job_id_123'}, self.mock_req.media)
+        mock_ks_client.create_trust.assert_called_once()
+        self.assertEqual('trust_123',
+                         job['user_credentials']['trust_id'])
+
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_on_post_centralized_scheduler_failure(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = True
+        job = common.get_fake_job_0()
+        self.mock_json_body.return_value = job
+        self.mock_db.add_job.side_effect = Exception("DB Failure")
+
+        mock_ks_client = mock.Mock()
+        mock_trust = mock.Mock()
+        mock_trust.id = 'trust_123'
+        mock_ks_client.create_trust.return_value = mock_trust
+        self.mock_req.env['freezer.context'].keystone_client = mock_ks_client
+
+        self.assertRaises(Exception, self.resource.on_post,
+                          self.mock_req, self.mock_req,
+                          common.fake_job_0_project_id)
+
 
 class TestJobsResource(common.FreezerBaseTestCase):
     def setUp(self):
@@ -209,7 +254,11 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.assertEqual(common.get_fake_job_0(), result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
-    def test_on_delete_removes_proper_data(self):
+    @patch('freezer_api.api.v2.jobs.KeystoneClient')
+    def test_on_delete_removes_proper_data(self, mock_keystone):
+        self.mock_db.delete_job.return_value = (common.fake_job_0_job_id,
+                                                'trust_id')
+        self.mock_db.trust_in_use.return_value = False
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_job_0_project_id,
                                 common.fake_job_0_job_id)
@@ -217,6 +266,22 @@ class TestJobsResource(common.FreezerBaseTestCase):
         expected_result = {'job_id': common.fake_job_0_job_id}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
+        mock_keystone.return_value.delete_trust.assert_called_with(
+            'trust_id', common.fake_job_0_project_id)
+
+    @patch('freezer_api.api.v2.jobs.KeystoneClient')
+    def test_on_delete_does_not_remove_trust_if_in_use(self, mock_keystone):
+        self.mock_db.delete_job.return_value = (common.fake_job_0_job_id,
+                                                'trust_id')
+        self.mock_db.trust_in_use.return_value = True
+        self.resource.on_delete(self.mock_req, self.mock_req,
+                                common.fake_job_0_project_id,
+                                common.fake_job_0_job_id)
+        result = self.mock_req.media
+        expected_result = {'job_id': common.fake_job_0_job_id}
+        self.assertEqual(falcon.HTTP_204, self.mock_req.status)
+        self.assertEqual(expected_result, result)
+        self.assertFalse(mock_keystone.called)
 
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)

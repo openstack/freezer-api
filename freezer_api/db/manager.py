@@ -38,7 +38,9 @@ def _load_class_by_alias_or_classname(namespace, name):
     try:
         # Try to resolve class by alias
         mgr = driver.DriverManager(
-            namespace, name, warn_on_missing_entrypoint=False)
+            namespace, name,
+            on_missing_entrypoints_callback=lambda mgr, name: None
+        )
         class_to_load = mgr.driver
     except RuntimeError:
         e1_info = sys.exc_info()
