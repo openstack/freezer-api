@@ -1,3 +1,62 @@
 [build-system]
-requires = ["pbr>=6.0.0", "setuptools>=64.0.0"]
+requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
+
+[project]
+name = "freezer-api"
+description = "OpenStack Backup and Restore API Service"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "Apache-2.0"}
+dynamic = ["version", "dependencies"]
+requires-python = ">=3.10"
+classifiers = [
+  "Environment :: OpenStack",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.urls]
+Homepage = "https://docs.openstack.org/freezer/latest/"
+Repository = "https://opendev.org/openstack/freezer-api"
+
+[tool.setuptools]
+packages = [
+    "freezer_api"
+]
+
+[tool.setuptools.data-files]
+"etc/freezer" = [
+    "etc/freezer/freezer-paste.ini",
+]
+
+[project.entry-points."oslo.config.opts"]
+freezer-api = "freezer_api.common.config:list_opts"
+
+[project.entry-points."oslo.policy.policies"]
+freezer-api = "freezer_api.common.policies:list_rules"
+
+[project.entry-points."console_scripts"]
+freezer-api = "freezer_api.cmd.api:main"
+freezer-manage = "freezer_api.cmd.manage:main"
+freezer-manager-status = "freezer_api.cmd.status:main"
+
+[project.entry-points."freezer.db.backends"]
+sqlalchemy = "freezer_api.db.sqlalchemy.driver:SQLDriver"
+elasticsearch = "freezer_api.db.elasticsearch.driver:ElasticSearchDB"
+
+[tool.pytests]
+where = "tests"
+verbosity = 2
