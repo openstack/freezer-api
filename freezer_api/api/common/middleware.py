@@ -131,7 +131,8 @@ class RequireJSON(HookableMiddlewareMixin, object):
     def process_request(self, req, resp):
         if not req.client_accepts_json:
             raise falcon.HTTPNotAcceptable(
-                'Freezer-api only supports responses encoded as JSON.',
+                description='Freezer-api only supports responses encoded '
+                            'as JSON.',
                 href='http://docs.examples.com/api/json')
 
 

@@ -38,5 +38,5 @@ class BaseResource(object):
             json_data = json.loads(raw_json, encoding='utf-8')
         except ValueError:
             raise falcon.HTTPError(falcon.HTTP_753,
-                                   'Malformed JSON')
+                                   title='Malformed JSON')
         return json_data

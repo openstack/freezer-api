@@ -30,9 +30,9 @@ extensions = [
 ]
 
 # openstackdocstheme options
-repository_name = 'openstack/freezer-api'
-bug_project = 'freezer'
-bug_tag = 'release notes'
+openstackdocs_repo_name = 'openstack/freezer-api'
+openstackdocs_bug_project = 'freezer'
+openstackdocs_bug_tag = 'release notes'
 
 html_last_updated_fmt = '%Y-%m-%d %H:%M'
 

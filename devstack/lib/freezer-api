@@ -143,6 +143,11 @@ function configure_freezer_api {
     sudo chown $STACK_USER $FREEZER_API_AUTH_CACHE_DIR/registry
     rm -f $FREEZER_API_AUTH_CACHE_DIR/registry/*
 
+    # configure logs
+    if [ -n "$BASE" ] && [ -d "$BASE/logs" ]; then
+        sudo ln -sf $FREEZER_API_LOG_DIR/freezer-api.log $BASE/logs/freezer-api-post.log
+    fi
+
     # set keystone configuration
     configure_auth_token_middleware $FREEZER_API_CONF freezer $FREEZER_API_AUTH_CACHE_DIR/api
 
@@ -299,7 +304,7 @@ function configure_uwsgi_freezer_api_app {
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi'  http $local_http
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi' processes 2
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi' threads 2
-    iniset $FREEZER_API_UWSGI_CONF 'uwsgi' wsgi-file $FREEZER_API_DIR/freezer_api/cmd/wsgi.py
+    iniset $FREEZER_API_UWSGI_CONF 'uwsgi' wsgi freezer_api.wsgi:application
 
     # Make sure the client doesn't try to re-use the connection.
     iniset $FREEZER_API_UWSGI_CONF 'uwsgi' add-header "Connection: close"
