@@ -7,8 +7,8 @@
 
 # Package source and version, all pkg files are expected to have
 # something like this, as well as a way to override them.
-ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-1.7.5}
-ELASTICSEARCH_BASEURL=${ELASTICSEARCH_BASEURL:-https://download.elasticsearch.org/elasticsearch/elasticsearch}
+ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-9.2.4-amd64}
+ELASTICSEARCH_BASEURL=${ELASTICSEARCH_BASEURL:-https://artifacts.elastic.co/downloads/elasticsearch}
 
 # Elastic search actual implementation
 function wget_elasticsearch {
@@ -18,13 +18,13 @@ function wget_elasticsearch {
         wget $ELASTICSEARCH_BASEURL/${file} -O ${FREEZER_API_FILES}/${file}
     fi
 
-    if [ ! -f ${FREEZER_API_FILES}/${file}.sha1.txt ]; then
-        wget $ELASTICSEARCH_BASEURL/${file}.sha1.txt -O ${FREEZER_API_FILES}/${file}.sha1.txt
+    if [ ! -f ${FREEZER_API_FILES}/${file}.sha512 ]; then
+        wget $ELASTICSEARCH_BASEURL/${file}.sha512 -O ${FREEZER_API_FILES}/${file}.sha512
     fi
 
-    pushd ${FREEZER_API_FILES};  sha1sum ${file} > ${file}.sha1.gen;  popd
+    pushd ${FREEZER_API_FILES};  sha512sum ${file} > ${file}.sha512.gen;  popd
 
-    if ! diff ${FREEZER_API_FILES}/${file}.sha1.gen ${FREEZER_API_FILES}/${file}.sha1.txt; then
+    if ! diff ${FREEZER_API_FILES}/${file}.sha512.gen ${FREEZER_API_FILES}/${file}.sha512; then
         echo "Invalid elasticsearch download. Could not install."
         return 1
     fi
@@ -52,30 +52,12 @@ function _check_elasticsearch_ready {
 }
 
 function start_elasticsearch {
-    if is_ubuntu; then
-        sudo /etc/init.d/elasticsearch start
-        _check_elasticsearch_ready
-    elif is_fedora; then
-        sudo /bin/systemctl start elasticsearch.service
-        _check_elasticsearch_ready
-    elif is_suse; then
-        sudo /usr/bin/systemctl start elasticsearch.service
-        _check_elasticsearch_ready
-    else
-        echo "Unsupported architecture...can not start elasticsearch."
-    fi
+    sudo /bin/systemctl start elasticsearch.service
+    _check_elasticsearch_ready
 }
 
 function stop_elasticsearch {
-    if is_ubuntu; then
-        sudo /etc/init.d/elasticsearch stop
-    elif is_fedora; then
-        sudo /bin/systemctl stop elasticsearch.service
-    elif is_suse ; then
-        sudo /usr/bin/systemctl stop elasticsearch.service
-    else
-        echo "Unsupported architecture...can not stop elasticsearch."
-    fi
+    sudo /bin/systemctl stop elasticsearch.service
 }
 
 function install_elasticsearch {
@@ -85,27 +67,19 @@ function install_elasticsearch {
         return
     fi
     if is_ubuntu; then
-        if [[ ${DISTRO} == "bionic" ]]; then
-            is_package_installed openjdk-8-jre-headless || install_package openjdk-8-jre-headless
-        else
-            is_package_installed default-jre-headless || install_package default-jre-headless
-        fi
-
+        is_package_installed default-jre-headless || install_package default-jre-headless
         sudo dpkg -i ${FREEZER_API_FILES}/elasticsearch-${ELASTICSEARCH_VERSION}.deb
-        sudo update-rc.d elasticsearch defaults 95 10
     elif is_fedora; then
         is_package_installed java-1.8.0-openjdk-headless || install_package java-1.8.0-openjdk-headless
         yum_install ${FREEZER_API_FILES}/elasticsearch-${ELASTICSEARCH_VERSION}.noarch.rpm
-        sudo /bin/systemctl daemon-reload
-        sudo /bin/systemctl enable elasticsearch.service
     elif is_suse; then
         is_package_installed java-1_8_0-openjdk-headless || install_package java-1_8_0-openjdk-headless
         zypper_install --no-gpg-checks ${FREEZER_API_FILES}/elasticsearch-${ELASTICSEARCH_VERSION}.noarch.rpm
-        sudo /usr/bin/systemctl daemon-reload
-        sudo /usr/bin/systemctl enable elasticsearch.service
     else
         echo "Unsupported install of elasticsearch on this architecture."
     fi
+    sudo /bin/systemctl daemon-reload
+    sudo /bin/systemctl enable elasticsearch.service
 }
 
 function uninstall_elasticsearch {
@@ -113,7 +87,7 @@ function uninstall_elasticsearch {
         if is_ubuntu; then
             sudo apt-get purge elasticsearch
         elif is_fedora; then
-            sudo yum remove elasticsearch
+            sudo dnf remove elasticsearch
         elif is_suse; then
             sudo zypper rm elasticsearch
         else
