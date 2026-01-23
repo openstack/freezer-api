@@ -21,7 +21,6 @@ from alembic import migration as alembic_migration
 import sqlalchemy as sa
 
 from oslo_config import cfg
-from oslo_db import api as db_api
 from oslo_log import log
 
 from freezer_api.db import base as db_base
@@ -33,14 +32,11 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-_BACKEND_MAPPING = {'sqlalchemy': 'freezer_api.db.sqlalchemy.api'}
-
-
 class SQLDriver(db_base.DBDriver):
 
     def __init__(self, backend):
         super(SQLDriver, self).__init__(backend)
-        self.IMPL = db_api.DBAPI.from_config(CONF, _BACKEND_MAPPING)
+        self.IMPL = db_session
         self._engine = None
 
     def _find_alembic_conf(self):

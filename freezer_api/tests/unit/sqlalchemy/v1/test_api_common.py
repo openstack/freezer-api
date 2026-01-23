@@ -52,12 +52,10 @@ class ApiTestCase(base.DbTestCase):
         CONF.enable_v1_api = False
 
     def test_raises_model_query(self):
-        session = api.get_db_session()
-        session.begin()
-        self.assertRaises(ValueError,
-                          api.model_query, session, models.Job,
-                          read_deleted='both')
-        session.close()
+        with api.session_for_read() as session:
+            self.assertRaises(ValueError,
+                              api.model_query, session, models.Job,
+                              read_deleted='both')
 
     def test_model_query(self):
         job_doc1 = copy.deepcopy(self.fake_job_0)
@@ -69,8 +67,7 @@ class ApiTestCase(base.DbTestCase):
 
         result = self.dbapi.delete_job(user_id=self.fake_user_id,
                                        job_id=job_id2)
-        session = api.get_db_session()
-        with session.begin():
+        with api.session_for_read() as session:
             try:
                 query = api.model_query(session, models.Job,
                                         read_deleted='no')
@@ -92,9 +89,8 @@ class ApiTestCase(base.DbTestCase):
             except Exception as e:
                 raise freezer_api_exc.StorageEngineError(
                     message='sqlalchemy operation failed {0}'.format(e))
-        session.close()
 
-    @ patch('oslo_db.sqlalchemy.utils.model_query')
+    @patch('oslo_db.sqlalchemy.utils.model_query')
     def test_raises_delete_tuple(self, mock_model_query):
         mock_model_query.side_effect = Exception('regular test failure')
         self.assertRaises(freezer_api_exc.StorageEngineError,
@@ -111,8 +107,7 @@ class ApiTestCase(base.DbTestCase):
 
         result = self.dbapi.delete_job(user_id=self.fake_user_id,
                                        job_id=job_id2)
-        session = api.get_db_session()
-        with session.begin():
+        with api.session_for_read() as session:
             try:
                 query = api.model_query(session, models.Job,
                                         read_deleted='no')
@@ -134,7 +129,6 @@ class ApiTestCase(base.DbTestCase):
             except Exception as e:
                 raise freezer_api_exc.StorageEngineError(
                     message='sqlalchemy operation failed {0}'.format(e))
-        session.close()
 
     @patch('oslo_db.sqlalchemy.utils.model_query')
     def test_raises_get_tuple(self, mock_model_query):

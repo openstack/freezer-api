@@ -13,9 +13,10 @@
 #    under the License.
 
 
-import sys
+import threading
 
 from oslo_config import cfg
+from oslo_db import api as db_api
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
@@ -37,41 +38,31 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-main_context_manager = enginefacade.transaction_context()
-api_context_manager = enginefacade.transaction_context()
+main_context_lock = threading.Lock()
+main_context_manager = None
+main_context = None
 
 
-def _get_db_conf(conf_group, connection=None):
-    kw = dict(
-        connection=connection or conf_group.connection,
-        slave_connection=conf_group.slave_connection,
-        sqlite_fk=False,
-        __autocommit=True,
-        expire_on_commit=False,
-        mysql_sql_mode=conf_group.mysql_sql_mode,
-        connection_recycle_time=conf_group.connection_recycle_time,
-        connection_debug=conf_group.connection_debug,
-        max_pool_size=conf_group.max_pool_size,
-        max_overflow=conf_group.max_overflow,
-        pool_timeout=conf_group.pool_timeout,
-        sqlite_synchronous=conf_group.sqlite_synchronous,
-        connection_trace=conf_group.connection_trace,
-        max_retries=conf_group.max_retries,
-        retry_interval=conf_group.retry_interval)
-    return kw
+def _get_main_context():
+    global main_context
+    with main_context_lock:
+        if main_context is None:
+            main_context = threading.local()
+    return main_context
 
 
-def get_backend():
-    return sys.modules[__name__]
+def _get_main_context_manager():
+    global main_context_lock
+    global main_context_manager
 
+    with main_context_lock:
+        if not main_context_manager:
+            main_context_manager = enginefacade.transaction_context()
+            # NOTE(noonedeadpunk): Disable foreign key enforcement by default
+            # to avoid breaking tests that have incomplete data setup.
+            main_context_manager.configure(sqlite_fk=False)
 
-def create_context_manager(connection=None):
-    """Create a database context manager object.
-    : param connection: The database connection string
-    """
-    ctxt_mgr = enginefacade.transaction_context()
-    ctxt_mgr.configure(**_get_db_conf(CONF.database, connection=connection))
-    return ctxt_mgr
+    return main_context_manager
 
 
 def _context_manager_from_context(context):
@@ -82,32 +73,35 @@ def _context_manager_from_context(context):
             pass
 
 
-def get_context_manager(context):
-    """Get a database context manager object.
-    :param context: The request context that can contain a context manager
+def session_for_read():
+    reader = _get_main_context_manager().reader
+    return reader.using(_get_main_context())
+
+
+def session_for_write():
+    writer = _get_main_context_manager().writer
+    return writer.using(_get_main_context())
+
+
+def clear_db_env():
     """
-    return _context_manager_from_context(context) or main_context_manager
+    Unset global configuration variables for database.
+    """
+    global main_context_lock
+    global main_context_manager
+    global main_context
+
+    with main_context_lock:
+        main_context_manager = None
+        main_context = None
 
 
-def get_engine(use_slave=False, context=None):
+def get_engine():
     """Get a database engine object.
     :param use_slave: Whether to use the slave connection
     :param context: The request context that can contain a context manager
     """
-    ctxt_mgr = get_context_manager(context)
-    return ctxt_mgr.get_legacy_facade().get_engine(use_slave=use_slave)
-
-
-def get_db_session(context=None):
-    """Get a database session object.
-    :param context: The request context that can contain a context manager
-    """
-    ctxt_mgr = get_context_manager(context)
-    return ctxt_mgr.get_legacy_facade().get_session()
-
-
-def get_api_engine():
-    return api_context_manager.get_legacy_facade().get_engine()
+    return _get_main_context_manager().writer.get_engine()
 
 
 def model_query(session, model,
@@ -147,9 +141,10 @@ def model_query(session, model,
     return query
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def delete_tuple(tablename, user_id, tuple_id, project_id=None):
-    session = get_db_session()
-    with session.begin():
+    with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
@@ -169,9 +164,10 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
     return tuple_id
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def get_tuple(tablename, user_id, tuple_id, project_id=None):
-    session = get_db_session()
-    with session.begin():
+    with session_for_read() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
@@ -179,13 +175,13 @@ def get_tuple(tablename, user_id, tuple_id, project_id=None):
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-    session.close()
     return result
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def add_tuple(tuple):
-    session = get_db_session()
-    with session.begin():
+    with session_for_write() as session:
         try:
             tuple.save(session=session)
         except Exception as e:
@@ -193,10 +189,11 @@ def add_tuple(tuple):
                 message='Mysql operation failed {0}'.format(e))
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
-    session = get_db_session()
-    with session.begin():
+    with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
@@ -215,10 +212,11 @@ def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
         return tuple_id
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
-    session = get_db_session()
-    with session.begin():
+    with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
@@ -233,13 +231,16 @@ def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
     return tuple_id
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def search_tuple(tablename, user_id, project_id=None, all_projects=False,
                  offset=0, limit=100, search=None):
     search = valid_and_get_search_option(search=search)
-    session = get_db_session()
+
     if all_projects:
         project_id = None
-    with session.begin():
+
+    with session_for_write() as session:
         try:
             # TODO(gecong) search will be implemented in the future
             query = model_query(session, tablename, project_id=project_id)
@@ -254,7 +255,7 @@ def search_tuple(tablename, user_id, project_id=None, all_projects=False,
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-    session.close()
+
     return result, search
 
 
@@ -359,10 +360,11 @@ def filter_tuple_by_search_opt(tuples, offset=0, limit=100, search=None):
     return result_last
 
 
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def get_client_byid(user_id, client_id, project_id=None):
 
-    session = get_db_session()
-    with session.begin():
+    with session_for_read() as session:
         try:
             query = model_query(session, models.Client, project_id=project_id)
             if client_id:
@@ -372,7 +374,7 @@ def get_client_byid(user_id, client_id, project_id=None):
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Mysql operation failed {0}'.format(e))
-    session.close()
+
     return result
 
 
