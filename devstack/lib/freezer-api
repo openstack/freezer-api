@@ -131,7 +131,11 @@ function configure_freezer_api {
 
         iniset $FREEZER_API_CONF 'elasticsearch' index freezer
         iniset $FREEZER_API_CONF 'elasticsearch' number_of_replicas 0
-        iniset $FREEZER_API_CONF 'elasticsearch' hosts http://$SERVICE_HOST:9200
+        iniset $FREEZER_API_CONF 'elasticsearch' hosts https://$SERVICE_HOST:9200
+        iniset $FREEZER_API_CONF 'elasticsearch' use_ssl true
+        iniset $FREEZER_API_CONF 'elasticsearch' verify_certs true
+        iniset $FREEZER_API_CONF 'elasticsearch' ca_certs /etc/elasticsearch/certs/http_ca.crt
+        iniset $FREEZER_API_CONF 'elasticsearch' http_auth freezer:$DATABASE_PASSWORD
 
     fi
 

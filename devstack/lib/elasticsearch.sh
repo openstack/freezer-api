@@ -80,6 +80,8 @@ function install_elasticsearch {
     fi
     sudo /bin/systemctl daemon-reload
     sudo /bin/systemctl enable elasticsearch.service
+    usermod -a -G elasticsearch $USER
+    /usr/share/elasticsearch/bin/elasticsearch-users useradd freezer -p ${DATABASE_PASSWORD} -r superuser
 }
 
 function uninstall_elasticsearch {

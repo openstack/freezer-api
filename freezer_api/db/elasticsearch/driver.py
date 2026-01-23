@@ -35,6 +35,10 @@ class ElasticSearchDB(db_base.DBDriver):
         cfg.ListOpt('hosts',
                     default=['http://127.0.0.1:9200'],
                     help='specify the storage hosts'),
+        cfg.StrOpt('http_auth',
+                   default=None,
+                   help='Optional http auth information defined as a string '
+                        'separated with a semicolon (`:`)'),
         cfg.StrOpt('index',
                    default='freezer',
                    help='specify the name of the elasticsearch index'),

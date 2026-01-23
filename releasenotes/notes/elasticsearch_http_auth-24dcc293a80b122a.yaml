@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Added ``http_auth`` configuration parameter to ``[elasticsearch]``
+    backend for authentication against elasticsearch engine by freezer.
