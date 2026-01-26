@@ -167,11 +167,13 @@ class BackupTypeManagerV2(TypeManagerV2):
         TypeManagerV2.__init__(self, es, doc_type, index=index)
 
     @staticmethod
-    def get_search_query(project_id, doc_id, user_id=None, search=None):
+    def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
+                         search=None):
         search = search or {}
         base_filter = TypeManagerV2.get_base_search_filter(
             project_id=project_id,
             user_id=user_id,
+            all_projects=all_projects,
             search=search
         )
         if doc_id is not None:
@@ -195,11 +197,13 @@ class ClientTypeManagerV2(TypeManagerV2):
         TypeManagerV2.__init__(self, es, doc_type, index=index)
 
     @staticmethod
-    def get_search_query(project_id, doc_id, user_id=None, search=None):
+    def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
+                         search=None):
         search = search or {}
         base_filter = TypeManagerV2.get_base_search_filter(
             project_id=project_id,
             user_id=user_id,
+            all_projects=all_projects,
             search=search
         )
         if doc_id is not None:
@@ -213,11 +217,13 @@ class JobTypeManagerV2(TypeManagerV2):
         TypeManagerV2.__init__(self, es, doc_type, index=index)
 
     @staticmethod
-    def get_search_query(project_id, doc_id, user_id=None, search=None):
+    def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
+                         search=None):
         search = search or {}
         base_filter = TypeManagerV2.get_base_search_filter(
             project_id=project_id,
             user_id=user_id,
+            all_projects=all_projects,
             search=search
         )
         if doc_id is not None:
@@ -251,11 +257,13 @@ class ActionTypeManagerV2(TypeManagerV2):
         TypeManagerV2.__init__(self, es, doc_type, index=index)
 
     @staticmethod
-    def get_search_query(project_id, doc_id, user_id=None, search=None):
+    def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
+                         search=None):
         search = search or {}
         base_filter = TypeManagerV2.get_base_search_filter(
             project_id=project_id,
             user_id=user_id,
+            all_projects=all_projects,
             search=search
         )
         if doc_id is not None:
@@ -290,11 +298,13 @@ class SessionTypeManagerV2(TypeManagerV2):
         TypeManagerV2.__init__(self, es, doc_type, index=index)
 
     @staticmethod
-    def get_search_query(project_id, doc_id, user_id=None, search=None):
+    def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
+                         search=None):
         search = search or {}
         base_filter = TypeManagerV2.get_base_search_filter(
             project_id=project_id,
             user_id=user_id,
+            all_projects=all_projects,
             search=search
         )
         if doc_id is not None:
