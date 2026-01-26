@@ -22,18 +22,13 @@ Please refer the `freezer-api Core Team
 
 New Feature Planning
 ~~~~~~~~~~~~~~~~~~~~
-freezer-api features are tracked on `Storyboard <https://storyboard.openstack.org/#!/project/openstack/freezer-api>`_.
-
-Task Tracking
-~~~~~~~~~~~~~
-We track our tasks in `Storyboard <https://storyboard.openstack.org/#!/project/openstack/freezer-api>`_.
-If you're looking for some smaller, easier work item to pick up and get started
-on, search for the 'low-hanging-fruit' tag.
+freezer-api features are tracked as `Specs <https://specs.openstack.org/openstack/freezer-specs/>`_.
+You can submit new spec file to the `repository <https://opendev.org/openstack/freezer-specs>`_.
 
 Reporting a Bug
 ~~~~~~~~~~~~~~~
 You found an issue and want to make sure we are aware of it? You can do so on
-`Storyboard <https://storyboard.openstack.org/#!/project/openstack/freezer-api>`_.
+`Launchpad <https://bugs.launchpad.net/freezer>`_.
 
 Getting Your Patch Merged
 ~~~~~~~~~~~~~~~~~~~~~~~~~
