@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    Freezer API now defaults to SQLAlchemy as the storage driver.
+deprecations:
+  - |
+    Elasticsearch DB storage is deprecated and will be removed in the next
+    release. The only supported storage driver is SQLAlchemy.

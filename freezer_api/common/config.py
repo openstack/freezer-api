@@ -35,14 +35,26 @@ paste_deploy = [
 
 _DB_DRIVERS = [
     cfg.StrOpt("backend",
+               default='sqlalchemy',
                help="Database backend section name. This section will "
                     "be loaded by the proper driver to connect to "
-                    "the database."
+                    "the database.",
+               deprecated_for_removal=True,
+               deprecated_reason="Elasticsearch DB storage is deprecated "
+                                 "and will be removed in the next release. "
+                                 "The only supported storage driver is "
+                                 "SQLAlchemy.",
+               deprecated_since="2026.2",
                ),
     cfg.StrOpt('driver',
-               # default='freezer_api.storage.elastic.ElasticSearchEngine',
-               default='elasticsearch',
-               help="Database driver to be used."
+               default='sqlalchemy',
+               help="Database driver to be used.",
+               deprecated_for_removal=True,
+               deprecated_reason="Elasticsearch DB storage is deprecated "
+                                 "and will be removed in the next release. "
+                                 "The only supported storage driver is "
+                                 "SQLAlchemy.",
+               deprecated_since="2026.2",
                )
 ]
 
