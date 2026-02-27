@@ -1,12 +1,3 @@
-========================
-Team and repository tags
-========================
-
-.. image:: https://governance.openstack.org/tc/badges/freezer-api.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-
-.. Change things from this point on
-
 ===========
 Freezer API
 ===========
@@ -38,7 +29,7 @@ Install freezer-api
   # cd freezer-api
   # pip install ./
 
-edit config file
+Edit config file
 ----------------
 
 .. code-block::
@@ -50,7 +41,7 @@ edit config file
   # sudo vi /etc/freezer/freezer-api.conf
   # sudo vi /etc/freezer/freezer-paste.ini
 
-setup/configure the db
+Setup/configure the DB
 ----------------------
 
 The currently supported DB include Elasticsearch and sqlalchemy. You can
@@ -60,8 +51,8 @@ config backend DB in ``freezer-api.conf`` file. If use sqlalchemy::
     driver = sqlalchemy
     backend = sqlalchemy
 
-Use  Elasticsearch
-------------------
+Use Elasticsearch
+-----------------
 
 In case you are using a dedicated instance of the server, you'll need to
 install Elasticsearch and start it.
@@ -83,10 +74,10 @@ and started:
 
   # systemctl start elasticsearch
 
-Use Sqlalchemy
+Use SQLAlchemy
 --------------
 
-You can use pip to install sqlalchemy:
+You can use pip to install SQLAlchemy:
 
 .. code-block ::
 
@@ -148,14 +139,14 @@ Correct Example::
 
    # freezer-manage -y -e db sync
 
-run simple instance
+Run simple instance
 -------------------
 
 .. code-block::
 
   # freezer-api
 
-examples running using uwsgi
+Examples running using uwsgi
 ----------------------------
 
 .. code-block::
@@ -165,7 +156,7 @@ examples running using uwsgi
   # uwsgi --https :9090,foobar.crt,foobar.key --need-app --master --module freezer_api.cmd.wsgi:application
 
 
-example running freezer-api with apache2
+Example running freezer-api with Apache2
 ----------------------------------------
 
 .. code-block::
@@ -192,7 +183,7 @@ example running freezer-api with apache2
         </Directory>
     </VirtualHost>
 
-Devstack Plugin
+DevStack Plugin
 ===============
 
 Edit local.conf
@@ -220,7 +211,7 @@ For example
     enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git master
 
 Plugin Options
----------------
+--------------
 
 The plugin makes use of apache2 by default.
 To use the *uwsgi* server set the following environment variable
@@ -240,7 +231,7 @@ For example to make use of port 19090 use
 For more information, see `openstack_devstack_plugins_install <https://docs.openstack.org/devstack/latest/plugins.html>`_
 
 Concepts and definitions
-===========================
+========================
 
 *hostname* is _probably_ going to be the host fqdn.
 
@@ -252,9 +243,8 @@ identifies a backup
 defined as `container_hostname_backupname` identifies a group of related
 backups which share the same container,hostname and backupname
 
-
 API registration
-===================
+================
 
 .. code-block::
 
@@ -266,7 +256,6 @@ API registration
     # openstack endpoint create --region RegionOne backup public http://freezer_api_publicurl:port
     # openstack endpoint create --region RegionOne backup internal http://freezer_api_internalurl:port
     # openstack endpoint create --region RegionOne backup admin http://freezer_api_adminurl:port
-
 
 API routes
 ==========
@@ -347,10 +336,10 @@ Freezer sessions management
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    removes the job from the session
 
 Backup metadata structure
-============================
+=========================
 
 .. note::
-   sizes are in MB
+   Sizes are in MB
 
 .. code-block::
 
@@ -379,7 +368,6 @@ Backup metadata structure
       "version": string
     }
 
-
 The api wraps backup_metadata dictionary with some additional information.
 It stores and returns the information provided in this form
 
@@ -399,9 +387,8 @@ It stores and returns the information provided in this form
       }
     }
 
-
 Freezer Client document structure
-====================================
+=================================
 
 Identifies a freezer client for the purpose of sending action
 
@@ -417,7 +404,6 @@ client_info document contains information relevant for client identification
       "uuid":
     }
 
-
 client_type document embeds the client_info and adds user_id
 
 .. code-block::
@@ -428,9 +414,8 @@ client_type document embeds the client_info and adds user_id
       "user_id": string,    # owner of the information (OS X-User-Id, keystone provided, added by api)
     }
 
-
 Jobs
-=======
+====
 
 A job describes a single action to be executed by a freezer client, for example a backup, or a restore.
 It contains the necessary information as if they were provided on the command line.
@@ -454,7 +439,6 @@ Scheduling information enables future/recurrent execution of jobs
     |                     |               |   +-------------------+
     +---------------------+               +-->| job schedule dict |
                                               +-------------------+
-
 
 job document structure
 
@@ -508,9 +492,8 @@ job document structure
       SCHEDULING TIME INFORMATION
     }
 
-
 Scheduling Time Information
--------------------------------
+---------------------------
 
 Three types of scheduling can be identified
 
@@ -520,15 +503,15 @@ Three types of scheduling can be identified
 
 Each type has specific parameters which can be given.
 
-date scheduling
-----------------
+Date scheduling
+---------------
 
 .. code-block::
 
   "schedule_date":      : datetime isoformat
 
-interval scheduling
--------------------------
+Interval scheduling
+-------------------
 
 .. code-block::
 
@@ -537,7 +520,7 @@ interval scheduling
   "schedule_start_date" : datetime isoformat
   "schedule_end_date"   : datetime isoformat
 
-cron-like scheduling
+Cron-like scheduling
 --------------------
 
 .. code-block::
@@ -589,7 +572,6 @@ example restore freezer_action
       "restore-from-host": "another_host"
       "max_cpu_priority": true
     }
-
 
 example scheduled backup job.
 job will be executed once at the provided datetime
@@ -657,8 +639,7 @@ job will be executed once at the provided datetime
         "description": "daily backup",
     }
 
-
-multiple scheduling choices allowed
+Multiple scheduling choices allowed
 
 .. code-block::
 
@@ -682,7 +663,6 @@ multiple scheduling choices allowed
         "description": "daily backup",
     }
 
-
 Finished job with result
 
 .. code-block::
@@ -704,7 +684,6 @@ Finished job with result
         "user_id": "blabla",
         "description": "one shot job",
     }
-
 
 Actions default values
 ----------------------
@@ -748,7 +727,6 @@ Example
         "description": "scheduled one shot"
     }
 
-
 Is Equivalent to
 
 .. code-block::
@@ -784,7 +762,6 @@ Is Equivalent to
         }],
         "description": "scheduled one shot"
     }
-
 
 Actions
 =======
@@ -822,9 +799,8 @@ together and which therefore represent a snapshot of a distributed system.
 When a job is added to a session, the scheduling time of the session is copied into the
 job data structure, so that any job belonging to the same session will start at the same time.
 
-
 Session Data Structure
------------------------
+----------------------
 
 .. code-block::
 
@@ -872,7 +848,7 @@ it sends a POST request to the following endpoint:
 The body of the request bears the action and parameters
 
 Session START action
----------------------
+--------------------
 
 .. code-block::
 
@@ -893,7 +869,7 @@ Example of a successful response
     }
 
 Session STOP action
---------------------
+-------------------
 
 .. code-block::
 
@@ -906,7 +882,7 @@ Session STOP action
     }
 
 Session-Job association
-------------------------
+-----------------------
 
 .. code-block::
 
@@ -914,7 +890,7 @@ Session-Job association
     DELETE /v1/sessions/{sessions_id}/jobs/{job_id}    removes the job from the session
 
 Known Issues
-=============
+============
 
 Versions of falcon < 0.1.8
 ---------------------------
