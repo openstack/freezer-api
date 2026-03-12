@@ -73,8 +73,10 @@ class TypeManager(common.FreezerBaseTestCase):
         self.assertEqual(common.fake_job_0, res)
 
     def test_get_raise_DocumentNotFound_when_doc_not_found(self):
-        self.mock_es.get.side_effect = elasticsearch.TransportError(
-            'regular test failure')
+        meta = mock.Mock()
+        meta.status = 404
+        self.mock_es.get.side_effect = elasticsearch.NotFoundError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentNotFound, self.type_manager.get,
                           user_id=common.fake_job_0_user_id,
                           doc_id=common.fake_job_0_job_id)
@@ -176,7 +178,7 @@ class TypeManager(common.FreezerBaseTestCase):
     def test_insert_raise_StorageEngineError_on_ES_TransportError_exception(
             self):
         self.mock_es.index.side_effect = elasticsearch.TransportError(
-            500, 'regular test failure'
+            'regular test failure'
         )
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         self.assertRaises(exceptions.StorageEngineError,
@@ -187,9 +189,10 @@ class TypeManager(common.FreezerBaseTestCase):
 
     def test_insert_raise_DocumentExists_on_ES_TransportError409_exception(
             self):
-        self.mock_es.index.side_effect = elasticsearch.TransportError(
-            409, 'regular test failure'
-        )
+        meta = mock.Mock()
+        meta.status = 409
+        self.mock_es.index.side_effect = elasticsearch.ConflictError(
+            'regular test failure', meta=meta, body={})
         test_doc = {'test_key_412': 'test_value_412', '_version': 5}
         self.assertRaises(exceptions.DocumentExists, self.type_manager.insert,
                           doc=test_doc)
@@ -447,16 +450,19 @@ class JobTypeManager(common.FreezerBaseTestCase):
         )
 
     def test_update_raise_DocumentNotFound_when_not_found(self):
-        self.mock_es.update.side_effect = elasticsearch.TransportError(
-            'regular test failure', 1)
+        meta = mock.Mock()
+        meta.status = 404
+        self.mock_es.update.side_effect = elasticsearch.NotFoundError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentNotFound, self.job_manager.update,
                           job_id=common.fake_job_0_job_id,
                           job_update_doc={'status': 'sleepy'})
 
     def test_update_raise_DocumentExists_when_elasticsearch_returns_409(self):
-        self.mock_es.update.side_effect = elasticsearch.TransportError(
-            409, 'regular test failure'
-        )
+        meta = mock.Mock()
+        meta.status = 409
+        self.mock_es.update.side_effect = elasticsearch.ConflictError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentExists, self.job_manager.update,
                           job_id=common.fake_job_0_job_id,
                           job_update_doc={'status': 'sleepy'})
@@ -538,17 +544,20 @@ class ActionTypeManager(common.FreezerBaseTestCase):
         )
 
     def test_update_raise_DocumentNotFound_when_not_found(self):
-        self.mock_es.update.side_effect = elasticsearch.TransportError(
-            'regular test failure', 1)
+        meta = mock.Mock()
+        meta.status = 404
+        self.mock_es.update.side_effect = elasticsearch.NotFoundError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentNotFound,
                           self.action_manager.update,
                           action_id='asdfsadf',
                           action_update_doc={'status': 'sleepy'})
 
     def test_update_raise_DocumentExists_when_elasticsearch_returns_409(self):
-        self.mock_es.update.side_effect = elasticsearch.TransportError(
-            409, 'regular test failure'
-        )
+        meta = mock.Mock()
+        meta.status = 409
+        self.mock_es.update.side_effect = elasticsearch.ConflictError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentExists,
                           self.action_manager.update,
                           action_id='pepepepepe2321',
@@ -632,17 +641,20 @@ class SessionTypeManager(common.FreezerBaseTestCase):
             body={"doc": {'status': 'sleepy'}})
 
     def test_update_raise_DocumentNotFound_when_not_found(self):
-        self.mock_es.update.side_effect = elasticsearch.TransportError(
-            'regular test failure', 1)
+        meta = mock.Mock()
+        meta.status = 404
+        self.mock_es.update.side_effect = elasticsearch.NotFoundError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentNotFound,
                           self.session_manager.update,
                           session_id='asdfsadf',
                           session_update_doc={'status': 'sleepy'})
 
     def test_update_raise_DocumentExists_when_elasticsearch_returns_409(self):
-        self.mock_es.update.side_effect = elasticsearch.TransportError(
-            409, 'regular test failure'
-        )
+        meta = mock.Mock()
+        meta.status = 409
+        self.mock_es.update.side_effect = elasticsearch.ConflictError(
+            'regular test failure', meta=meta, body={})
         self.assertRaises(exceptions.DocumentExists,
                           self.session_manager.update,
                           session_id='pepepepepe2321',

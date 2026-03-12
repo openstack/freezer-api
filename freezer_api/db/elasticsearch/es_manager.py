@@ -61,8 +61,7 @@ class ElasticSearchManager(object):
 
     def _check_mapping_exists(self, mappings):
         LOG.info('check if mappings: {0} exists or not'.format(mappings))
-        return self.elk.indices.exists_type(index=self.index,
-                                            doc_type=mappings)
+        return self.elk.indices.exists(index=self.index)
 
     def get_required_mappings(self):
         """
@@ -149,14 +148,12 @@ class ElasticSearchManager(object):
             )
             if do_update:
                 # Call elasticsearch library and put the mappings
-                return self.elk.indices.put_mapping(doc_type=doc_type,
-                                                    body=body,
-                                                    index=self.index
-                                                    )
+                return self.elk.indices.put_mapping(body=body,
+                                                    index=self.index)
             else:
                 return {'acknowledged': False}
-        return self.elk.indices.put_mapping(doc_type=doc_type, body=body,
-                                            index=self.index)
+
+        return self.elk.indices.put_mapping(body=body, index=self.index)
 
     def remove_one_mapping(self, doc_type):
         """
@@ -164,13 +161,9 @@ class ElasticSearchManager(object):
         :param doc_type: document type to be removed
         :return: dict
         """
-        LOG.info('Removing mapping {0} from index {1}'.format(doc_type,
-                                                              self.index))
-        try:
-            return self.elk.indices.delete_mapping(self.index,
-                                                   doc_type=doc_type)
-        except Exception:
-            raise
+        LOG.warning('delete_mapping is not supported by the installed '
+                    'elasticsearch client. Mapping %s not removed.',
+                    doc_type)
 
     def remove_mappings(self):
         """

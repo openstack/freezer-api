@@ -77,9 +77,9 @@ class TypeManagerV2(object):
                               doc_type=self.doc_type,
                               id=doc_id)
             doc = res['_source']
-        except elasticsearch.TransportError:
+        except elasticsearch.NotFoundError:
             raise freezer_api_exc.DocumentNotFound(
-                message='No document found with ID:{0}'.format(doc_id))
+                message='No document found with ID {0}'.format(doc_id))
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Get operation failed: {}'.format(e))
@@ -126,9 +126,9 @@ class TypeManagerV2(object):
             created = res['created']
             version = res['_version']
             self.es.indices.refresh(index=self.index)
+        except elasticsearch.ConflictError as e:
+            raise freezer_api_exc.DocumentExists(message=str(e))
         except elasticsearch.TransportError as e:
-            if e.status_code == 409:
-                raise freezer_api_exc.DocumentExists(message=e.error)
             raise freezer_api_exc.StorageEngineError(
                 message='index operation failed {0}'.format(e))
         except Exception as e:
@@ -240,12 +240,12 @@ class JobTypeManagerV2(TypeManagerV2):
                                  id=job_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
-        except elasticsearch.TransportError as e:
-            if e.status_code == 409:
-                raise freezer_api_exc.DocumentExists(message=e.error)
+        except elasticsearch.ConflictError as e:
+            raise freezer_api_exc.DocumentExists(message=str(e))
+        except elasticsearch.NotFoundError:
             raise freezer_api_exc.DocumentNotFound(
                 message='Unable to find job to update with id'
-                        ' {0} {1}'.format(job_id, e))
+                        ' {0}'.format(job_id))
         except Exception:
             raise freezer_api_exc.StorageEngineError(
                 message='Unable to update job with id {0}'.format(job_id))
@@ -280,9 +280,9 @@ class ActionTypeManagerV2(TypeManagerV2):
                                  id=action_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
-        except elasticsearch.TransportError as e:
-            if e.status_code == 409:
-                raise freezer_api_exc.DocumentExists(message=e.error)
+        except elasticsearch.ConflictError as e:
+            raise freezer_api_exc.DocumentExists(message=str(e))
+        except elasticsearch.NotFoundError:
             raise freezer_api_exc.DocumentNotFound(
                 message='Unable to find action to update with id'
                         ' {0}'.format(action_id))
@@ -321,12 +321,11 @@ class SessionTypeManagerV2(TypeManagerV2):
                                  id=session_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
-        except elasticsearch.TransportError as e:
-            if e.status_code == 409:
-                raise freezer_api_exc.DocumentExists(message=e.error)
+        except elasticsearch.ConflictError as e:
+            raise freezer_api_exc.DocumentExists(message=str(e))
+        except elasticsearch.NotFoundError:
             raise freezer_api_exc.DocumentNotFound(
-                message='Unable to update session ID: {0}, '
-                        'Error: {1}'.format(session_id, e))
+                message='Unable to update session ID: {0}'.format(session_id))
         except Exception:
             raise freezer_api_exc.StorageEngineError(
                 message='Unable to update session with id'
