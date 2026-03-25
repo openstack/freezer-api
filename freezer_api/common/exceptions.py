@@ -106,5 +106,6 @@ exception_handlers_catalog = [
     StorageEngineError,
     DocumentNotFound,
     AccessForbidden,
-    MethodNotImplemented
+    MethodNotImplemented,
+    UnprocessableEntity,
 ]

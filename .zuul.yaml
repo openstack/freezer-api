@@ -1,6 +1,9 @@
 ---
 
 - project:
+    vars:
+      devstack_localrc:
+        FREEZER_BACKEND: 'sqlalchemy'
     templates:
       - check-requirements
       - openstack-python3-jobs
