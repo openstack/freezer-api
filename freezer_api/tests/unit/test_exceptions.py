@@ -70,3 +70,19 @@ class TestExceptions(common.FreezerBaseTestCase):
         self.assertRaises(falcon.HTTPForbidden,
                           e.handle, self.ex, self.mock_req, self.mock_req,
                           None)
+
+    def test_MissingCredentialError(self):
+        e = exceptions.MissingCredentialError(message='testing')
+        self.assertRaises(falcon.HTTPUnprocessableEntity,
+                          e.handle, self.ex, self.mock_req, self.mock_req,
+                          None)
+
+    def test_exception_handlers_catalog(self):
+        import inspect
+        for name, obj in inspect.getmembers(exceptions, inspect.isclass):
+            if issubclass(obj, exceptions.FreezerAPIException) and \
+               obj is not exceptions.FreezerAPIException:
+                self.assertIn(
+                    obj, exceptions.exception_handlers_catalog,
+                    f"{name} is missing from exception_handlers_catalog"
+                )
