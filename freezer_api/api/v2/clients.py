@@ -51,6 +51,13 @@ class ClientsCollectionResource(resource.BaseResource):
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
         user_id = req.get_header('X-User-ID')
+
+        # Schedulers claiming themselves as central can register as
+        # central clients
+        if doc.get('is_central', False):
+            context = req.env['freezer.context']
+            policy.can('clients:create_central', context)
+
         client_id = self.db.add_client(
             project_id=project_id, user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201

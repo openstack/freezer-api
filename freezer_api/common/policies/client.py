@@ -61,6 +61,17 @@ rules = [
                 'method': 'GET'
             }
         ]
+    ),
+    policy.DocumentedRuleDefault(
+        name=CLIENTS % 'create_central',
+        check_str=base.ADMIN_OR_SERVICE,
+        description='Register a central scheduler client.',
+        operations=[
+            {
+                'path': '/v2/{project_id}/clients',
+                'method': 'POST'
+            }
+        ]
     )
 ]
 

@@ -547,6 +547,10 @@ client_info = {
             "enum": SUPPORTED_ENGINES,
         },
     },
+    "is_central": {
+        "id": "is_central",
+        "type": "boolean"
+    },
 }
 
 client_schema = {

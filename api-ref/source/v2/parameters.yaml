@@ -129,6 +129,14 @@ hostname:
   description: |
     The hostname of the machine that client is running on.
 
+is_central:
+  type: boolean
+  in: body
+  required: false
+  description: |
+    Whether the client is registered as a central client. Central clients are
+    visible to all tenants.
+
 job_actions_req:
   type: list
   in: body

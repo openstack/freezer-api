@@ -84,6 +84,7 @@ class Client(BASE, FreezerBase):
         String(255),
         default=json.dumps(SUPPORTED_ENGINES),
     )
+    is_central = Column(Boolean, default=False)
 
 
 class Action(BASE, FreezerBase):

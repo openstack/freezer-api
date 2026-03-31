@@ -20,6 +20,7 @@ from oslo_db import api as db_api
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
+from sqlalchemy import and_, or_
 import uuid
 
 from freezer_api.api.common import utils as json_utils
@@ -241,12 +242,22 @@ def search_tuple(tablename, user_id, project_id=None, all_projects=False,
     if all_projects:
         project_id = None
 
-    with session_for_write() as session:
+    with session_for_read() as session:
         try:
-            # TODO(gecong) search will be implemented in the future
-            query = model_query(session, tablename, project_id=project_id)
-            if not all_projects:
-                query = query.filter_by(user_id=user_id)
+            if tablename == models.Client and not all_projects:
+                # Special case for clients: include central clients even if
+                # project/user doesn't match the requester
+                query = model_query(session, tablename)
+                query = query.filter(or_(
+                    and_(models.Client.project_id == project_id,
+                         models.Client.user_id == user_id),
+                    models.Client.is_central.is_(True)
+                ))
+            else:
+                query = model_query(session, tablename, project_id=project_id)
+                if not all_projects:
+                    query = query.filter_by(user_id=user_id)
+
             #  If search option isn't valid or set, we use limit and offset
             #  in sqlalchemy level
             if len(search) == 0:
@@ -367,10 +378,15 @@ def get_client_byid(user_id, client_id, project_id=None):
 
     with session_for_read() as session:
         try:
-            query = model_query(session, models.Client, project_id=project_id)
+            query = model_query(session, models.Client)
             if client_id:
-                query = query.filter_by(user_id=user_id).filter_by(
-                    client_id=client_id)
+                # Allow retrieval if user owns it OR if it is a central client
+                query = query.filter(or_(
+                    and_(models.Client.project_id == project_id,
+                         models.Client.user_id == user_id),
+                    models.Client.is_central.is_(True)
+                ))
+                query = query.filter_by(client_id=client_id)
                 result = query.all()
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
@@ -406,6 +422,7 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
         clientmap['client'] = {'uuid': client.uuid,
                                'hostname': client.hostname,
                                'client_id': client.client_id,
+                               'is_central': client.is_central,
                                'description': client.description,
                                'supported_actions': decode_capability(
                                    client.supported_actions),
@@ -433,9 +450,21 @@ def add_client(user_id, doc, project_id=None):
     client_id = client_doc['client']['client_id']
     values = {}
     client_json = client_doc.get('client', {})
+    is_central = doc.get('is_central', False)
+    hostname = client_json.get('hostname', None)
 
-    existing = get_client(project_id=project_id, user_id=user_id,
-                          client_id=client_id)
+    if is_central:
+        # Central clients must be unique across all projects to prevent
+        # identity hijacking. We check the identity pair (client_id, hostname)
+        # globally.
+        with session_for_read() as session:
+            query = model_query(session, models.Client).filter_by(
+                client_id=client_id, hostname=hostname)
+            existing = query.all()
+    else:
+        existing = get_client(project_id=project_id, user_id=user_id,
+                              client_id=client_id)
+
     if existing:
         raise freezer_api_exc.DocumentExists(
             message='Client already registered with ID'
@@ -446,7 +475,7 @@ def add_client(user_id, doc, project_id=None):
     values['client_id'] = client_id
     values['id'] = client_json.get('uuid', None)
     values['user_id'] = user_id
-    values['hostname'] = client_json.get('hostname', None)
+    values['hostname'] = hostname
     values['uuid'] = client_json.get('uuid', None)
     values['description'] = client_json.get('description', None)
     values['supported_actions'] = json_utils.json_encode(
@@ -457,6 +486,7 @@ def add_client(user_id, doc, project_id=None):
         client_json.get('supported_storages', SUPPORTED_STORAGES))
     values['supported_engines'] = json_utils.json_encode(
         client_json.get('supported_engines', SUPPORTED_ENGINES))
+    values['is_central'] = is_central
     client.update(values)
 
     add_tuple(tuple=client)

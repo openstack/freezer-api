@@ -121,6 +121,16 @@ class MigrationsWalk(
         for created_column in self._29a2fd19eb86_credentials_columns:
             self.assertIn(created_column, columns)
 
+    _30a3fd20ec97_added_columns = (
+        'is_central',
+    )
+
+    def _check_30a3fd20ec97(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        columns = [x['name'] for x in inspector.get_columns('clients')]
+        for added_column in self._30a3fd20ec97_added_columns:
+            self.assertIn(added_column, columns)
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection
