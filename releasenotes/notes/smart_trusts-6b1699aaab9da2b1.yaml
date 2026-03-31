@@ -1,0 +1,11 @@
+---
+features:
+  - |
+    Introduced a new configuration parameter ``[centralized_scheduler]/enforce_trusts``.
+    Default logic for API is to create trusts only when a client is registered
+    with ``is_central`` property.
+    If operator wants to create for each job regardless of the client it's
+    associated with, ``[centralized_scheduler]/enforce_trusts`` should be set
+    to True.
+    In case operator wants to disable creation of trusts on behalf of the user,
+    ``[centralized_scheduler]/enabled`` should be set to False.

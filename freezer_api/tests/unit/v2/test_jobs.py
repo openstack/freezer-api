@@ -132,6 +132,60 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
                                                    user_id='duder',
                                                    doc=new_doc)
 
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_should_create_trust_disabled(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = False
+        result = self.resource._should_create_trust('proj', 'user', {})
+        self.assertFalse(result)
+
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_should_create_trust_enforced(self, mock_conf):
+        mock_conf.centralized_scheduler.enforce_trusts = True
+        result = self.resource._should_create_trust('proj', 'user', {})
+        self.assertTrue(result)
+
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_should_create_trust_no_client_id(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = True
+        mock_conf.centralized_scheduler.enforce_trusts = False
+        result = self.resource._should_create_trust('proj', 'user', {})
+        self.assertFalse(result)
+
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_should_create_trust_client_not_found(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = True
+        mock_conf.centralized_scheduler.enforce_trusts = False
+        self.mock_db.get_client.return_value = []
+        result = self.resource._should_create_trust('proj', 'user',
+                                                    {'client_id': 'cid'})
+        self.assertFalse(result)
+
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_should_create_trust_client_not_central(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = True
+        mock_conf.centralized_scheduler.enforce_trusts = False
+        self.mock_db.get_client.return_value = [
+            {'client': {'is_central': False}}
+        ]
+        result = self.resource._should_create_trust('proj', 'user',
+                                                    {'client_id': 'cid'})
+        self.assertFalse(result)
+
+    @mock.patch.object(v2_jobs, 'CONF')
+    def test_should_create_trust_client_is_central(self, mock_conf):
+        mock_conf.centralized_scheduler.enforce_trusts = False
+        self.mock_db.get_client.return_value = [
+            {'client': {'is_central': True}}
+        ]
+        result = self.resource._should_create_trust('proj', 'user',
+                                                    {'client_id': 'cid'})
+        self.assertTrue(result)
+        self.mock_db.get_client.assert_called_with(
+            project_id='proj',
+            user_id='user',
+            client_id='cid'
+        )
+
 
 class TestJobsCollectionResource(common.FreezerBaseTestCase):
     def setUp(self):
@@ -139,6 +193,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.mock_json_body = mock.Mock()
         self.mock_json_body.return_value = {}
         self.mock_db = mock.Mock()
+        self.mock_db.get_client.return_value = []
         self.mock_req = mock.MagicMock()
         self.fake_context = common.FakeContext()
         self.fake_context.keystone_client = mock.Mock()
