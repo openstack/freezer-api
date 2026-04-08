@@ -125,10 +125,14 @@ class JobsResource(JobsBaseResource):
     @policy.enforce('jobs:get')
     def on_get(self, req, resp, project_id, job_id):
         # GET /v2/{project_id}/jobs/{job_id}     retrieves the specified job
-        # search in body
         user_id = req.get_header('X-User-ID') or ''
+        all_projects = policy.can('jobs:get_all_projects',
+                                  req.env['freezer.context'],
+                                  do_raise=False)
+
         obj = self.db.get_job(project_id=project_id,
-                              user_id=user_id, job_id=job_id)
+                              user_id=user_id, job_id=job_id,
+                              all_projects=all_projects)
         if obj:
             resp.media = obj
         else:

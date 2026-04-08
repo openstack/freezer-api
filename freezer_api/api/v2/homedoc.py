@@ -49,6 +49,19 @@ HOME_DOC = {
                 },
             },
         },
+        'rel/job': {
+            'href-template': '/v2/{project_id}/jobs/{job_id}',
+            'href-vars': {
+                'project_id': 'param/project_id',
+                'job_id': 'param/job_id'
+            },
+            'hints': {
+                'allow': ['GET', 'PATCH', 'POST', 'DELETE'],
+                'formats': {
+                    'application/json': {},
+                },
+            },
+        },
     }
 }
 

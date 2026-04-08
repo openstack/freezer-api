@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    A new parameter ``all_projects`` has been added to the ``GET /v2/jobs``
+    endpoint.
+    When set to ``True``, it will return all jobs regardless of the project
+    owning them.
+
+    This call requires passing the ``jobs:get_all_projects`` policy for the
+    authenticated user.

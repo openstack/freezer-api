@@ -252,6 +252,8 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.stream.read.return_value = {}
         self.mock_req.get_header.return_value = common.fake_job_0_user_id
+        self.mock_req.get_param_as_bool.return_value = False
+        self.mock_req.get_param_as_int.return_value = None
         self.mock_req.status = falcon.HTTP_200
         self.resource = v2_jobs.JobsResource(self.mock_db)
 
@@ -275,6 +277,31 @@ class TestJobsResource(common.FreezerBaseTestCase):
         result = self.mock_req.media
         self.assertEqual(common.get_fake_job_0(), result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
+
+    def test_on_get_with_all_projects(self):
+        self.mock_db.get_job.return_value = common.get_fake_job_0()
+        fake_context = common.FakeContext()
+        self.mock_req.env.__getitem__.side_effect = (
+            lambda k: fake_context if k == 'freezer.context'
+            else common.get_req_items(k)
+        )
+
+        with mock.patch('freezer_api.policy.can') as mock_policy_can:
+            mock_policy_can.return_value = True
+            self.resource.on_get(self.mock_req, self.mock_req,
+                                 common.fake_job_0_project_id,
+                                 common.fake_job_0_job_id)
+
+            mock_policy_can.assert_any_call(
+                'jobs:get_all_projects', fake_context, do_raise=False
+            )
+            self.mock_db.get_job.assert_called_with(
+                project_id=common.fake_job_0_project_id,
+                user_id=common.fake_job_0_user_id,
+                job_id=common.fake_job_0_job_id,
+                all_projects=True
+            )
+        self.assertEqual(common.get_fake_job_0(), self.mock_req.media)
 
     @patch('freezer_api.api.v2.jobs.KeystoneClient')
     def test_on_delete_removes_proper_data(self, mock_keystone):

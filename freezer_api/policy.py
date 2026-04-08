@@ -34,9 +34,9 @@ def setup_policy(conf):
         ENFORCER.load_rules()
 
 
-def can(rule, ctx):
-    ENFORCER.enforce(rule, {}, ctx.to_dict(), do_raise=True,
-                     exc=exceptions.AccessForbidden)
+def can(rule, ctx, do_raise=True):
+    return ENFORCER.enforce(rule, {}, ctx.to_dict(), do_raise=do_raise,
+                            exc=exceptions.AccessForbidden)
 
 
 def enforce(rule):

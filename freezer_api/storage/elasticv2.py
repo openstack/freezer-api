@@ -71,7 +71,7 @@ class TypeManagerV2(object):
             raise freezer_api_exc.StorageEngineError(
                 message='search operation failed: query not valid')
 
-    def get(self, project_id, doc_id, user_id=None):
+    def get(self, project_id, doc_id, user_id=None, all_projects=False):
         try:
             res = self.es.get(index=self.index,
                               doc_type=self.doc_type,
@@ -83,10 +83,10 @@ class TypeManagerV2(object):
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Get operation failed: {}'.format(e))
-        if doc['project_id'] != project_id:
+        if not all_projects and doc['project_id'] != project_id:
             raise freezer_api_exc.AccessForbidden("You are not allowed to"
                                                   " access")
-        if user_id:
+        if not all_projects and user_id:
             if doc['user_id'] != user_id:
                 raise freezer_api_exc.AccessForbidden(
                     "Document access forbidden"
@@ -444,11 +444,12 @@ class ElasticSearchEngineV2(object):
         client = client_list[0]
         check_client_capabilities(job_actions, client)
 
-    def get_job(self, project_id, user_id, job_id):
+    def get_job(self, project_id, user_id, job_id, all_projects=False):
         return self.job_manager.get(
             project_id=project_id,
             user_id=user_id,
-            doc_id=job_id
+            doc_id=job_id,
+            all_projects=all_projects
         )
 
     def search_job(self, project_id, user_id, all_projects=False,

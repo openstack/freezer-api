@@ -1019,7 +1019,7 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng.job_manager.get.assert_called_with(
             project_id='tecs',
             user_id=common.fake_job_0['user_id'],
-            doc_id=common.fake_job_0['job_id'])
+            doc_id=common.fake_job_0['job_id'], all_projects=False)
 
     def test_get_job_userid_and_job_id_return_none(self):
         self.eng.job_manager.get.return_value = None
@@ -1030,7 +1030,7 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         self.eng.job_manager.get.assert_called_with(
             project_id='tecs',
             user_id=common.fake_job_0['user_id'],
-            doc_id=common.fake_job_0['job_id'])
+            doc_id=common.fake_job_0['job_id'], all_projects=False)
 
     def test_get_job_with_userid_and_search_return_list(self):
         self.eng.job_manager.search.return_value = \

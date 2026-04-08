@@ -167,11 +167,16 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
 
 @db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
                       inc_retry_interval=False, retry_on_deadlock=True)
-def get_tuple(tablename, user_id, tuple_id, project_id=None):
+def get_tuple(tablename, user_id, tuple_id, project_id=None,
+              all_projects=False):
+    if all_projects:
+        project_id = None
     with session_for_read() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            if not all_projects:
+                query = query.filter_by(user_id=user_id)
+            query = query.filter_by(id=tuple_id)
             result = query.all()
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
@@ -771,10 +776,11 @@ def add_job(user_id, doc, project_id=None):
     return job_id
 
 
-def get_job(user_id, job_id, project_id=None):
+def get_job(user_id, job_id, project_id=None, all_projects=False):
 
     result = get_tuple(tablename=models.Job, user_id=user_id,
-                       tuple_id=job_id, project_id=project_id)
+                       tuple_id=job_id, project_id=project_id,
+                       all_projects=all_projects)
     values = {}
     if 1 == len(result):
         values['job_id'] = result[0].get('id')
