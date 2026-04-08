@@ -147,6 +147,8 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             else common.get_req_items(k)
         )
         self.mock_req.get_header.return_value = common.fake_job_0_user_id
+        self.mock_req.get_param_as_bool.return_value = False
+        self.mock_req.get_param_as_int.return_value = None
         self.mock_req.status = falcon.HTTP_200
         self.resource = v2_jobs.JobsCollectionResource(self.mock_db)
         self.resource.json_body = self.mock_json_body
@@ -170,6 +172,26 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         result = self.mock_req.media
         self.assertEqual(expected_result, result)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
+
+    def test_on_get_list_all_projects(self):
+        self.mock_db.search_job.return_value = [common.get_fake_job_0()]
+        self.mock_req.get_param_as_bool.side_effect = (
+            lambda k: True if k == 'all_projects' else False
+        )
+        with mock.patch('freezer_api.policy.can') as mock_policy_can:
+            self.resource.on_get(self.mock_req, self.mock_req,
+                                 common.fake_job_0_project_id)
+            mock_policy_can.assert_has_calls([
+                mock.call('jobs:get_all', self.fake_context),
+                mock.call('jobs:get_all_projects', self.fake_context)
+            ])
+            self.mock_db.search_job.assert_called_with(
+                project_id=common.fake_job_0_project_id,
+                user_id=common.fake_job_0_user_id,
+                all_projects=True,
+                offset=0, limit=10,
+                search={}
+            )
 
     def test_on_post_inserts_correct_data(self):
         job = common.get_fake_job_0()

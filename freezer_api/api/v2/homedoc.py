@@ -33,6 +33,22 @@ HOME_DOC = {
                 },
             },
         },
+        'rel/jobs': {
+            'href-template': '/v2/{project_id}/jobs'
+                             '{?all_projects,offset,limit}',
+            'href-vars': {
+                'project_id': 'param/project_id',
+                'all_projects': 'param/all_projects',
+                'offset': 'param/offset',
+                'limit': 'param/limit'
+            },
+            'hints': {
+                'allow': ['GET', 'POST'],
+                'formats': {
+                    'application/json': {},
+                },
+            },
+        },
     }
 }
 

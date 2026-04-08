@@ -35,6 +35,7 @@ Request Parameters
 
 .. rest_parameters:: parameters.yaml
 
+  - all_projects: all_projects
   - limit: limit
   - offset: marker
   - search: search_option

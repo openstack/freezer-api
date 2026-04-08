@@ -78,11 +78,12 @@ class JobsCollectionResource(JobsBaseResource):
     """
 
     @policy.enforce('jobs:get_all')
-    def on_get(self, req, resp, project_id, all_projects=False):
+    def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/jobs(?limit,offset)     Lists jobs
         user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
+        all_projects = req.get_param_as_bool('all_projects') or False
         search = self.json_body(req)
         if all_projects:
             policy.can('jobs:get_all_projects', req.env['freezer.context'])

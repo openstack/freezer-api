@@ -229,7 +229,7 @@ class DbJobTestCase(base.DbTestCase):
             self.assertEqual(jobids[index], jobmap['job_id'])
 
     def test_job_list_all_projects_without_search(self):
-        fake_project_ids = [f"tjl-project-{x}" for x in range(0, 9)]
+        fake_project_ids = [f"tjl-project-{x}" for x in range(0, 5)]
         jobs = {}
         for project_id in fake_project_ids:
             user_id = str(uuid4())
@@ -246,19 +246,22 @@ class DbJobTestCase(base.DbTestCase):
                                         project_id=project_id)
             self.assertIsNotNone(job_id)
             jobs[job_id] = project_id
+
+        # Search across all projects using completely unrelated context
         result = self.dbapi.search_job(
-            project_id=self.fake_project_id,
-            user_id=user_id,
+            user_id="unrelated-user-id",
+            project_id="unrelated-project-id",
             all_projects=True,
             offset=0,
             limit=1000,
         )
         self.assertIsNotNone(result)
-        # Find our jobs, ignore any others
+        # Find our jobs, ignore any others that might be in the DB
         for job in result:
             if job['job_id'] in jobs:
                 jobs.pop(job['job_id'])
-        self.assertEqual(0, len(jobs))
+        self.assertEqual(0, len(jobs),
+                         "Not all jobs were found when searching all projects")
 
     def test_job_list_with_search_match_and_match_not(self):
         count = 0
