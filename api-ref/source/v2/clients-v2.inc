@@ -94,6 +94,7 @@ Request Parameters
   - hostname: hostname
   - uuid: uuid
   - client_id: client_id
+  - is_central: is_central
 
 Request Example
 ---------------
@@ -148,6 +149,7 @@ Response Parameters
   - project_id: project_id
   - user_id: user_id
   - client_id: client_id
+  - is_central: is_central
   - hostname: hostname
   - uuid: uuid
 

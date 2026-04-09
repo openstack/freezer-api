@@ -1,0 +1,11 @@
+---
+features:
+  - |
+    Introduced a new boolean parameter ``is_central`` for client registration.
+    Clients marked as central are globally visible to all projects, facilitating
+    the use of shared scheduler nodes in multi-project environments.
+    Registration of central clients is governed by the new
+    ``clients:create_central`` policy rule (defaulting to
+    ``rule:admin_or_service``). While these clients are visible globally,
+    management and deletion remain restricted to the original owning project or
+    system administrators.
