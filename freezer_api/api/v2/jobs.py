@@ -71,6 +71,30 @@ class JobsBaseResource(resource.BaseResource):
                                user_id=user_id,
                                doc=action.doc)
 
+    def _should_create_trust(self, project_id, user_id, job_doc):
+        """
+        Implements internal logic on when trusts should be created.
+        By default, we create trusts for clients registered as central,
+        when [centralized_scheduler]/enabled is True (default).
+        We always create trusts if [centralized_scheduler]/enforce_trusts
+        is True (default is False).
+        Trusts are never created when [centralized_scheduler]/enabled is
+        explicitly set to False.
+        """
+        if not CONF.centralized_scheduler.enabled:
+            return False
+        if CONF.centralized_scheduler.enforce_trusts:
+            return True
+        client_id = job_doc.get('client_id')
+        if not client_id:
+            return False
+        client_doc = self.db.get_client(project_id=project_id,
+                                        user_id=user_id,
+                                        client_id=client_id)
+        if client_doc and client_doc[0].get('client', {}).get('is_central'):
+            return True
+        return False
+
 
 class JobsCollectionResource(JobsBaseResource):
     """
@@ -104,7 +128,7 @@ class JobsCollectionResource(JobsBaseResource):
                 message='Missing request body')
         user_id = req.get_header('X-User-ID')
         self.update_actions_in_job(project_id, user_id, job.doc)
-        if CONF.centralized_scheduler.enabled:
+        if self._should_create_trust(project_id, user_id, job.doc):
             ks_client = req.env['freezer.context'].keystone_client
             trust = ks_client.create_trust(user_id, project_id)
             job.doc['user_credentials'] = {

@@ -105,12 +105,22 @@ def centralized_scheduler_opts():
     """Return a list of centralized scheduler options."""
     options = [
         cfg.BoolOpt('enabled',
+                    default=True,
+                    help="""Default True.
+                    When this option is set to ``True``, Freezer-API
+                    enables centralized scheduler mode and
+                    trusts will be created for jobs which are associated with
+                    clients created with `is_central` property.
+                    Setting option to ``False`` will disable trust creation
+                    by API.
+                    """),
+        cfg.BoolOpt('enforce_trusts',
                     default=False,
                     help="""Default False.
                     When this option is set to ``True``, Freezer-API
-                    enables centralized scheduler mode and
-                    service will create keystone trusts to run jobs on
-                    behalf of the user.
+                    will always create keystone trusts for jobs regardless
+                    of the client type. If False (default), trusts are
+                    created only for central clients.
                     """),
         cfg.StrOpt('service_user',
                    help="""Required in centralized scheduler mode.
