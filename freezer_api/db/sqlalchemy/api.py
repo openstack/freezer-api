@@ -506,7 +506,14 @@ def delete_client(user_id, client_id, project_id=None):
                           client_id=client_id)
 
     if existing:
-        clientt = existing[0].get('client')
+        client_info = existing[0]
+        if client_info.get('user_id') != user_id or \
+                client_info.get('project_id') != project_id:
+            raise freezer_api_exc.AccessForbidden(
+                "You are not permitted to delete this client"
+            )
+
+        clientt = client_info.get('client')
         clientid = clientt.get('uuid')
         delete_tuple(tablename=models.Client, user_id=user_id,
                      tuple_id=clientid, project_id=project_id)

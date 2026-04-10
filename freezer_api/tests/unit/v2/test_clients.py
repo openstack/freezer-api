@@ -267,8 +267,10 @@ class TestClientsDb(db_base.DbTestCase):
         self.dbapi.add_client(user_id='user_a', project_id='project_A',
                               doc=doc_central)
 
-        self.dbapi.delete_client(user_id='user_b', project_id='project_B',
-                                 client_id='central_node')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.dbapi.delete_client,
+                          user_id='user_b', project_id='project_B',
+                          client_id='central_node')
 
         clients = self.dbapi.get_client(user_id='user_a',
                                         project_id='project_A',
