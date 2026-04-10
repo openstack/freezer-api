@@ -122,6 +122,14 @@ clients:
   description: |
     A list of clients.
 
+current_pid:
+  type: integer
+  in: body
+  description: |
+    The OS process ID of the running job. Note: This field is only visible to
+    the project that owns the client executing the job or to users with
+    administrative privileges.
+
 freezer_action:
   type: dict
   in: body
@@ -211,9 +219,9 @@ search_option:
   in: body
   required: false
   description: |
-     The query option of list. It is a JSON structure. It contains the keywords
-     ``match``, ``match_not``, or one of the two. The values about keys
-     ``match`` and ``match_not`` are a list of {key, value}.
+    The query option of list. It is a JSON structure. It contains the keywords
+    ``match``, ``match_not``, or one of the two. The values about keys
+    ``match`` and ``match_not`` are a list of {key, value}.
 
 session_description:
   type: string

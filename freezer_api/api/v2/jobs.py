@@ -71,6 +71,24 @@ class JobsBaseResource(resource.BaseResource):
                                user_id=user_id,
                                doc=action.doc)
 
+    def _filter_pid(self, req, project_id, user_id, obj_list):
+        context = req.env.get('freezer.context')
+        if not isinstance(obj_list, list):
+            obj_list = [obj_list]
+
+        for obj in obj_list:
+            client_id = obj.get('client_id')
+            client_info = self.db.get_client(user_id=user_id,
+                                             project_id=project_id,
+                                             client_id=client_id)
+            client_owner = None
+            if client_info:
+                client_owner = client_info[0].get('project_id')
+
+            if context.project_id != client_owner:
+                if 'job_schedule' in obj:
+                    obj['job_schedule'].pop('current_pid', None)
+
     def _should_create_trust(self, project_id, user_id, job_doc):
         """
         Implements internal logic on when trusts should be created.
@@ -109,13 +127,17 @@ class JobsCollectionResource(JobsBaseResource):
         limit = req.get_param_as_int('limit') or 10
         all_projects = req.get_param_as_bool('all_projects') or False
         search = self.json_body(req)
-        if all_projects:
-            policy.can('jobs:get_all_projects', req.env['freezer.context'])
+        all_projects = policy.can(
+            'jobs:get_all_projects', req.env['freezer.context'],
+            do_raise=False
+        )
         obj_list = self.db.search_job(project_id=project_id,
                                       user_id=user_id,
                                       all_projects=all_projects,
                                       offset=offset, limit=limit,
                                       search=search)
+        if not all_projects:
+            self._filter_pid(req, project_id, user_id, obj_list)
         resp.media = {'jobs': obj_list}
 
     @policy.enforce('jobs:create')
@@ -158,6 +180,12 @@ class JobsResource(JobsBaseResource):
                               user_id=user_id, job_id=job_id,
                               all_projects=all_projects)
         if obj:
+            all_projects = policy.can(
+                'jobs:get_all_projects', req.env['freezer.context'],
+                do_raise=False
+            )
+            if not all_projects:
+                self._filter_pid(req, project_id, user_id, obj)
             resp.media = obj
         else:
             resp.status = falcon.HTTP_404

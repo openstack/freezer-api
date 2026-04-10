@@ -12,9 +12,9 @@ Lists jobs(v2)
 
 .. rest_method::  GET /v2/{project_id}/jobs
 
-Lists jobs.
-
-This operation lists jobs for the project.
+This operation lists jobs for the project. For security reasons, sensitive
+fields like ``current_pid`` in ``job_schedule`` are only visible to the
+project that owns the client or to administrators.
 
 Normal response codes: 200
 
@@ -129,6 +129,10 @@ Shows a job.
 
 This operation shows a certain job. It displays all job details with actions
 inside the job.
+
+For security reasons, sensitive fields like ``current_pid`` in
+``job_schedule`` are only visible to the project that owns the client or
+to administrators.
 
 
 Normal response codes: 200

@@ -204,7 +204,9 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.mock_req.get_header.return_value = common.fake_job_0_user_id
         self.mock_req.get_param_as_bool.return_value = False
         self.mock_req.get_param_as_int.return_value = None
+        self.mock_req.media = {}
         self.mock_req.status = falcon.HTTP_200
+        self.mock_db.get_client.return_value = []
         self.resource = v2_jobs.JobsCollectionResource(self.mock_db)
         self.resource.json_body = self.mock_json_body
 
@@ -234,11 +236,13 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             lambda k: True if k == 'all_projects' else False
         )
         with mock.patch('freezer_api.policy.can') as mock_policy_can:
+            mock_policy_can.return_value = True
             self.resource.on_get(self.mock_req, self.mock_req,
                                  common.fake_job_0_project_id)
             mock_policy_can.assert_has_calls([
                 mock.call('jobs:get_all', self.fake_context),
-                mock.call('jobs:get_all_projects', self.fake_context)
+                mock.call('jobs:get_all_projects', self.fake_context,
+                          do_raise=False)
             ])
             self.mock_db.search_job.assert_called_with(
                 project_id=common.fake_job_0_project_id,
@@ -247,6 +251,24 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
                 offset=0, limit=10,
                 search={}
             )
+
+    def test_on_get_filters_pid_in_list(self):
+        job = common.get_fake_job_0()
+        job['job_schedule']['current_pid'] = 1234
+        job['project_id'] = 'my_project'
+        job['client_id'] = 'central_client'
+        self.mock_db.search_job.return_value = [job]
+
+        # Client is owned by admin_project
+        self.mock_db.get_client.return_value = [
+            {'project_id': 'admin_project'}
+        ]
+
+        self.resource.on_get(self.mock_req, self.mock_req,
+                             'my_project')
+
+        self.assertNotIn('current_pid',
+                         self.mock_req.media['jobs'][0]['job_schedule'])
 
     def test_on_post_inserts_correct_data(self):
         job = common.get_fake_job_0()
@@ -310,6 +332,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.mock_req.get_param_as_bool.return_value = False
         self.mock_req.get_param_as_int.return_value = None
         self.mock_req.status = falcon.HTTP_200
+        self.mock_db.get_client.return_value = []
         self.resource = v2_jobs.JobsResource(self.mock_db)
 
     def test_create_resource(self):
@@ -358,6 +381,77 @@ class TestJobsResource(common.FreezerBaseTestCase):
             )
         self.assertEqual(common.get_fake_job_0(), self.mock_req.media)
 
+    @patch('freezer_api.policy.can')
+    def test_on_get_filters_pid_for_non_client_owner(self, mock_policy_can):
+        job = common.get_fake_job_0()
+        job['job_schedule']['current_pid'] = 1234
+        job['project_id'] = 'my_project'
+        job['client_id'] = 'central_client'
+        self.mock_db.get_job.return_value = job
+
+        mock_policy_can.return_value = False
+
+        mock_context = common.FakeContext()
+        mock_context.project_id = 'my_project'
+        self.mock_req.env = {'freezer.context': mock_context}
+
+        # Client is owned by admin_project
+        self.mock_db.get_client.return_value = [
+            {'project_id': 'admin_project'}
+        ]
+
+        self.resource.on_get(self.mock_req, self.mock_req,
+                             'my_project',
+                             common.fake_job_0_job_id)
+
+        self.assertNotIn('current_pid', self.mock_req.media['job_schedule'])
+
+    @patch('freezer_api.policy.can')
+    def test_on_get_shows_pid_for_admin_non_client_owner(self,
+                                                         mock_policy_can):
+        job = common.get_fake_job_0()
+        job['job_schedule']['current_pid'] = 1234
+        job['project_id'] = 'other_project'
+        self.mock_db.get_job.return_value = job
+
+        mock_policy_can.return_value = True
+
+        mock_context = common.FakeContext()
+        mock_context.project_id = 'my_project'
+        self.mock_req.env = {'freezer.context': mock_context}
+
+        # Client is owned by other_project
+        self.mock_db.get_client.return_value = [
+            {'project_id': 'other_project'}
+        ]
+
+        self.resource.on_get(self.mock_req, self.mock_req,
+                             'other_project',
+                             common.fake_job_0_job_id)
+
+        mock_pid = self.mock_req.media['job_schedule']['current_pid']
+        self.assertEqual(1234, mock_pid)
+
+    def test_on_get_shows_pid_for_client_owner(self):
+        job = common.get_fake_job_0()
+        job['job_schedule']['current_pid'] = 1234
+        job['project_id'] = 'my_project'
+        job['client_id'] = 'my_client'
+        self.mock_db.get_job.return_value = job
+
+        mock_context = common.FakeContext()
+        mock_context.project_id = 'my_project'
+        self.mock_req.env = {'freezer.context': mock_context}
+
+        # Client is owned by my_project
+        self.mock_db.get_client.return_value = [{'project_id': 'my_project'}]
+
+        self.resource.on_get(self.mock_req, self.mock_req,
+                             'my_project',
+                             common.fake_job_0_job_id)
+        mock_pid = self.mock_req.media['job_schedule']['current_pid']
+        self.assertEqual(1234, mock_pid)
+
     @patch('freezer_api.api.v2.jobs.KeystoneClient')
     def test_on_delete_removes_proper_data(self, mock_keystone):
         self.mock_db.delete_job.return_value = (common.fake_job_0_job_id,
@@ -366,10 +460,9 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_job_0_project_id,
                                 common.fake_job_0_job_id)
-        result = self.mock_req.media
         expected_result = {'job_id': common.fake_job_0_job_id}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected_result, self.mock_req.media)
         mock_keystone.return_value.delete_trust.assert_called_with(
             'trust_id', common.fake_job_0_project_id)
 
@@ -381,10 +474,9 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.resource.on_delete(self.mock_req, self.mock_req,
                                 common.fake_job_0_project_id,
                                 common.fake_job_0_job_id)
-        result = self.mock_req.media
         expected_result = {'job_id': common.fake_job_0_job_id}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected_result, self.mock_req.media)
         self.assertFalse(mock_keystone.called)
 
     def test_on_patch_ok_with_some_fields(self):
@@ -406,8 +498,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
             job_id=common.fake_job_0_job_id,
             patch_doc=patch_doc)
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
-        result = self.mock_req.media
-        self.assertEqual(expected_result, result)
+        self.assertEqual(expected_result, self.mock_req.media)
 
     def test_on_post_ok(self):
         new_version = random.randint(0, 99)
