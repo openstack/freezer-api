@@ -12,9 +12,9 @@
 
 from keystoneauth1 import exceptions as ks_exceptions
 from keystoneauth1.identity import v3
+from keystoneauth1 import loading as ks_loading
 from keystoneauth1 import session as ks_session
 from openstack import connection as os_connection
-from openstack import exceptions as os_exceptions
 from oslo_config import cfg
 from oslo_log import log
 
@@ -49,6 +49,21 @@ class KeystoneClient:
         )
         return conn
 
+    def create_service_client(self):
+        auth_section = CONF.centralized_scheduler.auth_section
+        auth_plugin = ks_loading.load_auth_from_conf_options(
+            CONF, auth_section)
+        auth_group = getattr(CONF, auth_section)
+
+        session = ks_session.Session(auth=auth_plugin)
+        conn = os_connection.Connection(
+            session=session,
+            region_name=getattr(auth_group, 'region_name', None),
+            interface=getattr(auth_group, 'interface', None),
+            connect_retries=getattr(auth_group, 'http_request_max_retries', 3)
+        )
+        return conn
+
     def create_trust(self, trustor_user_id, trustor_project_id):
         try:
             roles = []
@@ -67,14 +82,14 @@ class KeystoneClient:
                     roles = [{'name': name} for name in self.context.roles]
 
             client = self.create_client(trustor_project_id)
-            trustee_user = CONF.centralized_scheduler.service_user
-            trustee_domain = CONF.centralized_scheduler.service_user_domain
+            service_client = self.create_service_client()
 
-            trustee_user_id = self._get_user_id(
-                client,
-                trustee_user,
-                trustee_domain
-            )
+            try:
+                trustee_user_id = service_client.session.get_user_id()
+            except Exception as e:
+                LOG.error(f"Failed to get user ID from auth_section: {e}")
+                raise MissingCredentialError(
+                    message="Cannot deduce trustee user from auth_section")
 
             # Try to find existing trust
             # We filter by trustor, trustee and project
@@ -115,24 +130,6 @@ class KeystoneClient:
             raise
 
         return trust
-
-    def _get_domain_id(self, conn, domain):
-        found_domain = conn.identity.find_domain(domain)
-        if not found_domain:
-            LOG.warning(f"Domain {domain} not found.")
-            return None
-        return found_domain.id
-
-    def _get_user_id(self, conn, user, domain):
-        try:
-            return conn.identity.get_user(user).id
-        except os_exceptions.NotFoundException:
-            domain_id = self._get_domain_id(conn, domain)
-            found_user = conn.identity.find_user(user, domain_id=domain_id)
-            if not found_user:
-                raise MissingCredentialError(
-                    message=f"User {user} not found")
-            return found_user.id
 
     def delete_trust(self, trust_id, trustor_project_id):
         try:

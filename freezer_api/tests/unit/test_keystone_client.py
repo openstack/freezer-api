@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from keystoneauth1 import exceptions as ks_exceptions
-from openstack import exceptions as os_exceptions
 from oslo_config import cfg
 from unittest import mock
 
@@ -64,15 +63,31 @@ class TestKeystoneClient(common.FreezerBaseTestCase):
         mock_conn.assert_called_once()
         self.assertEqual(mock_conn.return_value, c)
 
-    @mock.patch.object(KeystoneClient, '_get_user_id')
+    @mock.patch('openstack.connection.Connection')
+    @mock.patch('keystoneauth1.session.Session')
+    @mock.patch('keystoneauth1.loading.load_auth_from_conf_options')
+    def test_create_service_client(self,
+                                   mock_load_auth,
+                                   mock_session,
+                                   mock_conn):
+        c = self.client.create_service_client()
+
+        mock_load_auth.assert_called_once_with(
+            CONF, 'keystone_authtoken'
+        )
+        mock_conn.assert_called_once()
+        self.assertEqual(mock_conn.return_value, c)
+
+    @mock.patch.object(KeystoneClient, 'create_service_client')
     @mock.patch.object(KeystoneClient, 'create_client')
     def test_create_trust_reuses_existing(self, mock_create_client,
-                                          mock_get_user):
+                                          mock_create_service_client):
         mock_conn = mock_create_client.return_value
+        mock_admin_conn = mock_create_service_client.return_value
+        mock_admin_conn.session.get_user_id.return_value = 'trustee_id'
         mock_trust = mock.Mock()
         mock_trust.id = 'existing_trust_id'
         mock_conn.identity.trusts.return_value = [mock_trust]
-        mock_get_user.return_value = 'trustee_id'
 
         trust = self.client.create_trust('user1', 'project1')
 
@@ -84,15 +99,16 @@ class TestKeystoneClient(common.FreezerBaseTestCase):
         )
         mock_conn.identity.create_trust.assert_not_called()
 
-    @mock.patch.object(KeystoneClient, '_get_user_id')
+    @mock.patch.object(KeystoneClient, 'create_service_client')
     @mock.patch.object(KeystoneClient, 'create_client')
     def test_create_trust_uses_default_member_role(self, mock_create_client,
-                                                   mock_get_user):
+                                                   mock_create_service_client):
         mock_conn = mock_create_client.return_value
+        mock_admin_conn = mock_create_service_client.return_value
+        mock_admin_conn.session.get_user_id.return_value = 'trustee_id'
         mock_conn.identity.trusts.return_value = []
         mock_new_trust = mock.Mock()
         mock_conn.identity.create_trust.return_value = mock_new_trust
-        mock_get_user.return_value = 'trustee_id'
 
         # Default trusts_delegated_roles is ['member']
         self.client.create_trust('user1', 'project1')
@@ -106,15 +122,16 @@ class TestKeystoneClient(common.FreezerBaseTestCase):
             roles=[{'name': 'member'}]
         )
 
-    @mock.patch.object(KeystoneClient, '_get_user_id')
+    @mock.patch.object(KeystoneClient, 'create_service_client')
     @mock.patch.object(KeystoneClient, 'create_client')
     def test_create_trust_inherits_all_token_roles_when_config_is_empty(
-            self, mock_create_client, mock_get_user):
+            self, mock_create_client, mock_create_service_client):
         mock_conn = mock_create_client.return_value
+        mock_admin_conn = mock_create_service_client.return_value
+        mock_admin_conn.session.get_user_id.return_value = 'trustee_id'
         mock_conn.identity.trusts.return_value = []
         mock_new_trust = mock.Mock()
         mock_conn.identity.create_trust.return_value = mock_new_trust
-        mock_get_user.return_value = 'trustee_id'
 
         # Explicitly clear the delegated roles to trigger inheritance
         CONF.set_override('trusts_delegated_roles', [],
@@ -132,14 +149,17 @@ class TestKeystoneClient(common.FreezerBaseTestCase):
             roles=[{'id': 'role1'}, {'id': 'role2'}]
         )
 
-    @mock.patch.object(KeystoneClient, '_get_user_id')
+    @mock.patch.object(KeystoneClient, 'create_service_client')
     @mock.patch.object(KeystoneClient, 'create_client')
-    def test_create_trust_respects_delegated_roles_config(self,
-                                                          mock_create_client,
-                                                          mock_get_user):
+    def test_create_trust_respects_delegated_roles_config(
+        self,
+        mock_create_client,
+        mock_create_service_client
+    ):
         mock_conn = mock_create_client.return_value
+        mock_admin_conn = mock_create_service_client.return_value
+        mock_admin_conn.session.get_user_id.return_value = 'trustee_id'
         mock_conn.identity.trusts.return_value = []
-        mock_get_user.return_value = 'trustee_id'
 
         # Override config to delegate a custom role
         CONF.set_override('trusts_delegated_roles', ['backup-operator'],
@@ -156,80 +176,18 @@ class TestKeystoneClient(common.FreezerBaseTestCase):
             roles=[{'name': 'backup-operator'}]
         )
 
-    @mock.patch.object(KeystoneClient, '_get_user_id')
+    @mock.patch.object(KeystoneClient, 'create_service_client')
     @mock.patch.object(KeystoneClient, 'create_client')
     def test_create_trust_handles_not_found_roles(self, mock_create_client,
-                                                  mock_get_user):
+                                                  mock_create_service_client):
         mock_conn = mock_create_client.return_value
+        mock_admin_conn = mock_create_service_client.return_value
+        mock_admin_conn.session.get_user_id.return_value = 'trustee_id'
         mock_conn.identity.trusts.return_value = []
         mock_conn.identity.create_trust.side_effect = ks_exceptions.NotFound()
-        mock_get_user.return_value = 'trustee_id'
 
         self.assertRaises(exceptions.MissingCredentialError,
                           self.client.create_trust, 'user1', 'project1')
-
-    @mock.patch.object(KeystoneClient, 'create_client')
-    def test_get_domain_id(self, mock_create_client):
-        mock_conn = mock_create_client.return_value
-        mock_domain = mock.Mock()
-        mock_domain.id = 'domain_id'
-        mock_conn.identity.find_domain.return_value = mock_domain
-
-        domain_id = self.client._get_domain_id(mock_conn, 'some_domain')
-        self.assertEqual('domain_id', domain_id)
-        mock_conn.identity.find_domain.assert_called_once_with('some_domain')
-
-    @mock.patch.object(KeystoneClient, 'create_client')
-    def test_get_domain_id_not_found(self, mock_create_client):
-        mock_conn = mock_create_client.return_value
-        mock_conn.identity.find_domain.return_value = None
-
-        domain_id = self.client._get_domain_id(mock_conn, 'some_domain')
-        self.assertIsNone(domain_id)
-
-    @mock.patch.object(KeystoneClient, 'create_client')
-    def test_get_user_id_direct(self, mock_create_client):
-        mock_conn = mock_create_client.return_value
-        mock_user = mock.Mock()
-        mock_user.id = 'user_id'
-        mock_conn.identity.get_user.return_value = mock_user
-
-        user_id = self.client._get_user_id(mock_conn, 'some_user', 'domain_id')
-        self.assertEqual('user_id', user_id)
-        mock_conn.identity.get_user.assert_called_once_with('some_user')
-        mock_conn.identity.find_user.assert_not_called()
-
-    @mock.patch.object(KeystoneClient, '_get_domain_id')
-    @mock.patch.object(KeystoneClient, 'create_client')
-    def test_get_user_id_fallback(self, mock_create_client, mock_get_domain):
-        mock_conn = mock_create_client.return_value
-        mock_conn.identity.get_user.side_effect = \
-            os_exceptions.NotFoundException()
-        mock_user = mock.Mock()
-        mock_user.id = 'user_id'
-        mock_conn.identity.find_user.return_value = mock_user
-        mock_get_domain.return_value = 'domain_id'
-
-        user_id = self.client._get_user_id(mock_conn,
-                                           'some_user', 'domain_val')
-        self.assertEqual('user_id', user_id)
-        mock_conn.identity.get_user.assert_called_once_with('some_user')
-        mock_get_domain.assert_called_once_with(mock_conn, 'domain_val')
-        mock_conn.identity.find_user.assert_called_once_with(
-            'some_user', domain_id='domain_id')
-
-    @mock.patch.object(KeystoneClient, '_get_domain_id')
-    @mock.patch.object(KeystoneClient, 'create_client')
-    def test_get_user_id_fails(self, mock_create_client, mock_get_domain):
-        mock_conn = mock_create_client.return_value
-        mock_conn.identity.get_user.side_effect = \
-            os_exceptions.NotFoundException()
-        mock_conn.identity.find_user.return_value = None
-        mock_get_domain.return_value = 'domain_id'
-
-        self.assertRaises(exceptions.MissingCredentialError,
-                          self.client._get_user_id, mock_conn,
-                          'some_user', 'domain_val')
 
     @mock.patch.object(KeystoneClient, 'create_client')
     def test_delete_trust(self, mock_create_client):
