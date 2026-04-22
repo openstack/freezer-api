@@ -33,4 +33,5 @@ def check_client_capabilities(job_actions, client):
                 continue
             if option not in client.get(f"supported_{capability}s"):
                 raise exceptions.UnprocessableEntity(
-                    f"Client does not support {capability}: {option}")
+                    f"Client {client['client_id']} does not support "
+                    f"{capability}: {option}")

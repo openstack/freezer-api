@@ -41,6 +41,7 @@ UNSUPPORTED_JOB_ACTIONS = [
 
 TEST_CLIENT = {
     "client": {
+        "client_id": "test-client-id",
         "supported_actions": ["backup"],
         "supported_modes": ["cindernative"],
         "supported_storages": [],
