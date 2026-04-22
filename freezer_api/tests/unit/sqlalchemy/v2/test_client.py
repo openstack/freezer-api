@@ -17,7 +17,9 @@
 
 
 import copy
+from unittest import mock
 
+from freezer_api.common import exceptions
 from freezer_api.tests.unit import common
 from freezer_api.tests.unit.sqlalchemy import base
 
@@ -357,3 +359,114 @@ class DbClientTestCase(base.DbTestCase):
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
+
+    def test_add_client_update(self):
+        client_doc = copy.deepcopy(self.fake_client_doc)
+        client_id = self.dbapi.add_client(user_id=self.fake_user_id,
+                                          doc=client_doc,
+                                          project_id=self.fake_project_id)
+        self.assertIsNotNone(client_id)
+
+        # Update description
+        client_doc['description'] = 'Updated description'
+        updated_client_id = self.dbapi.add_client(
+            user_id=self.fake_user_id,
+            doc=client_doc,
+            project_id=self.fake_project_id)
+
+        self.assertEqual(client_id, updated_client_id)
+
+        result = self.dbapi.get_client(project_id=self.fake_project_id,
+                                       user_id=self.fake_user_id,
+                                       client_id=client_id)
+
+        self.assertEqual(
+            result[0]['client'].get('description'),
+            'Updated description'
+        )
+
+    def test_add_client_update_forbidden(self):
+        client_doc = copy.deepcopy(self.fake_client_doc)
+        client_doc['is_central'] = True
+        # Register in project 1
+        self.dbapi.add_client(user_id=self.fake_user_id,
+                              doc=client_doc,
+                              project_id='project_1')
+
+        # Try to update in project 2 (hijack)
+        self.assertRaises(exceptions.DocumentExists, self.dbapi.add_client,
+                          user_id=self.fake_user_id,
+                          doc=client_doc,
+                          project_id='project_2')
+
+    def test_add_client_update_ignores_owner_change(self):
+        client_doc = copy.deepcopy(self.fake_client_doc)
+        client_id = self.dbapi.add_client(user_id='original_user',
+                                          doc=client_doc,
+                                          project_id='original_project')
+
+        # Try to update, but provide different owner info in doc
+        # (The API should ignore these and use the authenticated project/user)
+        update_doc = copy.deepcopy(client_doc)
+        update_doc['project_id'] = 'malicious_project'
+        update_doc['user_id'] = 'malicious_user'
+        update_doc['description'] = 'Updated description'
+
+        self.dbapi.add_client(user_id='original_user',
+                              doc=update_doc,
+                              project_id='original_project')
+
+        # Verify record still belongs to original project/user
+        res = self.dbapi.get_client_byid(user_id='original_user',
+                                         client_id=client_id,
+                                         project_id='original_project')
+        self.assertEqual(1, len(res))
+        self.assertEqual('original_project', res[0].project_id)
+        self.assertEqual('original_user', res[0].user_id)
+        self.assertEqual('Updated description', res[0].description)
+
+    def test_add_client_different_projects_same_id(self):
+        client_id = self.fake_client_doc['client_id']
+
+        # Register in project 1 (using unique copy)
+        self.dbapi.add_client(user_id='user_1',
+                              doc=copy.deepcopy(self.fake_client_doc),
+                              project_id='project_1')
+
+        # Register same client_id in project 2 (using unique copy)
+        self.dbapi.add_client(user_id='user_2',
+                              doc=copy.deepcopy(self.fake_client_doc),
+                              project_id='project_2')
+
+        # Verify they are separate records
+        res1 = self.dbapi.get_client_byid(user_id='user_1',
+                                          client_id=client_id,
+                                          project_id='project_1')
+        res2 = self.dbapi.get_client_byid(user_id='user_2',
+                                          client_id=client_id,
+                                          project_id='project_2')
+
+        self.assertEqual(1, len(res1))
+        self.assertEqual(1, len(res2))
+        self.assertEqual('project_1', res1[0].project_id)
+        self.assertEqual('project_2', res2[0].project_id)
+        self.assertNotEqual(res1[0].uuid, res2[0].uuid)
+
+    def test_add_client_no_change_no_update(self):
+        client_doc = copy.deepcopy(self.fake_client_doc)
+        # Ensure description is present
+        client_doc['description'] = 'same description'
+
+        # First registration
+        self.dbapi.add_client(user_id=self.fake_user_id,
+                              doc=client_doc,
+                              project_id=self.fake_project_id)
+
+        # Second registration with same data
+        # We patch the low-level update_tuple to verify it's skipped
+        with mock.patch('freezer_api.db.sqlalchemy.api.update_tuple') as \
+                mock_upd:
+            self.dbapi.add_client(user_id=self.fake_user_id,
+                                  doc=client_doc,
+                                  project_id=self.fake_project_id)
+            mock_upd.assert_not_called()

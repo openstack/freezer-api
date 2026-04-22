@@ -931,27 +931,59 @@ class TestElasticSearchEngine_client(
                           user_id=common.fake_data_0_user_name,
                           doc=doc)
 
-    def test_add_client_raises_when_doc_exists(self):
-        self.eng.client_manager.search.return_value = [
-            common.fake_client_entry_0]
+    def test_add_client_update(self):
+        # Mocking es.search to return an existing document with ID
+        # 'existing_id' and matching project_id
+        self.eng.es.search.return_value = {
+            'hits': {
+                'hits': [
+                    {
+                        '_id': 'existing_id',
+                        '_source': {'project_id': 'tecs'}
+                    }
+                ]
+            }
+        }
+        res = self.eng.add_client(project_id='tecs',
+                                  user_id=common.fake_data_0_user_id,
+                                  doc=common.fake_client_info_0)
+
+        self.assertEqual(common.fake_client_info_0['client_id'], res)
+        # Verify it was updated with partial document
+        self.eng.client_manager.update.assert_called_with(
+            'existing_id', mock.ANY)
+
+    def test_add_client_update_forbidden(self):
+        # Mocking es.search to return an existing document with different
+        # project_id
+        self.eng.es.search.return_value = {
+            'hits': {
+                'hits': [
+                    {
+                        '_id': 'existing_id',
+                        '_source': {'project_id': 'other_project'}
+                    }
+                ]
+            }
+        }
+        doc = common.fake_client_info_0.copy()
+        doc['is_central'] = True
         self.assertRaises(exceptions.DocumentExists, self.eng.add_client,
                           project_id='tecs',
                           user_id=common.fake_data_0_user_id,
-                          doc=common.fake_client_info_0)
+                          doc=doc)
 
     def test_add_client_ok(self):
-        self.eng.client_manager.search.return_value = []
+        self.eng.es.search.return_value = {'hits': {'hits': []}}
         res = self.eng.add_client(project_id='tecs',
                                   user_id=common.fake_data_0_user_id,
                                   doc=common.fake_client_info_0)
         self.assertEqual(common.fake_client_info_0['client_id'], res)
-        self.eng.client_manager.search.assert_called_with(
-            project_id='tecs',
-            user_id=common.fake_data_0_user_id,
-            doc_id=common.fake_client_info_0['client_id'])
+        self.eng.client_manager.insert.assert_called_with(
+            mock.ANY)
 
     def test_add_client_raises_when_manager_insert_raises(self):
-        self.eng.client_manager.search.return_value = []
+        self.eng.es.search.return_value = {'hits': {'hits': []}}
         self.eng.client_manager.insert.side_effect = (
             exceptions.StorageEngineError('regular test failure')
         )
@@ -959,6 +991,84 @@ class TestElasticSearchEngine_client(
                           project_id='tecs',
                           user_id=common.fake_data_0_user_id,
                           doc=common.fake_client_info_0)
+
+    def test_add_client_update_ignores_owner_change(self):
+        # Mocking es.search to return an existing document
+        self.eng.es.search.return_value = {
+            'hits': {
+                'hits': [
+                    {
+                        '_id': 'existing_id',
+                        '_source': {
+                            'project_id': 'original_project',
+                            'user_id': 'original_user'
+                        }
+                    }
+                ]
+            }
+        }
+        doc = common.fake_client_info_0.copy()
+        doc['project_id'] = 'malicious_project'
+        doc['user_id'] = 'malicious_user'
+        doc['is_central'] = True  # Trigger global search to find existing
+
+        self.eng.add_client(project_id='original_project',
+                            user_id='original_user',
+                            doc=doc)
+
+        # Verify update was called with only safe fields
+        # Note: the update body should NOT contain project_id or user_id
+        call_args = self.eng.client_manager.update.call_args
+        update_body = call_args[0][1]
+        self.assertNotIn('project_id', update_body)
+        self.assertNotIn('user_id', update_body)
+        self.assertIn('client', update_body)
+        self.assertNotIn('project_id', update_body['client'])
+
+    def test_add_client_different_projects_same_id(self):
+        # When is_central is False, get_search_query should be called with
+        # all_projects=False
+        self.eng.es.search.return_value = {'hits': {'hits': []}}
+        doc = common.fake_client_info_0.copy()
+        doc['is_central'] = False
+
+        self.eng.add_client(project_id='project_2',
+                            user_id='user_2',
+                            doc=doc)
+
+        # Verify it searched only within the project
+        self.eng.client_manager.get_search_query.assert_called_with(
+            project_id='project_2',
+            user_id='user_2',
+            doc_id=mock.ANY,
+            all_projects=False
+        )
+        self.eng.client_manager.insert.assert_called_with(mock.ANY)
+
+    def test_add_client_no_change_no_update(self):
+        # Mocking es.search to return an existing document
+        doc = common.get_fake_client_0()['client']
+        self.eng.es.search.return_value = {
+            'hits': {
+                'hits': [
+                    {
+                        '_id': 'existing_id',
+                        '_source': {
+                            'project_id': 'tecs',
+                            'user_id': common.fake_data_0_user_id,
+                            'client': doc
+                        }
+                    }
+                ]
+            }
+        }
+
+        self.eng.add_client(project_id='tecs',
+                            user_id=common.fake_data_0_user_id,
+                            doc=doc)
+
+        # Verify update was NOT called
+        self.eng.client_manager.update.assert_not_called()
 
     def test_delete_client_ok(self):
         self.eng.client_manager.delete.return_value = (

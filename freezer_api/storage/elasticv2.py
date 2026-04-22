@@ -134,6 +134,27 @@ class TypeManagerV2(object):
                 message='index operation failed {0}'.format(e))
         return created, version
 
+    def update(self, doc_id, update_doc):
+        # remove _version from the document
+        update_doc.pop('_version', 0)
+        body = {"doc": update_doc}
+        try:
+            res = self.es.update(index=self.index,
+                                 id=doc_id, body=body)
+            version = res['_version']
+            self.es.indices.refresh(index=self.index)
+        except elasticsearch.ConflictError as e:
+            raise freezer_api_exc.DocumentExists(message=str(e))
+        except elasticsearch.NotFoundError:
+            raise freezer_api_exc.DocumentNotFound(
+                message='Unable to find document to update with id'
+                        ' {0}'.format(doc_id))
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='Unable to update document with id'
+                        ' {0}: {1}'.format(doc_id, e))
+        return version
+
     def delete(self, project_id, doc_id, user_id=None):
         query_dsl = self.get_search_query(
             project_id=project_id,
@@ -414,17 +435,59 @@ class ElasticSearchEngineV2(object):
     def add_client(self, project_id, user_id, doc):
         client_doc = utils.ClientDoc.create(doc, project_id, user_id)
         client_id = client_doc['client']['client_id']
-        existing = self.client_manager.search(
+
+        is_central = doc.get('is_central', False)
+        # Determine if client already exists to get its document ID for update
+        query_dsl = self.client_manager.get_search_query(
             project_id=project_id,
             user_id=user_id,
-            doc_id=client_id
+            doc_id=client_id,
+            all_projects=is_central  # Consistency with SQLAlchemy
         )
-        if existing:
-            raise freezer_api_exc.DocumentExists(
-                message='Client already registered with ID'
-                        ' {0}'.format(client_id))
-        self.client_manager.insert(client_doc)
-        logging.info('Client registered, client_id: {0}'.format(client_id))
+        try:
+            res = self.es.search(index=self.index,
+                                 body=query_dsl)
+            hits = res['hits']['hits']
+        except Exception as e:
+            raise freezer_api_exc.StorageEngineError(
+                message='Search operation failed: {0}'.format(e))
+
+        doc_id = hits[0]['_id'] if hits else None
+
+        if doc_id:
+            # Check ownership before update
+            existing_doc = hits[0]['_source']
+            if existing_doc['project_id'] != project_id:
+                raise freezer_api_exc.DocumentExists(
+                    message=f'Client {client_id} is already registered by '
+                            'another project'
+                )
+
+            # Only update description and capabilities, NOT the owner or
+            # identity
+            client = client_doc['client']
+            update_values = {
+                'description': client.get('description'),
+                'supported_actions': client.get('supported_actions'),
+                'supported_modes': client.get('supported_modes'),
+                'supported_storages': client.get('supported_storages'),
+                'supported_engines': client.get('supported_engines'),
+            }
+
+            # Check if anything actually changed to avoid unnecessary updates
+            existing_client_data = existing_doc.get('client', existing_doc)
+            changed = any(existing_client_data.get(k) != v
+                          for k, v in update_values.items())
+            if not changed:
+                logging.info('Client registration unchanged, '
+                             'client_id: {0}'.format(client_id))
+                return client_id
+
+            self.client_manager.update(doc_id, {'client': update_values})
+            logging.info('Client updated, client_id: {0}'.format(client_id))
+        else:
+            self.client_manager.insert(client_doc)
+            logging.info('Client registered, client_id: {0}'.format(client_id))
         return client_id
 
     def delete_client(self, project_id, user_id, client_id):

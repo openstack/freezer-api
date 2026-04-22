@@ -458,6 +458,7 @@ def add_client(user_id, doc, project_id=None):
     is_central = doc.get('is_central', False)
     hostname = client_json.get('hostname', None)
 
+    existing_client_uuid = None
     if is_central:
         # Central clients must be unique across all projects to prevent
         # identity hijacking. We check the identity pair (client_id, hostname)
@@ -465,23 +466,19 @@ def add_client(user_id, doc, project_id=None):
         with session_for_read() as session:
             query = model_query(session, models.Client).filter_by(
                 client_id=client_id, hostname=hostname)
-            existing = query.all()
+            existing = query.first()
     else:
-        existing = get_client(project_id=project_id, user_id=user_id,
-                              client_id=client_id)
+        result = get_client_byid(user_id, client_id, project_id=project_id)
+        existing = result[0] if result else None
 
     if existing:
-        raise freezer_api_exc.DocumentExists(
-            message='Client already registered with ID'
-                    ' {0}'.format(client_id))
+        existing_client_uuid = existing.uuid
 
-    client = models.Client()
+    values = {}
     values['project_id'] = project_id
     values['client_id'] = client_id
-    values['id'] = client_json.get('uuid', None)
     values['user_id'] = user_id
     values['hostname'] = hostname
-    values['uuid'] = client_json.get('uuid', None)
     values['description'] = client_json.get('description', None)
     values['supported_actions'] = json_utils.json_encode(
         client_json.get('supported_actions', SUPPORTED_ACTIONS))
@@ -492,11 +489,57 @@ def add_client(user_id, doc, project_id=None):
     values['supported_engines'] = json_utils.json_encode(
         client_json.get('supported_engines', SUPPORTED_ENGINES))
     values['is_central'] = is_central
-    client.update(values)
 
-    add_tuple(tuple=client)
+    if existing_client_uuid:
+        # Update existing client
+        # We only update description and capabilities, NOT the owner or
+        # identity
+        update_values = {
+            'description': values['description'],
+            'supported_actions': values['supported_actions'],
+            'supported_modes': values['supported_modes'],
+            'supported_storages': values['supported_storages'],
+            'supported_engines': values['supported_engines'],
+        }
 
-    LOG.info('Client registered, client_id: {0}'.format(client_id))
+        # Check ownership first.
+        # Otherwise it will respond with 200 while not touching the data
+        if existing.project_id != project_id:
+            raise freezer_api_exc.DocumentExists(
+                message='Client {0} is already registered by another project'
+                        .format(client_id))
+
+        changed = any(getattr(existing, k) != v
+                      for k, v in update_values.items())
+        if not changed:
+            LOG.info('Client registration unchanged, '
+                     'client_id: {0}'.format(client_id))
+            return client_id
+
+        # update_tuple filters by project_id/user_id. If the existing client
+        # belongs to another project (possible with central clients), it will
+        # raise DocumentNotFound.
+        try:
+            update_tuple(tablename=models.Client, user_id=user_id,
+                         tuple_id=existing_client_uuid,
+                         tuple_values=update_values,
+                         project_id=project_id)
+            LOG.info('Client updated, client_id: {0}'.format(client_id))
+        except freezer_api_exc.DocumentNotFound:
+            # If we found it globally but couldn't update it locally,
+            # it's owned by someone else
+            raise freezer_api_exc.DocumentExists(
+                message='Client {0} is already registered by '
+                        'another project'.format(client_id))
+    else:
+        # Create new client
+        client = models.Client()
+        values['id'] = client_json.get('uuid', uuid.uuid4().hex)
+        values['uuid'] = values['id']
+        client.update(values)
+        add_tuple(tuple=client)
+        LOG.info('Client registered, client_id: {0}'.format(client_id))
+
     return client_id
 
 
