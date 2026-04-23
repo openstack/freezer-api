@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    Introduced a config option ``[centralized_scheduler]/auth_section``
+    to specify the auth section to be used to identify the service user
+    for which trust will be issued.
+    Freezer API will complete an auth for the user to ensure it's correctly
+    autenticated and has the required roles.
+    By default, it's pointing to ``[keystone_authtoken]`` section.
+deprecations:
+  - |
+    Configuration options ``[centralized_scheduler]/service_user`` and
+    ``[centralized_scheduler]/service_user_domain`` are deprecated and will be
+    removed in a future release. Use ``[centralized_scheduler]/auth_section``
+    instead.

@@ -123,15 +123,25 @@ def centralized_scheduler_opts():
                     created only for central clients.
                     """),
         cfg.StrOpt('service_user',
+                   deprecated_for_removal=True,
+                   deprecated_reason='Use auth_section instead to derive ID',
                    help="""Required in centralized scheduler mode.
                    ID or name of the service user (trustee) that will be used
                    to create trusts for delegated authorization.
                    """),
         cfg.StrOpt('service_user_domain',
                    default='default',
+                   deprecated_for_removal=True,
+                   deprecated_reason='Use auth_section instead to derive ID',
                    help="""Required if "service_user" is a name.
                    ID or Name of the domain where "service_user" is
                    located.
+                   """),
+        cfg.StrOpt('auth_section',
+                   default='keystone_authtoken',
+                   help="""Config section where scheduler auth plugin options
+                   are defined. Defaults to 'keystone_authtoken', using the
+                   ID of the service account configured there as the trustee.
                    """),
         cfg.ListOpt('trusts_delegated_roles',
                     default=['member'],
