@@ -17,6 +17,7 @@ import threading
 
 from oslo_config import cfg
 from oslo_db import api as db_api
+from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
@@ -54,7 +55,6 @@ def _get_main_context():
 
 
 def _get_main_context_manager():
-    global main_context_lock
     global main_context_manager
 
     with main_context_lock:
@@ -89,7 +89,6 @@ def clear_db_env():
     """
     Unset global configuration variables for database.
     """
-    global main_context_lock
     global main_context_manager
     global main_context
 
@@ -160,9 +159,14 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
                 LOG.info('Tuple delete, Tuple_id: '
                          '{0} not found in Table {1}'.
                          format(tuple_id, tablename))
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='Mysql operation failed {0}'.format(e))
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
     return tuple_id
 
 
@@ -179,9 +183,14 @@ def get_tuple(tablename, user_id, tuple_id, project_id=None,
                 query = query.filter_by(user_id=user_id)
             query = query.filter_by(id=tuple_id)
             result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='Mysql operation failed {0}'.format(e))
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
     return result
 
 
@@ -191,9 +200,18 @@ def add_tuple(tuple):
     with session_for_write() as session:
         try:
             tuple.save(session=session)
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='Mysql operation failed {0}'.format(e))
+        except db_exc.DBDuplicateEntry as e:
+            LOG.warning('Database collision detected: {0}'.format(e))
+            raise freezer_api_exc.DocumentExists(
+                message='Document with the specified ID already exists.')
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
 
 
 @db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
@@ -205,9 +223,18 @@ def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
             query = model_query(session, tablename, project_id=project_id)
             query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
             result = query.update(tuple_values)
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='sql operation failed {0}'.format(e))
+        except db_exc.DBDuplicateEntry as e:
+            LOG.warning('Database update collision: {0}'.format(e))
+            raise freezer_api_exc.DocumentExists(
+                message='Update failed: document already exists.')
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
 
     if not result:
         raise freezer_api_exc.DocumentNotFound(
@@ -232,9 +259,18 @@ def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
                 tuplet = tablename()
                 tuplet.update(tuple_values)
                 tuplet.save(session=session)
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='Mysql operation failed {0}'.format(e))
+        except db_exc.DBDuplicateEntry as e:
+            LOG.warning('Database collision detected: {0}'.format(e))
+            raise freezer_api_exc.DocumentExists(
+                message='Document with the specified ID already exists.')
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
     return tuple_id
 
 
@@ -269,9 +305,14 @@ def search_tuple(tablename, user_id, project_id=None, all_projects=False,
                 query = query.offset(offset)
                 query = query.limit(limit)
             result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='Mysql operation failed {0}'.format(e))
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
 
     return result, search
 
@@ -393,9 +434,14 @@ def get_client_byid(user_id, client_id, project_id=None):
                 ))
                 query = query.filter_by(client_id=client_id)
                 result = query.all()
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='Mysql operation failed {0}'.format(e))
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
 
     return result
 
@@ -590,8 +636,10 @@ def add_action(user_id, doc, project_id=None):
     freezer_action = action_doc.get('freezer_action', {})
 
     action_id = action_doc.get('action_id')
-    existing = get_action(project_id=project_id, user_id=user_id,
-                          action_id=action_id)
+    # Check globally to avoid primary Key collision
+    existing = get_tuple(tablename=models.Action, user_id=None,
+                         tuple_id=action_id, project_id=None,
+                         all_projects=True)
     if existing:
         raise freezer_api_exc.DocumentExists(
             message='Action already registered with ID'
@@ -801,9 +849,14 @@ def delete_job(user_id, job_id, project_id=None):
                     trust_id = job.user_credentials.trust_id
                     job.user_credentials.delete(session)
                 job.delete(session)
-        except Exception as e:
-            raise freezer_api_exc.StorageEngineError(
-                message='MySQL operation failed {0}'.format(e))
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
     return job_id, trust_id
 
 
@@ -814,8 +867,9 @@ def add_job(user_id, doc, project_id=None):
         job_doc = utilsv2.JobDoc.create(doc, project_id, user_id)
 
     job_id = job_doc.get('job_id')
-    existing = get_job(project_id=project_id, user_id=user_id,
-                       job_id=job_id)
+    # Check globally to avoid primary Key collision
+    existing = get_job(project_id=None, user_id=None,
+                       job_id=job_id, all_projects=True)
     if existing:
         raise freezer_api_exc.\
             DocumentExists(message='Job already registered with ID {0}'.

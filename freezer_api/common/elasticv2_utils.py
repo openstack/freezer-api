@@ -95,10 +95,11 @@ class JobDoc(object):
             'time_started': -1,
             'time_ended': -1
         })
+        job_id = doc.get('job_id') or uuid.uuid4().hex
         doc.update({
             'user_id': user_id,
             'project_id': project_id,
-            'job_id': uuid.uuid4().hex,
+            'job_id': job_id,
             'job_schedule': job_schedule
         })
         JobDoc.validate(doc)
@@ -145,7 +146,7 @@ class ActionDoc(object):
 
     @staticmethod
     def create(doc, user_id, project_id):
-        action_id = doc.get('action_id', uuid.uuid4().hex)
+        action_id = doc.get('action_id') or uuid.uuid4().hex
         doc.update({
             'user_id': user_id,
             'project_id': project_id,

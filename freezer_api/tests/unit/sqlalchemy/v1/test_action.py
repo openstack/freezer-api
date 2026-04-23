@@ -420,9 +420,9 @@ class DbActionTestCase(base.DbTestCase):
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
 
-    @patch('freezer_api.db.sqlalchemy.api.get_action')
-    def test_raise_add_action(self, mock_get_action):
-        mock_get_action.return_value = mock.MagicMock()
+    @patch('freezer_api.db.sqlalchemy.api.get_tuple')
+    def test_raise_add_action(self, mock_get_tuple):
+        mock_get_tuple.return_value = [mock.MagicMock()]
         self.assertRaises(freezer_api_exc.DocumentExists,
                           self.dbapi.add_action, self.fake_user_id,
                           self.fake_action_0)

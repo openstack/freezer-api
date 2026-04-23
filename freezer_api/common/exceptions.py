@@ -33,7 +33,7 @@ class FreezerAPIException(falcon.HTTPError):
         if message:
             self.message = _(str(message))  # noqa
         logging.error(message)
-        Exception.__init__(self, message)
+        falcon.HTTPError.__init__(self, falcon.HTTP_500, description=message)
 
     @staticmethod
     def handle(ex, req, resp, params):

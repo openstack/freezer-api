@@ -53,6 +53,7 @@ class ApiTestCase(base.DbTestCase):
     def test_model_query(self):
         job_doc1 = copy.deepcopy(self.fake_job_0)
         job_doc2 = copy.deepcopy(self.fake_job_0)
+        job_doc2.pop('job_id', None)
         self.dbapi.add_job(user_id=self.fake_user_id,
                            doc=job_doc1,
                            project_id=self.fake_project_id)
@@ -100,6 +101,7 @@ class ApiTestCase(base.DbTestCase):
     def test_delete_tuple(self):
         job_doc1 = copy.deepcopy(self.fake_job_0)
         job_doc2 = copy.deepcopy(self.fake_job_0)
+        job_doc2.pop('job_id', None)
         self.dbapi.add_job(user_id=self.fake_user_id,
                            doc=job_doc1,
                            project_id=self.fake_project_id)
