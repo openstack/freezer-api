@@ -31,10 +31,9 @@ LOG = log.getLogger(__name__)
 
 
 class TypeManagerV2(object):
-    def __init__(self, es, doc_type, index):
+    def __init__(self, es, index):
         self.es = es
         self.index = index
-        self.doc_type = doc_type
 
     @staticmethod
     def get_base_search_filter(project_id, user_id=None, all_projects=False,
@@ -74,7 +73,6 @@ class TypeManagerV2(object):
     def get(self, project_id, doc_id, user_id=None, all_projects=False):
         try:
             res = self.es.get(index=self.index,
-                              doc_type=self.doc_type,
                               id=doc_id)
             doc = res['_source']
         except elasticsearch.NotFoundError:
@@ -106,7 +104,7 @@ class TypeManagerV2(object):
             search=search
         )
         try:
-            res = self.es.search(index=self.index, doc_type=self.doc_type,
+            res = self.es.search(index=self.index,
                                  size=limit, from_=offset, body=query_dsl)
         except elasticsearch.ConnectionError:
             raise freezer_api_exc.StorageEngineError(
@@ -121,7 +119,7 @@ class TypeManagerV2(object):
         try:
             # remove _version from the document
             doc.pop('_version', None)
-            res = self.es.index(index=self.index, doc_type=self.doc_type,
+            res = self.es.index(index=self.index,
                                 body=doc, id=doc_id)
             created = res['created']
             version = res['_version']
@@ -144,7 +142,6 @@ class TypeManagerV2(object):
         )
         try:
             results = self.es.search(index=self.index,
-                                     doc_type=self.doc_type,
                                      body=query_dsl)
             results = results['hits']['hits']
         except Exception as e:
@@ -154,7 +151,7 @@ class TypeManagerV2(object):
         for res in results:
             id = res.get('_id')
             try:
-                self.es.delete(index=self.index, doc_type=self.doc_type, id=id)
+                self.es.delete(index=self.index, id=id)
                 self.es.indices.refresh(index=self.index)
             except Exception as e:
                 raise freezer_api_exc.StorageEngineError(
@@ -163,8 +160,8 @@ class TypeManagerV2(object):
 
 
 class BackupTypeManagerV2(TypeManagerV2):
-    def __init__(self, es, doc_type, index='freezer'):
-        TypeManagerV2.__init__(self, es, doc_type, index=index)
+    def __init__(self, es, index='freezer'):
+        TypeManagerV2.__init__(self, es, index=index)
 
     @staticmethod
     def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
@@ -193,8 +190,8 @@ class BackupTypeManagerV2(TypeManagerV2):
 
 
 class ClientTypeManagerV2(TypeManagerV2):
-    def __init__(self, es, doc_type, index='freezer'):
-        TypeManagerV2.__init__(self, es, doc_type, index=index)
+    def __init__(self, es, index='freezer'):
+        TypeManagerV2.__init__(self, es, index=index)
 
     @staticmethod
     def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
@@ -213,8 +210,8 @@ class ClientTypeManagerV2(TypeManagerV2):
 
 
 class JobTypeManagerV2(TypeManagerV2):
-    def __init__(self, es, doc_type, index='freezer'):
-        TypeManagerV2.__init__(self, es, doc_type, index=index)
+    def __init__(self, es, index='freezer'):
+        TypeManagerV2.__init__(self, es, index=index)
 
     @staticmethod
     def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
@@ -236,7 +233,7 @@ class JobTypeManagerV2(TypeManagerV2):
         job_update_doc.pop('_version', 0)
         update_doc = {"doc": job_update_doc}
         try:
-            res = self.es.update(index=self.index, doc_type=self.doc_type,
+            res = self.es.update(index=self.index,
                                  id=job_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
@@ -253,8 +250,8 @@ class JobTypeManagerV2(TypeManagerV2):
 
 
 class ActionTypeManagerV2(TypeManagerV2):
-    def __init__(self, es, doc_type, index='freezer'):
-        TypeManagerV2.__init__(self, es, doc_type, index=index)
+    def __init__(self, es, index='freezer'):
+        TypeManagerV2.__init__(self, es, index=index)
 
     @staticmethod
     def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
@@ -276,7 +273,7 @@ class ActionTypeManagerV2(TypeManagerV2):
         action_update_doc.pop('_version', 0)
         update_doc = {"doc": action_update_doc}
         try:
-            res = self.es.update(index=self.index, doc_type=self.doc_type,
+            res = self.es.update(index=self.index,
                                  id=action_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
@@ -294,8 +291,8 @@ class ActionTypeManagerV2(TypeManagerV2):
 
 
 class SessionTypeManagerV2(TypeManagerV2):
-    def __init__(self, es, doc_type, index='freezer'):
-        TypeManagerV2.__init__(self, es, doc_type, index=index)
+    def __init__(self, es, index='freezer'):
+        TypeManagerV2.__init__(self, es, index=index)
 
     @staticmethod
     def get_search_query(project_id, doc_id, user_id=None, all_projects=False,
@@ -317,7 +314,7 @@ class SessionTypeManagerV2(TypeManagerV2):
         session_update_doc.pop('_version', 0)
         update_doc = {"doc": session_update_doc}
         try:
-            res = self.es.update(index=self.index, doc_type=self.doc_type,
+            res = self.es.update(index=self.index,
                                  id=session_id, body=update_doc)
             version = res['_version']
             self.es.indices.refresh(index=self.index)
@@ -362,11 +359,11 @@ class ElasticSearchEngineV2(object):
         self.es = elasticsearch.Elasticsearch(**kwargs)
         logging.info('Storage backend: Elasticsearch at'
                      ' {0}'.format(kwargs['hosts']))
-        self.backup_manager = BackupTypeManagerV2(self.es, 'backups')
-        self.client_manager = ClientTypeManagerV2(self.es, 'clients')
-        self.job_manager = JobTypeManagerV2(self.es, 'jobs')
-        self.action_manager = ActionTypeManagerV2(self.es, 'actions')
-        self.session_manager = SessionTypeManagerV2(self.es, 'sessions')
+        self.backup_manager = BackupTypeManagerV2(self.es, self.index)
+        self.client_manager = ClientTypeManagerV2(self.es, self.index)
+        self.job_manager = JobTypeManagerV2(self.es, self.index)
+        self.action_manager = ActionTypeManagerV2(self.es, self.index)
+        self.session_manager = SessionTypeManagerV2(self.es, self.index)
 
     def get_backup(self, user_id, backup_id, project_id=None):
         return self.backup_manager.get(

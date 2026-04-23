@@ -32,7 +32,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_es = mock.Mock()
         self.type_manager = elastic.TypeManagerV2(self.mock_es,
-                                                  'base_doc_type',
                                                   'freezer')
 
     def test_get_base_search_filter(self):
@@ -163,7 +162,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
                                        doc_id='mydocid',
                                        search=my_search, offset=7, limit=19)
         self.mock_es.search.assert_called_with(index='freezer',
-                                               doc_type='base_doc_type',
                                                size=19, from_=7,
                                                body=expected_q)
         self.assertEqual([common.fake_data_0_backup_metadata], res)
@@ -189,7 +187,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
         res = self.type_manager.insert(doc=test_doc)
         self.assertEqual((True, 15), res)
         self.mock_es.index.assert_called_with(index='freezer',
-                                              doc_type='base_doc_type',
                                               body=test_doc, id=None)
 
     def test_insert_raise_StorageEngineError_on_ES_Exception(self):
@@ -198,7 +195,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
         self.assertRaises(exceptions.StorageEngineError,
                           self.type_manager.insert, doc=test_doc)
         self.mock_es.index.assert_called_with(index='freezer',
-                                              doc_type='base_doc_type',
                                               body=test_doc, id=None)
 
     def test_insert_raise_StorageEngineError_on_ES_TransportError_exception(
@@ -210,7 +206,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
         self.assertRaises(exceptions.StorageEngineError,
                           self.type_manager.insert, doc=test_doc)
         self.mock_es.index.assert_called_with(index='freezer',
-                                              doc_type='base_doc_type',
                                               body=test_doc, id=None)
 
     def test_insert_raise_DocumentExists_on_ES_TransportError409_exception(
@@ -223,7 +218,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
         self.assertRaises(exceptions.DocumentExists, self.type_manager.insert,
                           doc=test_doc)
         self.mock_es.index.assert_called_with(index='freezer',
-                                              doc_type='base_doc_type',
                                               body=test_doc, id=None)
 
     @patch('freezer_api.storage.elasticv2.elasticsearch.Elasticsearch')
@@ -283,8 +277,7 @@ class TestBackupManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
         super().setUp()
         self.mock_es = mock.Mock()
-        self.backup_manager = elastic.BackupTypeManagerV2(self.mock_es,
-                                                          'backups')
+        self.backup_manager = elastic.BackupTypeManagerV2(self.mock_es)
 
     def test_get_search_query(self):
         my_search = {'match': [{'backup_name': 'my_backup'}, {'mode': 'fs'}],
@@ -363,8 +356,7 @@ class ClientTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
         super().setUp()
         self.mock_es = mock.Mock()
-        self.client_manager = elastic.ClientTypeManagerV2(self.mock_es,
-                                                          'clients')
+        self.client_manager = elastic.ClientTypeManagerV2(self.mock_es)
 
     def test_get_search_query(self):
         my_search = {'match': [{'some_field': 'some text'},
@@ -428,7 +420,7 @@ class JobTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
         super().setUp()
         self.mock_es = mock.Mock()
-        self.job_manager = elastic.JobTypeManagerV2(self.mock_es, 'clients')
+        self.job_manager = elastic.JobTypeManagerV2(self.mock_es)
 
     def test_get_search_query(self):
         my_search = {'match': [{'some_field': 'some text'},
@@ -493,7 +485,6 @@ class JobTypeManagerV2(common.FreezerBaseTestCase):
         self.assertEqual(3, res)
         self.mock_es.update.assert_called_with(
             index=self.job_manager.index,
-            doc_type=self.job_manager.doc_type,
             id=common.fake_job_0_job_id,
             body={"doc": {'status': 'sleepy'}}
         )
@@ -528,8 +519,7 @@ class ActionTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
         super().setUp()
         self.mock_es = mock.Mock()
-        self.action_manager = elastic.ActionTypeManagerV2(self.mock_es,
-                                                          'actions')
+        self.action_manager = elastic.ActionTypeManagerV2(self.mock_es)
 
     def test_get_search_query(self):
         my_search = {'match': [{'some_field': 'some text'},
@@ -594,7 +584,6 @@ class ActionTypeManagerV2(common.FreezerBaseTestCase):
         self.assertEqual(3, res)
         self.mock_es.update.assert_called_with(
             index=self.action_manager.index,
-            doc_type=self.action_manager.doc_type,
             id='poiuuiop7890',
             body={"doc": {'status': 'sleepy'}}
         )
@@ -631,8 +620,7 @@ class SessionTypeManagerV2(common.FreezerBaseTestCase):
     def setUp(self):
         super().setUp()
         self.mock_es = mock.Mock()
-        self.session_manager = elastic.SessionTypeManagerV2(self.mock_es,
-                                                            'sessions')
+        self.session_manager = elastic.SessionTypeManagerV2(self.mock_es)
 
     def test_get_search_query(self):
         my_search = {'match': [{'some_field': 'some text'},
@@ -699,7 +687,6 @@ class SessionTypeManagerV2(common.FreezerBaseTestCase):
         self.assertEqual(3, res)
         self.mock_es.update.assert_called_with(
             index=self.session_manager.index,
-            doc_type=self.session_manager.doc_type,
             id='poiuuiop7890',
             body={"doc": {'status': 'sleepy'}})
 
