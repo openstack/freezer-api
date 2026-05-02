@@ -413,7 +413,7 @@
 # used for key derivation (string value)
 #memcache_secret_key = <None>
 
-# (Optional) Global toggle for TLS usage when comunicating with the caching
+# (Optional) Global toggle for TLS usage when communicating with the caching
 # servers (boolean value)
 #memcache_tls_enabled = false
 
@@ -430,7 +430,7 @@
 #memcache_tls_certfile = <None>
 
 # (Optional) Path to a single file containing the client's private key in.
-# Otherwhise the private key will be taken from the file specified in
+# Otherwise the private key will be taken from the file specified in
 # tls_certfile. If tls_enabled is False, this option is ignored (string value)
 #memcache_tls_keyfile = <None>
 
