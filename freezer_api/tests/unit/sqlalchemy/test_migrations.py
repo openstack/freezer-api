@@ -22,9 +22,8 @@ import sqlalchemy
 
 
 class DatabaseSanityChecks(
-    test_fixtures.OpportunisticDBTestMixin,
-    test_base.BaseTestCase,
-):
+        test_fixtures.OpportunisticDBTestMixin,
+        test_base.BaseTestCase):
     def setUp(self):
         super().setUp()
         self.engine = enginefacade.writer.get_engine()
@@ -56,9 +55,8 @@ class DatabaseSanityChecks(
 
 
 class MigrationsWalk(
-    test_fixtures.OpportunisticDBTestMixin,
-    test_base.BaseTestCase,
-):
+        test_fixtures.OpportunisticDBTestMixin,
+        test_base.BaseTestCase):
     # Migrations can take a long time, particularly on underpowered CI nodes.
     # Give them some breathing room.
     TIMEOUT_SCALING_FACTOR = 4
@@ -98,8 +96,7 @@ class MigrationsWalk(
         'supported_actions',
         'supported_modes',
         'supported_storages',
-        'supported_engines',
-    )
+        'supported_engines')
 
     def _check_23c8ad2655a6(self, connection):
         inspector = sqlalchemy.inspect(connection)
@@ -111,8 +108,7 @@ class MigrationsWalk(
         'id',
         'trust_id',
         'trustor_user_id',
-        'job_id',
-    )
+        'job_id')
 
     def _check_29a2fd19eb86(self, connection):
         inspector = sqlalchemy.inspect(connection)
@@ -122,8 +118,7 @@ class MigrationsWalk(
             self.assertIn(created_column, columns)
 
     _30a3fd20ec97_added_columns = (
-        'is_central',
-    )
+        'is_central',)
 
     def _check_30a3fd20ec97(self, connection):
         inspector = sqlalchemy.inspect(connection)
@@ -143,16 +138,14 @@ class MigrationsWalk(
 
 
 class TestMigrationsWalkMySQL(
-    MigrationsWalk,
-    test_fixtures.OpportunisticDBTestMixin,
-    test_base.BaseTestCase,
-):
+        MigrationsWalk,
+        test_fixtures.OpportunisticDBTestMixin,
+        test_base.BaseTestCase):
     FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
 class TestMigrationsWalkPostgreSQL(
-    MigrationsWalk,
-    test_fixtures.OpportunisticDBTestMixin,
-    test_base.BaseTestCase,
-):
+        MigrationsWalk,
+        test_fixtures.OpportunisticDBTestMixin,
+        test_base.BaseTestCase):
     FIXTURE = test_fixtures.PostgresqlOpportunisticFixture

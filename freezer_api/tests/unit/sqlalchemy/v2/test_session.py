@@ -49,8 +49,6 @@ class DbSessionTestCase(base.DbTestCase):
         self.assertIsNotNone(session_id)
         result = self.dbapi.get_session(project_id=self.fake_session_0.
                                         get('project_id'),
-                                        user_id=self.fake_session_0.
-                                        get('user_id'),
                                         session_id=session_id)
         self.assertIsNotNone(result)
         self.assertEqual(result.get('session_tag'),
@@ -79,18 +77,15 @@ class DbSessionTestCase(base.DbTestCase):
                                             doc=session_doc)
         self.assertIsNotNone(session_id)
 
-        result = self.dbapi.delete_session(project_id=self.fake_session_0.
+        result = self.dbapi.delete_session(user_id=self.fake_user_id,
+                                           project_id=self.fake_session_0.
                                            get('project_id'),
-                                           user_id=self.fake_session_0.
-                                           get('user_id'),
                                            session_id=session_id)
 
         self.assertIsNotNone(result)
         self.assertEqual(result, session_id)
         result = self.dbapi.get_session(project_id=self.fake_session_0.
                                         get('project_id'),
-                                        user_id=self.fake_session_0.
-                                        get('user_id'),
                                         session_id=session_id)
         self.assertEqual(len(result), 0)
 
@@ -104,8 +99,7 @@ class DbSessionTestCase(base.DbTestCase):
         self.assertIsNotNone(session_id)
 
         patch_doc = copy.deepcopy(self.fake_session_2)
-        result = self.dbapi.update_session(user_id=self.fake_session_0.
-                                           get('user_id'),
+        result = self.dbapi.update_session(user_id=self.fake_user_id,
                                            session_id=session_id,
                                            patch_doc=patch_doc,
                                            project_id=self.fake_session_0.
@@ -115,8 +109,6 @@ class DbSessionTestCase(base.DbTestCase):
 
         result = self.dbapi.get_session(project_id=self.fake_session_0.
                                         get('project_id'),
-                                        user_id=self.fake_session_0.
-                                        get('user_id'),
                                         session_id=session_id)
         self.assertIsNotNone(result)
         self.assertEqual(result.get('description'),
@@ -137,8 +129,7 @@ class DbSessionTestCase(base.DbTestCase):
         self.assertIsNotNone(session_id)
 
         patch_doc = copy.deepcopy(self.fake_session_2)
-        result = self.dbapi.replace_session(user_id=self.
-                                            fake_session_2.get('user_id'),
+        result = self.dbapi.replace_session(user_id=self.fake_user_id,
                                             session_id=session_id,
                                             doc=patch_doc,
                                             project_id=self.fake_session_2.
@@ -149,8 +140,6 @@ class DbSessionTestCase(base.DbTestCase):
 
         result = self.dbapi.get_session(project_id=self.fake_session_2.
                                         get('project_id'),
-                                        user_id=self.fake_session_2.
-                                        get('user_id'),
                                         session_id=session_id)
 
         self.assertIsNotNone(result)
@@ -163,8 +152,7 @@ class DbSessionTestCase(base.DbTestCase):
                          get('schedule_date'))
 
         patch_doc1 = copy.deepcopy(self.fake_session_0)
-        result = self.dbapi.replace_session(user_id=self.
-                                            fake_session_0.get('user_id'),
+        result = self.dbapi.replace_session(user_id=self.fake_user_id,
                                             session_id=self.fake_session_id,
                                             doc=patch_doc1,
                                             project_id=self.fake_session_2.
@@ -172,8 +160,6 @@ class DbSessionTestCase(base.DbTestCase):
         self.assertIsNotNone(result)
         result = self.dbapi.get_session(project_id=self.fake_session_2.
                                         get('project_id'),
-                                        user_id=self.fake_session_2.
-                                        get('user_id'),
                                         session_id=self.fake_session_id)
         self.assertEqual(result.get('session_id'), self.fake_session_id)
 
@@ -191,11 +177,8 @@ class DbSessionTestCase(base.DbTestCase):
             sessionids.append(session_id)
             count += 1
 
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
                                            limit=10)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 10)
@@ -226,13 +209,9 @@ class DbSessionTestCase(base.DbTestCase):
                       'match_not':
                           [{'schedule_date': '2018-12-12T00:00:00'}]
                       }
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 3)
@@ -261,13 +240,9 @@ class DbSessionTestCase(base.DbTestCase):
             count += 1
         search_opt = {'match': [{'hold_off': 100},
                                 {'schedule_date': '2018-12-12T00:00:00'}]}
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 2)
@@ -296,13 +271,9 @@ class DbSessionTestCase(base.DbTestCase):
             count += 1
         search_opt = {'match_not': [{'schedule_date': '2018-11-14T16:20:00'},
                                     {'hold_off': 60}]}
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 2)
@@ -329,13 +300,9 @@ class DbSessionTestCase(base.DbTestCase):
             count += 1
 
         search_opt = {'match': [{'_all': '[{"hold_off": 100}]'}]}
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 5)
@@ -364,13 +331,9 @@ class DbSessionTestCase(base.DbTestCase):
         search_opt = {'match': [{'_all': '[{"hold_off": 100},'
                                          '{"schedule_date": '
                                          '"2018-12-12T00:00:00"}]'}]}
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 2)
@@ -397,25 +360,17 @@ class DbSessionTestCase(base.DbTestCase):
             count += 1
 
         search_opt = {'match': [{'_all': '{"hold_off": 100}'}]}
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
 
         search_opt = {'match': [{'_all': 'hold_off=100'}]}
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=20,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=20, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
@@ -438,13 +393,9 @@ class DbSessionTestCase(base.DbTestCase):
         # There are 5 records.
         search_opt = {'match': [{'_all': '[{"hold_off": 100}]'}]}
         # First, we can get 3 tuples
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
-                                           get('project_id'),
-                                           offset=0,
-                                           limit=3,
-                                           search=search_opt)
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
+                                           get('project_id'), offset=0,
+                                           limit=3, search=search_opt)
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 3)
@@ -452,9 +403,7 @@ class DbSessionTestCase(base.DbTestCase):
             sessionmap = result[index]
             self.assertEqual(100, sessionmap['hold_off'])
         # Second, we can get 2 tuples
-        result = self.dbapi.search_session(user_id=self.fake_session_3.
-                                           get('user_id'),
-                                           project_id=self.fake_session_3.
+        result = self.dbapi.search_session(project_id=self.fake_session_3.
                                            get('project_id'),
                                            offset=3,
                                            limit=3,

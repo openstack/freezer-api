@@ -21,7 +21,8 @@ from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
-from sqlalchemy import and_, or_
+from oslo_utils import timeutils
+from sqlalchemy import or_
 import uuid
 
 from freezer_api.api.common import utils as json_utils
@@ -147,7 +148,7 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
     with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            query = query.filter_by(id=tuple_id)
             result = query.all()
             if 1 == len(result):
                 result[0].delete(session=session)
@@ -171,15 +172,13 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
 
 @db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
                       inc_retry_interval=False, retry_on_deadlock=True)
-def get_tuple(tablename, user_id, tuple_id, project_id=None,
+def get_tuple(tablename, tuple_id, project_id=None,
               all_projects=False):
     if all_projects:
         project_id = None
     with session_for_read() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
-            if not all_projects:
-                query = query.filter_by(user_id=user_id)
             query = query.filter_by(id=tuple_id)
             result = query.all()
         except db_exc.DBError:
@@ -217,10 +216,14 @@ def add_tuple(tuple):
                       inc_retry_interval=False, retry_on_deadlock=True)
 def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
+    tuple_values = dict(tuple_values)
+    tuple_values['user_id'] = user_id
+    tuple_values['updated_at'] = timeutils.utcnow()
+
     with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            query = query.filter_by(id=tuple_id)
             result = query.update(tuple_values)
         except db_exc.DBDuplicateEntry as e:
             LOG.warning('Database update collision: {0}'.format(e))
@@ -249,10 +252,14 @@ def update_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
                       inc_retry_interval=False, retry_on_deadlock=True)
 def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
+    tuple_values = dict(tuple_values)
+    tuple_values['user_id'] = user_id
+    tuple_values['updated_at'] = timeutils.utcnow()
+
     with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
-            query = query.filter_by(user_id=user_id).filter_by(id=tuple_id)
+            query = query.filter_by(id=tuple_id)
             result = query.update(tuple_values)
             if not result:
                 tuplet = tablename()
@@ -275,7 +282,7 @@ def replace_tuple(tablename, user_id, tuple_id, tuple_values, project_id=None):
 
 @db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
                       inc_retry_interval=False, retry_on_deadlock=True)
-def search_tuple(tablename, user_id, project_id=None, all_projects=False,
+def search_tuple(tablename, project_id=None, all_projects=False,
                  offset=0, limit=100, search=None):
     search = valid_and_get_search_option(search=search)
 
@@ -286,17 +293,14 @@ def search_tuple(tablename, user_id, project_id=None, all_projects=False,
         try:
             if tablename == models.Client and not all_projects:
                 # Special case for clients: include central clients even if
-                # project/user doesn't match the requester
+                # project doesn't match the requester
                 query = model_query(session, tablename)
                 query = query.filter(or_(
-                    and_(models.Client.project_id == project_id,
-                         models.Client.user_id == user_id),
+                    models.Client.project_id == project_id,
                     models.Client.is_central.is_(True)
                 ))
             else:
                 query = model_query(session, tablename, project_id=project_id)
-                if not all_projects:
-                    query = query.filter_by(user_id=user_id)
 
             #  If search option isn't valid or set, we use limit and offset
             #  in sqlalchemy level
@@ -419,16 +423,16 @@ def filter_tuple_by_search_opt(tuples, offset=0, limit=100, search=None):
 
 @db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
                       inc_retry_interval=False, retry_on_deadlock=True)
-def get_client_byid(user_id, client_id, project_id=None):
+def get_client_byid(client_id, project_id=None):
 
     with session_for_read() as session:
         try:
             query = model_query(session, models.Client)
             if client_id:
-                # Allow retrieval if user owns it OR if it is a central client
+                # Allow retrieval if user's project owns it OR if it
+                # is a central client
                 query = query.filter(or_(
-                    and_(models.Client.project_id == project_id,
-                         models.Client.user_id == user_id),
+                    models.Client.project_id == project_id,
                     models.Client.is_central.is_(True)
                 ))
                 query = query.filter_by(client_id=client_id)
@@ -452,16 +456,15 @@ def decode_capability(db_field):
     return decoded
 
 
-def get_client(user_id, project_id=None, client_id=None, offset=0,
+def get_client(project_id=None, client_id=None, offset=0,
                limit=100, search=None):
 
     clients = []
     search_key = {}
     if client_id:
-        result = get_client_byid(user_id, client_id, project_id=project_id)
+        result = get_client_byid(client_id, project_id=project_id)
     else:
         result, search_key = search_tuple(tablename=models.Client,
-                                          user_id=user_id,
                                           project_id=project_id, offset=offset,
                                           limit=limit, search=search)
 
@@ -511,7 +514,7 @@ def add_client(user_id, doc, project_id=None):
                 client_id=client_id, hostname=hostname)
             existing = query.first()
     else:
-        result = get_client_byid(user_id, client_id, project_id=project_id)
+        result = get_client_byid(client_id, project_id=project_id)
         existing = result[0] if result else None
 
     if existing:
@@ -588,13 +591,12 @@ def add_client(user_id, doc, project_id=None):
 
 def delete_client(user_id, client_id, project_id=None):
 
-    existing = get_client(project_id=project_id, user_id=user_id,
+    existing = get_client(project_id=project_id,
                           client_id=client_id)
 
     if existing:
         client_info = existing[0]
-        if client_info.get('user_id') != user_id or \
-                client_info.get('project_id') != project_id:
+        if client_info.get('project_id') != project_id:
             raise freezer_api_exc.AccessForbidden(
                 "You are not permitted to delete this client"
             )
@@ -632,7 +634,7 @@ def add_action(user_id, doc, project_id=None):
 
     action_id = action_doc.get('action_id')
     # Check globally to avoid primary Key collision
-    existing = get_tuple(tablename=models.Action, user_id=None,
+    existing = get_tuple(tablename=models.Action,
                          tuple_id=action_id, project_id=None,
                          all_projects=True)
     if existing:
@@ -683,9 +685,9 @@ def add_action(user_id, doc, project_id=None):
     return action_id
 
 
-def get_action(user_id, action_id, project_id=None):
+def get_action(action_id, project_id=None):
 
-    result = get_tuple(tablename=models.Action, user_id=user_id,
+    result = get_tuple(tablename=models.Action,
                        tuple_id=action_id, project_id=project_id)
 
     values = {}
@@ -712,18 +714,18 @@ def get_action(user_id, action_id, project_id=None):
     return values
 
 
-def search_action(user_id, project_id=None, offset=0,
+def search_action(project_id=None, offset=0,
                   limit=100, search=None):
 
     actions = []
 
-    result, search_key = search_tuple(tablename=models.Action, user_id=user_id,
+    result, search_key = search_tuple(tablename=models.Action,
                                       project_id=project_id, offset=offset,
                                       limit=limit, search=search)
     for action in result:
         actionmap = {}
         actionmap['project_id'] = project_id
-        actionmap['user_id'] = user_id
+        actionmap['user_id'] = action.user_id
         actionmap['timeout'] = action.timeout
         actionmap['max_retries_interval'] = action.max_retries_interval
         actionmap['max_retries'] = action.max_retries
@@ -814,12 +816,10 @@ def replace_action(user_id, action_id, doc, project_id=None):
     return action_id
 
 
-def check_job_client(user_id, project_id, job_actions, client_id):
+def check_job_client(project_id, job_actions, client_id):
     client_list = get_client(
-        user_id=user_id,
         project_id=project_id,
-        client_id=client_id,
-    )
+        client_id=client_id)
     if not client_list:
         raise freezer_api_exc.UnprocessableEntity(
             message='Client not found with ID {0}'.format(client_id))
@@ -832,7 +832,7 @@ def delete_job(user_id, job_id, project_id=None):
     with session_for_write() as session:
         try:
             job = model_query(session, models.Job, project_id=project_id).\
-                filter_by(user_id=user_id, id=job_id).first()
+                filter_by(id=job_id).first()
             if job:
                 if job.user_credentials:
                     trust_id = job.user_credentials.trust_id
@@ -854,7 +854,7 @@ def add_job(user_id, doc, project_id=None):
 
     job_id = job_doc.get('job_id')
     # Check globally to avoid primary Key collision
-    existing = get_job(project_id=None, user_id=None,
+    existing = get_job(project_id=None,
                        job_id=job_id, all_projects=True)
     if existing:
         raise freezer_api_exc.\
@@ -862,7 +862,6 @@ def add_job(user_id, doc, project_id=None):
                            format(job_id))
 
     check_job_client(
-        user_id=user_id,
         project_id=project_id,
         job_actions=job_doc.get('job_actions', []),
         client_id=job_doc.get('client_id'))
@@ -896,9 +895,9 @@ def add_job(user_id, doc, project_id=None):
     return job_id
 
 
-def get_job(user_id, job_id, project_id=None, all_projects=False):
+def get_job(job_id, project_id=None, all_projects=False):
 
-    result = get_tuple(tablename=models.Job, user_id=user_id,
+    result = get_tuple(tablename=models.Job,
                        tuple_id=job_id, project_id=project_id,
                        all_projects=all_projects)
     values = {}
@@ -930,10 +929,10 @@ def trust_in_use(trust_id):
         return query.count() > 0
 
 
-def search_job(user_id, project_id=None, all_projects=False, offset=0,
+def search_job(project_id=None, all_projects=False, offset=0,
                limit=100, search=None):
     jobs = []
-    result, search_key = search_tuple(tablename=models.Job, user_id=user_id,
+    result, search_key = search_tuple(tablename=models.Job,
                                       project_id=project_id,
                                       all_projects=all_projects,
                                       offset=offset, limit=limit,
@@ -972,11 +971,10 @@ def update_job(user_id, job_id, patch_doc, project_id=None):
     if 'job_actions' in valid_patch:
         client_id = valid_patch.get(
             'client_id',
-            get_job(user_id=user_id, project_id=project_id, job_id=job_id
+            get_job(project_id=project_id, job_id=job_id
                     ).get('client_id')
         )
         check_job_client(
-            user_id=user_id,
             project_id=project_id,
             job_actions=valid_patch.get('job_actions', []),
             client_id=client_id)
@@ -1002,7 +1000,6 @@ def replace_job(user_id, job_id, doc, project_id=None):
     valid_doc = utilsv2.JobDoc.update(doc, user_id, job_id, project_id)
 
     check_job_client(
-        user_id=user_id,
         project_id=project_id,
         job_actions=valid_doc.get('job_actions', []),
         client_id=valid_doc.get('client_id'))
@@ -1033,8 +1030,8 @@ def replace_job(user_id, job_id, doc, project_id=None):
     return job_id
 
 
-def get_backup(user_id, backup_id, project_id=None):
-    result = get_tuple(tablename=models.Backup, user_id=user_id,
+def get_backup(backup_id, project_id=None):
+    result = get_tuple(tablename=models.Backup,
                        tuple_id=backup_id, project_id=project_id)
     values = {}
     if 1 == len(result):
@@ -1058,7 +1055,7 @@ def add_backup(user_id, user_name, doc, project_id=None):
     backupjson = metadatadoc.serialize()
     backup_metadata = backupjson.get('backup_metadata')
 
-    existing = get_backup(project_id=project_id, user_id=user_id,
+    existing = get_backup(project_id=project_id,
                           backup_id=backup_id)
     if existing:
         raise freezer_api_exc.DocumentExists(
@@ -1089,17 +1086,17 @@ def delete_backup(user_id, backup_id, project_id=None):
     return tupleid
 
 
-def search_backup(user_id, project_id=None, offset=0,
+def search_backup(project_id=None, offset=0,
                   limit=100, search=None):
     backups = []
 
-    result, search_key = search_tuple(tablename=models.Backup, user_id=user_id,
+    result, search_key = search_tuple(tablename=models.Backup,
                                       project_id=project_id, offset=offset,
                                       limit=limit, search=search)
     for backup in result:
         backupmap = {}
         backupmap['project_id'] = project_id
-        backupmap['user_id'] = user_id
+        backupmap['user_id'] = backup.user_id
         backupmap['backup_id'] = backup.id
         backupmap['user_name'] = backup.user_name
         backupmap['backup_metadata'] = json_utils.\
@@ -1112,10 +1109,10 @@ def search_backup(user_id, project_id=None, offset=0,
     return backups
 
 
-def get_session(user_id, session_id, project_id=None):
+def get_session(session_id, project_id=None):
     jobt = {}
     values = {}
-    result = get_tuple(tablename=models.Session, user_id=user_id,
+    result = get_tuple(tablename=models.Session,
                        tuple_id=session_id, project_id=project_id)
     if 1 == len(result):
         values['project_id'] = result[0].get('project_id')
@@ -1155,7 +1152,7 @@ def add_session(user_id, doc, project_id=None):
 
     session_id = session_doc['session_id']
     schedulingjson = session_doc.get('schedule')
-    existing = get_session(project_id=project_id, user_id=user_id,
+    existing = get_session(project_id=project_id,
                            session_id=session_id)
     if existing:
         raise freezer_api_exc.DocumentExists(
@@ -1191,7 +1188,7 @@ def update_session(user_id, session_id, patch_doc, project_id=None):
 
     valid_patch = utilsv2.SessionDoc.create_patch(patch_doc)
 
-    sessiont = get_session(project_id=project_id, user_id=user_id,
+    sessiont = get_session(project_id=project_id,
                            session_id=session_id)
     if not sessiont:
         raise freezer_api_exc.DocumentNotFound(
@@ -1254,19 +1251,18 @@ def replace_session(user_id, session_id, doc, project_id=None):
     return session_id
 
 
-def search_session(user_id, project_id=None, offset=0,
+def search_session(project_id=None, offset=0,
                    limit=100, search=None):
     sessions = []
     jobt = {}
 
     result, search_key = search_tuple(tablename=models.Session,
-                                      user_id=user_id,
                                       project_id=project_id, offset=offset,
                                       limit=limit, search=search)
     for sessiont in result:
         sessionmap = {}
         sessionmap['project_id'] = project_id
-        sessionmap['user_id'] = user_id
+        sessionmap['user_id'] = sessiont.get('user_id')
         sessionmap['session_id'] = sessiont.get('id')
         sessionmap['description'] = sessiont.get('description')
         sessionmap['session_tag'] = sessiont.get('session_tag')

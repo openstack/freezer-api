@@ -32,12 +32,10 @@ class ActionsCollectionResource(resource.BaseResource):
     @policy.enforce('actions:get_all')
     def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/actions(?limit,offset)     Lists actions
-        user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         search = self.json_body(req)
-        obj_list = self.db.search_action(project_id=project_id,
-                                         user_id=user_id, offset=offset,
+        obj_list = self.db.search_action(project_id=project_id, offset=offset,
                                          limit=limit, search=search)
         resp.media = {'actions': obj_list}
 
@@ -48,7 +46,7 @@ class ActionsCollectionResource(resource.BaseResource):
         if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         action_id = self.db.add_action(project_id=project_id,
                                        user_id=user_id,
                                        doc=doc)
@@ -69,10 +67,7 @@ class ActionsResource(resource.BaseResource):
         # GET /v2/{project_id}/actions/{action_id}
         # retrieves the specified action
         # search in body
-        user_id = req.get_header('X-User-ID') or ''
-        obj = self.db.get_action(project_id=project_id,
-                                 user_id=user_id,
-                                 action_id=action_id)
+        obj = self.db.get_action(project_id=project_id, action_id=action_id)
         if obj:
             resp.media = obj
         else:
@@ -82,7 +77,7 @@ class ActionsResource(resource.BaseResource):
     def on_delete(self, req, resp, project_id, action_id):
         # DELETE /v2/{project_id}/actions/{action_id}
         # Deletes the specified action
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         self.db.delete_action(project_id=project_id,
                               user_id=user_id,
                               action_id=action_id)
@@ -93,7 +88,7 @@ class ActionsResource(resource.BaseResource):
     def on_patch(self, req, resp, project_id, action_id):
         # PATCH /v2/{project_id}/actions/{action_id}
         # updates the specified action
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
         doc = self.json_body(req)
         new_version = self.db.update_action(project_id=project_id,
                                             user_id=user_id,
@@ -105,7 +100,7 @@ class ActionsResource(resource.BaseResource):
     def on_post(self, req, resp, project_id, action_id):
         # PUT /v2/{project_id}/actions/{action_id}
         # Creates/Replaces the specified action
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
         doc = self.json_body(req)
         new_version = self.db.replace_action(project_id=project_id,
                                              user_id=user_id,

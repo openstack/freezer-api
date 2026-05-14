@@ -26,6 +26,7 @@ class TestClientsCollectionResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_data_0_user_id
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_data_0_user_id
         self.mock_req.status = falcon.HTTP_200
@@ -118,6 +119,7 @@ class TestClientsResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_data_0_user_id
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_data_0_user_id
         self.mock_req.status = falcon.HTTP_200
@@ -192,8 +194,7 @@ class TestClientsDb(db_base.DbTestCase):
 
         # Project B should see the central client but NOT Project A's
         # private client.
-        clients_list = self.dbapi.get_client(user_id='user_b',
-                                             project_id='project_B')
+        clients_list = self.dbapi.get_client(project_id='project_B')
         client_ids = [c['client']['client_id'] for c in clients_list]
 
         self.assertIn('central_node', client_ids)
@@ -203,8 +204,7 @@ class TestClientsDb(db_base.DbTestCase):
 
         # Project A should see both, and private_node should have
         # is_central=False
-        clients_list_a = self.dbapi.get_client(user_id='user_a',
-                                               project_id='project_A')
+        clients_list_a = self.dbapi.get_client(project_id='project_A')
         self.assertEqual(2, len(clients_list_a))
         private = next(c for c in clients_list_a
                        if c['client']['client_id'] == 'private_node')
@@ -221,8 +221,7 @@ class TestClientsDb(db_base.DbTestCase):
                               doc=doc_central)
 
         # Project B requests the central client specifically by ID.
-        client = self.dbapi.get_client(user_id='user_b',
-                                       project_id='project_B',
+        client = self.dbapi.get_client(project_id='project_B',
                                        client_id='central_node')
         self.assertEqual(1, len(client))
         self.assertEqual('central_node', client[0]['client']['client_id'])
@@ -236,8 +235,7 @@ class TestClientsDb(db_base.DbTestCase):
         self.dbapi.add_client(user_id='user_a', project_id='project_A',
                               doc=doc)
 
-        clients_list = self.dbapi.get_client(user_id='user_a',
-                                             project_id='project_A')
+        clients_list = self.dbapi.get_client(project_id='project_A')
         self.assertFalse(clients_list[0]['client'].get('is_central'),
                          "is_central should default to False if not provided")
 
@@ -253,8 +251,7 @@ class TestClientsDb(db_base.DbTestCase):
 
         # Project B requests the private client specifically by ID.
         # It should NOT be found.
-        client = self.dbapi.get_client(user_id='user_b',
-                                       project_id='project_B',
+        client = self.dbapi.get_client(project_id='project_B',
                                        client_id='private_node')
         self.assertEqual(0, len(client))
 
@@ -272,8 +269,7 @@ class TestClientsDb(db_base.DbTestCase):
                           user_id='user_b', project_id='project_B',
                           client_id='central_node')
 
-        clients = self.dbapi.get_client(user_id='user_a',
-                                        project_id='project_A',
+        clients = self.dbapi.get_client(project_id='project_A',
                                         client_id='central_node')
         self.assertEqual(
             1, len(clients),

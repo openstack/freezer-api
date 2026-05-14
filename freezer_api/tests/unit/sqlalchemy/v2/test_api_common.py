@@ -95,8 +95,7 @@ class ApiTestCase(base.DbTestCase):
         mock_model_query.side_effect = Exception('regular test failure')
         self.assertRaises(freezer_api_exc.StorageEngineError,
                           api.delete_tuple, models.Job, self.fake_user_id,
-                          self.fake_job_id,
-                          project_id=self.fake_project_id)
+                          self.fake_job_id, project_id=self.fake_project_id)
 
     def test_delete_tuple(self):
         job_doc1 = copy.deepcopy(self.fake_job_0)
@@ -142,8 +141,7 @@ class ApiTestCase(base.DbTestCase):
     def test_raises_get_tuple(self, mock_model_query):
         mock_model_query.side_effect = Exception('regular test failure')
         self.assertRaises(freezer_api_exc.StorageEngineError,
-                          api.get_tuple, models.Job, self.fake_user_id,
-                          self.fake_job_id,
+                          api.get_tuple, models.Job, self.fake_job_id,
                           project_id=self.fake_project_id)
 
     def test_raises_add_tuple(self):
@@ -184,9 +182,9 @@ class ApiTestCase(base.DbTestCase):
         mock_search = mock.MagicMock()
         mock_model_query.side_effect = Exception('regular test failure')
         self.assertRaises(freezer_api_exc.StorageEngineError,
-                          api.search_tuple, mock_tablename, self.fake_user_id,
-                          project_id=self.fake_project_id, offset=0, limit=100,
-                          search=mock_search)
+                          api.search_tuple, mock_tablename,
+                          project_id=self.fake_project_id, offset=0,
+                          limit=100, search=mock_search)
 
     def test_valid_and_get_search_option(self):
         search = {'error_key': 'search_info_error'}

@@ -49,7 +49,6 @@ class DbJobTestCase(base.DbTestCase):
                                     project_id=self.fake_project_id)
         self.assertIsNotNone(job_id)
         result = self.dbapi.get_job(project_id=self.fake_project_id,
-                                    user_id=self.fake_job_0.get('user_id'),
                                     job_id=job_id)
         self.assertIsNotNone(result)
         self.assertEqual(result.get('client_id'),
@@ -80,7 +79,7 @@ class DbJobTestCase(base.DbTestCase):
         self.assertIsNotNone(job_id)
 
         result, trust_id = self.dbapi.delete_job(
-            user_id=self.fake_job_0.get('user_id'),
+            user_id=self.fake_user_id,
             job_id=job_id,
             project_id=self.fake_project_id)
 
@@ -88,7 +87,6 @@ class DbJobTestCase(base.DbTestCase):
         self.assertEqual(result, job_id)
         self.assertIsNone(trust_id)
         result = self.dbapi.get_job(project_id=self.fake_project_id,
-                                    user_id=self.fake_job_0.get('user_id'),
                                     job_id=job_id)
         self.assertEqual(len(result), 0)
 
@@ -133,15 +131,14 @@ class DbJobTestCase(base.DbTestCase):
 
         patch_doc = copy.deepcopy(self.fake_job_2)
 
-        result = self.dbapi.update_job(user_id=self.fake_job_2.get('user_id'),
+        result = self.dbapi.update_job(user_id=self.fake_user_id,
                                        job_id=job_id,
                                        patch_doc=patch_doc,
-                                       project_id=self.fake_project_id,)
+                                       project_id=self.fake_project_id)
         self.assertIsNotNone(result)
         self.assertEqual(result, 0)
 
         result = self.dbapi.get_job(project_id=self.fake_project_id,
-                                    user_id=self.fake_job_0.get('user_id'),
                                     job_id=job_id)
         self.assertIsNotNone(result)
         self.assertEqual(result.get('client_id'),
@@ -163,8 +160,7 @@ class DbJobTestCase(base.DbTestCase):
         self.assertIsNotNone(job_id)
 
         patch_doc = copy.deepcopy(self.fake_job_2)
-        result = self.dbapi.replace_job(user_id=self.
-                                        fake_job_2.get('user_id'),
+        result = self.dbapi.replace_job(user_id=self.fake_user_id,
                                         job_id=job_id,
                                         doc=patch_doc,
                                         project_id=self.fake_project_id)
@@ -173,7 +169,6 @@ class DbJobTestCase(base.DbTestCase):
         self.assertEqual(result, job_id)
 
         result = self.dbapi.get_job(project_id=self.fake_project_id,
-                                    user_id=self.fake_job_2.get('user_id'),
                                     job_id=job_id)
 
         self.assertIsNotNone(result)
@@ -190,14 +185,12 @@ class DbJobTestCase(base.DbTestCase):
 
         patch_doc1 = copy.deepcopy(self.fake_job_0)
 
-        result = self.dbapi.replace_job(user_id=self.
-                                        fake_job_2.get('user_id'),
+        result = self.dbapi.replace_job(user_id=self.fake_user_id,
                                         job_id=self.fake_job_id,
                                         doc=patch_doc1,
                                         project_id=self.fake_project_id)
         self.assertIsNotNone(result)
         result = self.dbapi.get_job(project_id=self.fake_project_id,
-                                    user_id=self.fake_job_2.get('user_id'),
                                     job_id=self.fake_job_id)
         self.assertEqual(result.get('job_id'), self.fake_job_id)
 
@@ -214,9 +207,7 @@ class DbJobTestCase(base.DbTestCase):
             jobids.append(job_id)
             count += 1
 
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=10)
 
@@ -238,8 +229,7 @@ class DbJobTestCase(base.DbTestCase):
             self.dbapi.add_client(
                 project_id=project_id,
                 user_id=user_id,
-                doc=client_doc['client'],
-            )
+                doc=client_doc['client'])
             job_doc = common.get_fake_job(project_id, user_id, client_id)
             job_id = self.dbapi.add_job(user_id=user_id,
                                         doc=job_doc,
@@ -249,12 +239,10 @@ class DbJobTestCase(base.DbTestCase):
 
         # Search across all projects using completely unrelated context
         result = self.dbapi.search_job(
-            user_id="unrelated-user-id",
             project_id="unrelated-project-id",
             all_projects=True,
             offset=0,
-            limit=1000,
-        )
+            limit=1000)
         self.assertIsNotNone(result)
         # Find our jobs, ignore any others that might be in the DB
         for job in result:
@@ -281,9 +269,7 @@ class DbJobTestCase(base.DbTestCase):
             count += 1
         search_opt = {'match_not': [{'schedule_interval': '10 days'}],
                       'match': [{'client_id': 'node1'}]}
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
@@ -314,9 +300,7 @@ class DbJobTestCase(base.DbTestCase):
             count += 1
         search_opt = {'match': [{'client_id': 'node1'},
                                 {'schedule_interval': '10 days'}]}
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
@@ -348,9 +332,7 @@ class DbJobTestCase(base.DbTestCase):
         search_opt = {'match_not':
                       [{'schedule_interval': '10 days'},
                        {'client_id': 'mytenantid_myhostname2'}]}
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
@@ -378,9 +360,7 @@ class DbJobTestCase(base.DbTestCase):
             jobids.append(job_id)
             count += 1
         search_opt = {'match': [{'_all': '[{"client_id": "node1"}]'}]}
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
@@ -412,9 +392,7 @@ class DbJobTestCase(base.DbTestCase):
                         '[{"client_id": "node1"}, '
                         '{"schedule_interval": "10 days"}]'}]}
 
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
@@ -442,18 +420,14 @@ class DbJobTestCase(base.DbTestCase):
             jobids.append(job_id)
             count += 1
         search_opt = {'match': [{'_all': '{"client_id": "node1"}'}]}
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 20)
         search_opt = {'match': [{'_all': 'client_id=node1'}]}
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=20,
                                        search=search_opt)
@@ -477,9 +451,7 @@ class DbJobTestCase(base.DbTestCase):
         # There are 5 records.
         search_opt = {'match': [{'_all': '[{"client_id": "node1"}]'}]}
         # First, we can get 3 tuples
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=0,
                                        limit=3,
                                        search=search_opt)
@@ -490,9 +462,7 @@ class DbJobTestCase(base.DbTestCase):
             jobmap = result[index]
             self.assertEqual('node1', jobmap['client_id'])
         # Second, we can get 2 tuples
-        result = self.dbapi.search_job(user_id=self.fake_job_3.
-                                       get('user_id'),
-                                       project_id=self.fake_project_id,
+        result = self.dbapi.search_job(project_id=self.fake_project_id,
                                        offset=3,
                                        limit=3,
                                        search=search_opt)

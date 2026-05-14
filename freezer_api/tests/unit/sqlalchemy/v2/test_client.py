@@ -49,7 +49,6 @@ class DbClientTestCase(base.DbTestCase):
         self.assertIsNotNone(client_id)
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        client_id=client_id)
 
         self.assertIsNotNone(result)
@@ -82,8 +81,8 @@ class DbClientTestCase(base.DbTestCase):
                                           project_id=self.fake_project_id)
         self.assertIsNotNone(client_id)
 
-        result = self.dbapi.delete_client(project_id=self.fake_project_id,
-                                          user_id=self.fake_user_id,
+        result = self.dbapi.delete_client(user_id=self.fake_user_id,
+                                          project_id=self.fake_project_id,
                                           client_id=client_id)
 
         self.assertIsNotNone(result)
@@ -91,7 +90,6 @@ class DbClientTestCase(base.DbTestCase):
         self.assertEqual(result, client_id)
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        client_id=client_id)
 
         self.assertEqual(len(result), 0)
@@ -112,7 +110,6 @@ class DbClientTestCase(base.DbTestCase):
             count += 1
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=10,
                                        offset=0)
 
@@ -149,7 +146,6 @@ class DbClientTestCase(base.DbTestCase):
                       'match': [{'description': 'tecs'}]}
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -189,7 +185,6 @@ class DbClientTestCase(base.DbTestCase):
                                 {'description': 'tecs'}]}
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -229,7 +224,6 @@ class DbClientTestCase(base.DbTestCase):
                                     {'description': 'some usefule text here'}]}
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -266,7 +260,6 @@ class DbClientTestCase(base.DbTestCase):
         search_opt = {'match': [{'_all': '[{"description": "tecs"}]'}]}
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -306,7 +299,6 @@ class DbClientTestCase(base.DbTestCase):
                         '{"hostname": "node2"}]'}]}
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -342,7 +334,6 @@ class DbClientTestCase(base.DbTestCase):
 
         search_opt = {'match': [{'_all': '{"hostname": "node2"}'}]}
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -352,7 +343,6 @@ class DbClientTestCase(base.DbTestCase):
 
         search_opt = {'match': [{'_all': 'hostname=node2'}]}
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        limit=20,
                                        offset=0,
                                        search=search_opt)
@@ -377,7 +367,6 @@ class DbClientTestCase(base.DbTestCase):
         self.assertEqual(client_id, updated_client_id)
 
         result = self.dbapi.get_client(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        client_id=client_id)
 
         self.assertEqual(
@@ -417,8 +406,7 @@ class DbClientTestCase(base.DbTestCase):
                               project_id='original_project')
 
         # Verify record still belongs to original project/user
-        res = self.dbapi.get_client_byid(user_id='original_user',
-                                         client_id=client_id,
+        res = self.dbapi.get_client_byid(client_id=client_id,
                                          project_id='original_project')
         self.assertEqual(1, len(res))
         self.assertEqual('original_project', res[0].project_id)
@@ -439,11 +427,9 @@ class DbClientTestCase(base.DbTestCase):
                               project_id='project_2')
 
         # Verify they are separate records
-        res1 = self.dbapi.get_client_byid(user_id='user_1',
-                                          client_id=client_id,
+        res1 = self.dbapi.get_client_byid(client_id=client_id,
                                           project_id='project_1')
-        res2 = self.dbapi.get_client_byid(user_id='user_2',
-                                          client_id=client_id,
+        res2 = self.dbapi.get_client_byid(client_id=client_id,
                                           project_id='project_2')
 
         self.assertEqual(1, len(res1))

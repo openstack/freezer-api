@@ -50,7 +50,7 @@ class TestDBSecuritySanitization(base.DbTestCase):
         patch_path = 'freezer_api.db.sqlalchemy.api.model_query'
         with mock.patch(patch_path) as mock_query:
             mock_res = mock_query.return_value.filter_by.return_value
-            mock_res.filter_by.return_value.update.side_effect = \
+            mock_res.update.side_effect = \
                 db_exc.DBDuplicateEntry("Violated Constraint Details")
 
             ex = self.assertRaises(freezer_api_exc.DocumentExists,
@@ -83,7 +83,7 @@ class TestDBSecuritySanitization(base.DbTestCase):
         sqlalchemy_api.add_action('user1', doc, 'proj1')
 
         mock_get_tuple.assert_called_with(
-            tablename=models.Action, user_id=None,
+            tablename=models.Action,
             tuple_id='unique-id', project_id=None,
             all_projects=True
         )
@@ -97,6 +97,6 @@ class TestDBSecuritySanitization(base.DbTestCase):
         sqlalchemy_api.add_job('user1', doc, 'proj1')
 
         mock_get_job.assert_called_with(
-            project_id=None, user_id=None,
+            project_id=None,
             job_id='job-uuid', all_projects=True
         )

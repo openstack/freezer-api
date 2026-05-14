@@ -43,7 +43,6 @@ class DbBackupTestCase(base.DbTestCase):
         self.assertIsNotNone(backup_id)
 
         result = self.dbapi.get_backup(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        backup_id=backup_id)
         self.assertIsNotNone(result)
 
@@ -70,8 +69,8 @@ class DbBackupTestCase(base.DbTestCase):
 
         self.assertIsNotNone(backup_id)
 
-        result = self.dbapi.delete_backup(project_id=self.fake_project_id,
-                                          user_id=self.fake_user_id,
+        result = self.dbapi.delete_backup(user_id=self.fake_user_id,
+                                          project_id=self.fake_project_id,
                                           backup_id=backup_id)
 
         self.assertIsNotNone(result)
@@ -79,7 +78,6 @@ class DbBackupTestCase(base.DbTestCase):
         self.assertEqual(result, backup_id)
 
         result = self.dbapi.get_backup(project_id=self.fake_project_id,
-                                       user_id=self.fake_user_id,
                                        backup_id=backup_id)
         self.assertEqual(len(result), 0)
 
@@ -98,7 +96,6 @@ class DbBackupTestCase(base.DbTestCase):
             count += 1
 
         result = self.dbapi.search_backup(project_id=self.fake_project_id,
-                                          user_id=self.fake_user_id,
                                           limit=10,
                                           offset=0)
 

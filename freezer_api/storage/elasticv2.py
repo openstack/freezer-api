@@ -386,18 +386,16 @@ class ElasticSearchEngineV2(object):
         self.action_manager = ActionTypeManagerV2(self.es, self.index)
         self.session_manager = SessionTypeManagerV2(self.es, self.index)
 
-    def get_backup(self, user_id, backup_id, project_id=None):
+    def get_backup(self, backup_id, project_id=None):
         return self.backup_manager.get(
             project_id=project_id,
-            user_id=user_id,
             doc_id=backup_id
         )
 
-    def search_backup(self, user_id, offset=0, limit=10, search=None,
+    def search_backup(self, offset=0, limit=10, search=None,
                       project_id=None):
         search = search or {}
         return self.backup_manager.search(project_id=project_id,
-                                          user_id=user_id,
                                           search=search,
                                           offset=offset,
                                           limit=limit)
@@ -422,11 +420,10 @@ class ElasticSearchEngineV2(object):
                                           doc_id=backup_id,
                                           user_id=user_id)
 
-    def get_client(self, project_id, user_id, client_id=None,
+    def get_client(self, project_id, client_id=None,
                    offset=0, limit=10, search=None):
         search = search or {}
         return self.client_manager.search(project_id=project_id,
-                                          user_id=user_id,
                                           doc_id=client_id,
                                           search=search,
                                           offset=offset,
@@ -496,27 +493,25 @@ class ElasticSearchEngineV2(object):
             user_id=user_id,
             doc_id=client_id)
 
-    def check_job_client(self, project_id, user_id, job_actions, client_id):
-        client_list = self.get_client(project_id, user_id, client_id)
+    def check_job_client(self, project_id, job_actions, client_id):
+        client_list = self.get_client(project_id, client_id)
         if not client_list:
             raise freezer_api_exc.UnprocessableEntity(
                 message='Client not found with ID {0}'.format(client_id))
         client = client_list[0]
         check_client_capabilities(job_actions, client)
 
-    def get_job(self, project_id, user_id, job_id, all_projects=False):
+    def get_job(self, project_id, job_id, all_projects=False):
         return self.job_manager.get(
             project_id=project_id,
-            user_id=user_id,
             doc_id=job_id,
             all_projects=all_projects
         )
 
-    def search_job(self, project_id, user_id, all_projects=False,
+    def search_job(self, project_id, all_projects=False,
                    offset=0, limit=10, search=None):
         search = search or {}
         return self.job_manager.search(project_id=project_id,
-                                       user_id=user_id,
                                        all_projects=all_projects,
                                        search=search,
                                        offset=offset,
@@ -527,7 +522,6 @@ class ElasticSearchEngineV2(object):
         job_id = jobdoc['job_id']
         self.check_job_client(
             project_id=project_id,
-            user_id=user_id,
             job_actions=jobdoc.get('job_actions'),
             client_id=jobdoc['client_id'])
         self.job_manager.insert(jobdoc, job_id)
@@ -554,13 +548,10 @@ class ElasticSearchEngineV2(object):
                 'client_id',
                 self.get_job(
                     project_id=project_id,
-                    user_id=user_id,
-                    job_id=job_id,
-                ).get('client_id')
+                    job_id=job_id).get('client_id')
             )
             self.check_job_client(
                 project_id=project_id,
-                user_id=user_id,
                 job_actions=valid_patch.get('job_actions', []),
                 client_id=client_id)
 
@@ -583,7 +574,6 @@ class ElasticSearchEngineV2(object):
 
         self.check_job_client(
             project_id=project_id,
-            user_id=user_id,
             job_actions=valid_doc.get('job_actions'),
             client_id=valid_doc['client_id'])
 
@@ -595,17 +585,15 @@ class ElasticSearchEngineV2(object):
                          ' {1}'.format(job_id, version))
         return version
 
-    def get_action(self, user_id, action_id, project_id):
-        return self.action_manager.get(user_id=user_id,
-                                       doc_id=action_id,
+    def get_action(self, action_id, project_id):
+        return self.action_manager.get(doc_id=action_id,
                                        project_id=project_id
                                        )
 
-    def search_action(self, user_id, offset=0, limit=10, search=None,
+    def search_action(self, offset=0, limit=10, search=None,
                       project_id=None):
         search = search or {}
         return self.action_manager.search(project_id=project_id,
-                                          user_id=user_id,
                                           search=search,
                                           offset=offset,
                                           limit=limit)
@@ -628,7 +616,6 @@ class ElasticSearchEngineV2(object):
 
         # check that document exists
         assert (self.action_manager.get(project_id=project_id,
-                                        user_id=user_id,
                                         doc_id=action_id))
 
         version = self.action_manager.update(action_id, valid_patch)
@@ -640,8 +627,7 @@ class ElasticSearchEngineV2(object):
         # check that no document exists with
         # same action_id and different user_id
         try:
-            self.action_manager.get(user_id=user_id,
-                                    doc_id=action_id,
+            self.action_manager.get(doc_id=action_id,
                                     project_id=project_id
                                     )
         except freezer_api_exc.DocumentNotFound:
@@ -657,16 +643,14 @@ class ElasticSearchEngineV2(object):
                          ' {1}'.format(action_id, version))
         return version
 
-    def get_session(self, user_id, session_id, project_id):
-        return self.session_manager.get(user_id=user_id,
-                                        doc_id=session_id,
+    def get_session(self, session_id, project_id):
+        return self.session_manager.get(doc_id=session_id,
                                         project_id=project_id)
 
-    def search_session(self, user_id, offset=0, limit=10, search=None,
+    def search_session(self, offset=0, limit=10, search=None,
                        project_id=None):
         search = search or {}
-        return self.session_manager.search(user_id=user_id,
-                                           project_id=project_id,
+        return self.session_manager.search(project_id=project_id,
                                            search=search,
                                            offset=offset,
                                            limit=limit)
@@ -689,7 +673,7 @@ class ElasticSearchEngineV2(object):
         valid_patch = utils.SessionDoc.create_patch(patch_doc)
 
         # check that document exists
-        assert (self.session_manager.get(user_id=user_id, doc_id=session_id,
+        assert (self.session_manager.get(doc_id=session_id,
                                          project_id=project_id))
 
         version = self.session_manager.update(session_id, valid_patch)
@@ -701,7 +685,7 @@ class ElasticSearchEngineV2(object):
         # check that no document exists with
         # same session_id and different user_id
         try:
-            self.session_manager.get(user_id=user_id, doc_id=session_id,
+            self.session_manager.get(doc_id=session_id,
                                      project_id=project_id)
         except freezer_api_exc.DocumentNotFound:
             pass

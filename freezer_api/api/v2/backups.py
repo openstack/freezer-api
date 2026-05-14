@@ -32,12 +32,10 @@ class BackupsCollectionResource(resource.BaseResource):
     @policy.enforce('backups:get_all')
     def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/backups(?limit,offset)     Lists backups
-        user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         search = self.json_body(req)
-        obj_list = self.db.search_backup(project_id=project_id,
-                                         user_id=user_id, offset=offset,
+        obj_list = self.db.search_backup(project_id=project_id, offset=offset,
                                          limit=limit, search=search)
         resp.media = {'backups': obj_list}
 
@@ -49,7 +47,7 @@ class BackupsCollectionResource(resource.BaseResource):
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
         user_name = req.get_header('X-User-Name')
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         backup_id = self.db.add_backup(project_id=project_id,
                                        user_id=user_id,
                                        user_name=user_name,
@@ -68,10 +66,7 @@ class BackupsResource(resource.BaseResource):
     @policy.enforce('backups:get')
     def on_get(self, req, resp, project_id, backup_id):
         # GET /v2/{project_id}/backups/{backup_id}     Get backup details
-        user_id = req.get_header('X-User-ID')
-        obj = self.db.get_backup(project_id=project_id,
-                                 user_id=user_id,
-                                 backup_id=backup_id)
+        obj = self.db.get_backup(project_id=project_id, backup_id=backup_id)
         if obj:
             resp.media = obj
         else:
@@ -81,7 +76,7 @@ class BackupsResource(resource.BaseResource):
     def on_delete(self, req, resp, project_id, backup_id):
         # DELETE /v2/{project_id}/backups/{backup_id}
         # Deletes the specified backup
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         self.db.delete_backup(project_id=project_id,
                               user_id=user_id,
                               backup_id=backup_id)

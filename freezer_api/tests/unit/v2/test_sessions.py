@@ -31,6 +31,7 @@ class TestSessionsCollectionResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_session_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']
@@ -83,6 +84,7 @@ class TestSessionsResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_session_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']
@@ -175,6 +177,7 @@ class TestSessionsAction(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_session_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']
@@ -398,6 +401,7 @@ class TestSessionsJobs(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_session_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']

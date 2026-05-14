@@ -30,6 +30,7 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_action_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_action_0['user_id']
         self.mock_req.status = falcon.HTTP_200
@@ -48,10 +49,12 @@ class TestActionsCollectionResource(common.FreezerBaseTestCase):
         self.assertEqual(falcon.HTTP_200, self.mock_req.status)
 
     def test_on_get_return_correct_list(self):
-        self.mock_db.search_action.return_value = [common.get_fake_action_0(),
-                                                   common.get_fake_action_1()]
-        expected_result = {'actions': [common.get_fake_action_0(),
-                                       common.get_fake_action_1()]}
+        self.mock_db.search_action.return_value = [
+            common.get_fake_action_0(), common.get_fake_action_1()]
+        expected_result = {
+            'actions': [
+                common.get_fake_action_0(), common.get_fake_action_1()]
+        }
         self.resource.on_get(self.mock_req, self.mock_req,
                              common.fake_action_0['project_id'])
         result = self.mock_req.media
@@ -80,6 +83,7 @@ class TestActionsResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_action_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_action_0['user_id']
         self.mock_req.status = falcon.HTTP_200
