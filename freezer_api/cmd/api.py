@@ -80,9 +80,9 @@ def build_app_v1():
                        utils.before_hooks()]
     middleware_list.append(middleware.RequireJSON())
 
-    # The signature of falcon.API() differs between versions, suppress pylint:
+    # The signature of falcon.App() differs between versions, suppress pylint:
     # pylint: disable=unexpected-keyword-arg
-    app = falcon.API(middleware=middleware_list)
+    app = falcon.App(middleware=middleware_list)
     # Set options to keep behavior compatible to pre-2.0.0 falcon
     app.req_options.auto_parse_qs_csv = True
     app.req_options.keep_blank_qs_values = False
@@ -104,7 +104,7 @@ def build_app_v2():
                        utils.before_hooks()]
     middleware_list.append(middleware.RequireJSON())
 
-    app = falcon.API(middleware=middleware_list)
+    app = falcon.App(middleware=middleware_list)
     db_driver = manager.get_db_driver(CONF.storage.driver,
                                       backend=CONF.storage.backend)
     db = db_driver.get_api()

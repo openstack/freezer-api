@@ -36,7 +36,7 @@ class FreezerAPIException(falcon.HTTPError):
         falcon.HTTPError.__init__(self, falcon.HTTP_500, description=message)
 
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPError(_('500 unknown server error'),
                                title=_("Internal Server Error"),
                                description=FreezerAPIException.message)
@@ -44,7 +44,7 @@ class FreezerAPIException(falcon.HTTPError):
 
 class BadDataFormat(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPBadRequest(
             title=_("Bad request format"),
             description=ex.message)
@@ -52,7 +52,7 @@ class BadDataFormat(FreezerAPIException):
 
 class UnprocessableEntity(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPUnprocessableEntity(
             title=_("Unprocessable Entity"),
             description=ex.message)
@@ -60,7 +60,7 @@ class UnprocessableEntity(FreezerAPIException):
 
 class DocumentExists(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPConflict(
             title=_("Document already existing"),
             description=ex.message)
@@ -68,7 +68,7 @@ class DocumentExists(FreezerAPIException):
 
 class StorageEngineError(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPInternalServerError(
             title=_("Internal Storage Error"),
             description=ex.message)
@@ -76,7 +76,7 @@ class StorageEngineError(FreezerAPIException):
 
 class DocumentNotFound(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPError(
             status=falcon.HTTP_404,
             title=_("Not Found"),
@@ -85,7 +85,7 @@ class DocumentNotFound(FreezerAPIException):
 
 class AccessForbidden(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPForbidden(
             title=_("Access Forbidden"),
             description="You are not allowed to access this resource")
@@ -93,7 +93,7 @@ class AccessForbidden(FreezerAPIException):
 
 class MissingCredentialError(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPUnprocessableEntity(
             title=_("Missing required credentials"),
             description=ex.message)
@@ -101,7 +101,7 @@ class MissingCredentialError(FreezerAPIException):
 
 class MethodNotImplemented(FreezerAPIException):
     @staticmethod
-    def handle(ex, req, resp, params):
+    def handle(req, resp, ex, params):
         raise falcon.HTTPMethodNotAllowed(
             title=_("Bad Method"),
             description=ex.message,

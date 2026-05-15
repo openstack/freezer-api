@@ -56,7 +56,7 @@ class TestService(common.FreezerBaseTestCase):
                 service.freezer_appv1_factory(None)
 
                 # Check kwargs to see if the correct arguments are being passed
-                _, kwargs = mock_falcon.API.call_args
+                _, kwargs = mock_falcon.App.call_args
 
                 named_args = kwargs.keys()
 
@@ -90,7 +90,7 @@ class TestService(common.FreezerBaseTestCase):
                 service.freezer_appv2_factory(None)
 
                 # Check kwargs to see if the correct arguments are being passed
-                _, named_args = mock_falcon.API.call_args
+                _, named_args = mock_falcon.App.call_args
 
                 self.assertNotIn('before', named_args)
                 self.assertNotIn('after', named_args)
