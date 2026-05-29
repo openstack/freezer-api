@@ -20,7 +20,8 @@ CLIENTS = 'clients:%s'
 rules = [
     policy.DocumentedRuleDefault(
         name=CLIENTS % 'create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Create client entry.',
         operations=[
             {
@@ -31,7 +32,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=CLIENTS % 'delete',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Delete specified client.',
         operations=[
             {
@@ -42,7 +44,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=CLIENTS % 'get',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Show clients.',
         operations=[
             {
@@ -53,7 +56,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=CLIENTS % 'get_all',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='List clients.',
         operations=[
             {
@@ -65,6 +69,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name=CLIENTS % 'create_central',
         check_str=base.ADMIN_OR_SERVICE,
+        scope_types=['project'],
         description='Register a central scheduler client.',
         operations=[
             {

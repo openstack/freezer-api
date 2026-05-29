@@ -20,7 +20,8 @@ SESSIONS = 'sessions:%s'
 rules = [
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Creates session.',
         operations=[
             {
@@ -31,7 +32,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'delete',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Delete session.',
         operations=[
             {
@@ -42,7 +44,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'get',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Show sessions.',
         operations=[
             {
@@ -53,7 +56,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'get_all',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Lists sessions.',
         operations=[
             {
@@ -64,7 +68,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'update',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Updates sessions.',
         operations=[
             {
@@ -75,7 +80,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'replace',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Creates/replaces the specified session.',
         operations=[
             {
@@ -86,7 +92,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'action:create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Executes an action on the specified session.',
         operations=[
             {
@@ -97,7 +104,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'job:add',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Adds a certain job to a session.',
         operations=[
             {
@@ -108,11 +116,12 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=SESSIONS % 'job:remove',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Remove a job from a session.',
         operations=[
             {
-                'path': '/v2/sessions/{session_id}',
+                'path': '/v2/sessions/{session_id}/jobs/{job_id}',
                 'method': 'DELETE'
             }
         ]

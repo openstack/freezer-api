@@ -240,7 +240,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             self.resource.on_get(self.mock_req, self.mock_req,
                                  common.fake_job_0_project_id)
             mock_policy_can.assert_has_calls([
-                mock.call('jobs:get_all', self.fake_context),
+                mock.call('jobs:get_all', self.fake_context, target={}),
                 mock.call('jobs:get_all_projects', self.fake_context,
                           do_raise=False)
             ])
@@ -252,17 +252,24 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
                 search={}
             )
 
-    def test_on_get_filters_pid_in_list(self):
+    @patch('freezer_api.policy.can')
+    def test_on_get_filters_pid_in_list(self, mock_policy_can):
         job = common.get_fake_job_0()
         job['job_schedule']['current_pid'] = 1234
         job['project_id'] = 'my_project'
         job['client_id'] = 'central_client'
         self.mock_db.search_job.return_value = [job]
+        mock_policy_can.return_value = False
 
         # Client is owned by admin_project
         self.mock_db.get_client.return_value = [
             {'project_id': 'admin_project'}
         ]
+
+        # Ensure the context is not an admin so that filtering
+        # logic is triggered
+        self.fake_context.context.update({'is_admin': False,
+                                          'roles': ['member']})
 
         self.resource.on_get(self.mock_req, self.mock_req,
                              'my_project')
@@ -391,8 +398,8 @@ class TestJobsResource(common.FreezerBaseTestCase):
 
         mock_policy_can.return_value = False
 
-        mock_context = common.FakeContext()
-        mock_context.project_id = 'my_project'
+        mock_context = common.FakeContext(is_admin=False, roles=['member'],
+                                          project_id='my_project')
         self.mock_req.env = {'freezer.context': mock_context}
 
         # Client is owned by admin_project

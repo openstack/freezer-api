@@ -86,7 +86,7 @@ class TestClientsCollectionResource(common.FreezerBaseTestCase):
                               common.fake_client_info_0['project_id'])
 
         expected_calls = [
-            mock.call('clients:create', fake_context),
+            mock.call('clients:create', fake_context, target={}),
             mock.call('clients:create_central', fake_context)
         ]
         mock_policy_can.assert_has_calls(expected_calls)

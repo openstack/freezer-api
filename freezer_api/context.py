@@ -36,11 +36,11 @@ class FreezerContext(context.RequestContext):
                  auth_token_info=None):
         super(FreezerContext, self).__init__(
             auth_token=auth_token,
-            # user=user,
-            # tenant=tenant,
-            # domain=domain,
-            # user_domain=user_domain,
-            # project_domain=project_domain,
+            user_id=user,
+            project_id=tenant,
+            domain_id=domain,
+            user_domain_id=user_domain,
+            project_domain_id=project_domain,
             is_admin=is_admin,
             read_only=read_only,
             show_deleted=show_deleted,

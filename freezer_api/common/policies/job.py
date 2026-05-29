@@ -20,7 +20,8 @@ JOBS = 'jobs:%s'
 rules = [
     policy.DocumentedRuleDefault(
         name=JOBS % 'create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Creates job.',
         operations=[
             {
@@ -31,7 +32,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=JOBS % 'delete',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Delete jobs.',
         operations=[
             {
@@ -42,7 +44,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=JOBS % 'get',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Show jobs.',
         operations=[
             {
@@ -53,7 +56,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=JOBS % 'get_all',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Lists jobs.',
         operations=[
             {
@@ -65,6 +69,7 @@ rules = [
     policy.DocumentedRuleDefault(
         name=JOBS % 'get_all_projects',
         check_str=base.ADMIN_OR_SERVICE,
+        scope_types=['project'],
         description='Lists all projects jobs.',
         operations=[
             {
@@ -75,7 +80,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=JOBS % 'update',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Updates jobs.',
         operations=[
             {
@@ -86,7 +92,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=JOBS % 'event:create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Create an event on the specified job',
         operations=[
             {

@@ -784,7 +784,18 @@ class FreezerBaseTestCase(testtools.TestCase):
 
 class FakeContext(object):
     def __init__(self, *args, **kwargs):
-        self.context = {}
+        self.context = {
+            'is_admin': True,
+            'roles': ['admin'],
+            'project_id': 'tecs'
+        }
+        self.context.update(kwargs)
+
+    def __getattr__(self, name):
+        if name in self.context:
+            return self.context[name]
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def to_dict(self):
         return self.context

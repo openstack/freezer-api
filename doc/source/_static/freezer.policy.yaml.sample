@@ -1,130 +1,173 @@
 # Creates action.
 # POST  /v2/actions
-#"actions:create": ""
+# Intended scope(s): project
+#"actions:create": "rule:admin_or_owner"
 
 # Delete action.
 # DELETE  /v2/actions/{action_id}
-#"actions:delete": ""
+# Intended scope(s): project
+#"actions:delete": "rule:admin_or_owner"
 
 # Show actions.
 # GET  /v2/actions/{action_id}
-#"actions:get": ""
+# Intended scope(s): project
+#"actions:get": "rule:admin_or_reader_or_service"
 
 # Lists actions.
 # GET  /v2/actions
-#"actions:get_all": ""
+# Intended scope(s): project
+#"actions:get_all": "rule:admin_or_reader_or_service"
 
 # Updates actions.
 # PATCH  /v2/actions/{action_id}
-#"actions:update": ""
+# Intended scope(s): project
+#"actions:update": "rule:admin_or_owner"
 
 # Creates/replaces the specified action.
 # PUT  /v2/actions/{action_id}
-#"actions:replace": ""
+# Intended scope(s): project
+#"actions:replace": "rule:admin_or_owner"
 
 # Creates backup entry.
 # POST  /v2/backups
-#"backups:create": ""
+# Intended scope(s): project
+#"backups:create": "rule:admin_or_owner"
 
 # Delete backup.
 # DELETE  /v2/backups/{backup_id}
-#"backups:delete": ""
+# Intended scope(s): project
+#"backups:delete": "rule:admin_or_owner"
 
 # Show backups.
 # GET  /v2/backups/{backup_id}
-#"backups:get": ""
+# Intended scope(s): project
+#"backups:get": "rule:admin_or_reader_or_service"
 
 # Lists backups.
 # GET  /v2/backups
-#"backups:get_all": ""
+# Intended scope(s): project
+#"backups:get_all": "rule:admin_or_reader_or_service"
 
+# Intended scope(s): system
 #"context_is_admin": "role:admin"
 
+# Intended scope(s): project
 #"admin_or_owner": "is_admin:True or project_id:%(project_id)s"
 
+# Intended scope(s): project
 #"admin_or_service": "role:admin or role:service"
+
+# Intended scope(s): project
+#"project_member": "role:member and project_id:%(project_id)s"
+
+# Intended scope(s): project
+#"project_reader": "role:reader and project_id:%(project_id)s"
+
+# Intended scope(s): project
+#"admin_or_reader_or_service": "rule:admin_or_owner or rule:project_reader or role:service"
 
 # Create client entry.
 # POST  /v2/clients
-#"clients:create": ""
+# Intended scope(s): project
+#"clients:create": "rule:admin_or_owner"
 
 # Delete specified client.
 # DELETE  /v2/clients/{client_id}
-#"clients:delete": ""
+# Intended scope(s): project
+#"clients:delete": "rule:admin_or_owner"
 
 # Show clients.
 # GET  /v2/clients/{client_id}
-#"clients:get": ""
+# Intended scope(s): project
+#"clients:get": "rule:admin_or_reader_or_service"
 
 # List clients.
 # GET  /v2/clients
-#"clients:get_all": ""
+# Intended scope(s): project
+#"clients:get_all": "rule:admin_or_reader_or_service"
 
 # Register a central scheduler client.
 # POST  /v2/{project_id}/clients
+# Intended scope(s): project
 #"clients:create_central": "rule:admin_or_service"
 
 # Creates job.
 # POST  /v2/jobs
-#"jobs:create": ""
+# Intended scope(s): project
+#"jobs:create": "rule:admin_or_owner"
 
 # Delete jobs.
 # DELETE  /v2/jobs/{job_id}
-#"jobs:delete": ""
+# Intended scope(s): project
+#"jobs:delete": "rule:admin_or_owner"
 
 # Show jobs.
 # GET  /v2/jobs/{job_id}
-#"jobs:get": ""
+# Intended scope(s): project
+#"jobs:get": "rule:admin_or_reader_or_service"
 
 # Lists jobs.
 # GET  /v2/jobs
-#"jobs:get_all": ""
+# Intended scope(s): project
+#"jobs:get_all": "rule:admin_or_reader_or_service"
 
 # Lists all projects jobs.
 # GET  /v2/jobs
+# Intended scope(s): project
 #"jobs:get_all_projects": "rule:admin_or_service"
 
 # Updates jobs.
 # PATCH  /v2/jobs/{job_id}
-#"jobs:update": ""
+# Intended scope(s): project
+#"jobs:update": "rule:admin_or_owner"
 
 # Create an event on the specified job
 # POST  /v2/jobs/{job_id}/event
-#"jobs:event:create": ""
+# Intended scope(s): project
+#"jobs:event:create": "rule:admin_or_owner"
 
 # Creates session.
 # POST  /v2/sessions
-#"sessions:create": ""
+# Intended scope(s): project
+#"sessions:create": "rule:admin_or_owner"
 
 # Delete session.
 # DELETE  /v2/sessions/{session_id}
-#"sessions:delete": ""
+# Intended scope(s): project
+#"sessions:delete": "rule:admin_or_owner"
 
 # Show sessions.
 # GET  /v2/sessions/{session_id}
-#"sessions:get": ""
+# Intended scope(s): project
+#"sessions:get": "rule:admin_or_reader_or_service"
 
 # Lists sessions.
 # GET  /v2/sessions
-#"sessions:get_all": ""
+# Intended scope(s): project
+#"sessions:get_all": "rule:admin_or_reader_or_service"
 
 # Updates sessions.
 # PATCH  /v2/sessions/{session_id}
-#"sessions:update": ""
+# Intended scope(s): project
+#"sessions:update": "rule:admin_or_owner"
 
 # Creates/replaces the specified session.
 # PUT  /v2/sessions/{session_id}
-#"sessions:replace": ""
+# Intended scope(s): project
+#"sessions:replace": "rule:admin_or_owner"
 
 # Executes an action on the specified session.
 # POST  /v2/sessions/{session_id}/action
-#"sessions:action:create": ""
+# Intended scope(s): project
+#"sessions:action:create": "rule:admin_or_owner"
 
 # Adds a certain job to a session.
 # PUT  /v2/sessions/{session_id}/jobs/{job_id}
-#"sessions:job:add": ""
+# Intended scope(s): project
+#"sessions:job:add": "rule:admin_or_owner"
 
 # Remove a job from a session.
-# DELETE  /v2/sessions/{session_id}
-#"sessions:job:remove": ""
+# DELETE  /v2/sessions/{session_id}/jobs/{job_id}
+# Intended scope(s): project
+#"sessions:job:remove": "rule:admin_or_owner"
 

@@ -17,19 +17,37 @@
 
 from oslo_policy import policy
 
-UNPROTECTED = ''
 ADMIN_OR_SERVICE = 'rule:admin_or_service'
+ADMIN_OR_OWNER = 'rule:admin_or_owner'
+PROJECT_MEMBER = 'rule:project_member'
+PROJECT_READER = 'rule:project_reader'
+ADMIN_OR_READER_OR_SERVICE = 'rule:admin_or_reader_or_service'
 
 rules = [
     policy.RuleDefault(
         "context_is_admin",
-        "role:admin"),
+        "role:admin",
+        scope_types=['project']),
     policy.RuleDefault(
         "admin_or_owner",
-        "is_admin:True or project_id:%(project_id)s"),
+        "is_admin:True or project_id:%(project_id)s",
+        scope_types=['project']),
     policy.RuleDefault(
         "admin_or_service",
-        "role:admin or role:service"),
+        "role:admin or role:service",
+        scope_types=['project']),
+    policy.RuleDefault(
+        "project_member",
+        "role:member and project_id:%(project_id)s",
+        scope_types=['project']),
+    policy.RuleDefault(
+        "project_reader",
+        "role:reader and project_id:%(project_id)s",
+        scope_types=['project']),
+    policy.RuleDefault(
+        "admin_or_reader_or_service",
+        "rule:admin_or_owner or rule:project_reader or role:service",
+        scope_types=['project']),
 ]
 
 

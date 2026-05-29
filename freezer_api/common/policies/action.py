@@ -20,7 +20,8 @@ ACTIONS = 'actions:%s'
 rules = [
     policy.DocumentedRuleDefault(
         name=ACTIONS % 'create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Creates action.',
         operations=[
             {
@@ -31,7 +32,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=ACTIONS % 'delete',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Delete action.',
         operations=[
             {
@@ -42,7 +44,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=ACTIONS % 'get',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Show actions.',
         operations=[
             {
@@ -53,7 +56,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=ACTIONS % 'get_all',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Lists actions.',
         operations=[
             {
@@ -64,7 +68,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=ACTIONS % 'update',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Updates actions.',
         operations=[
             {
@@ -75,7 +80,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=ACTIONS % 'replace',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Creates/replaces the specified action.',
         operations=[
             {

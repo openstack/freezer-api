@@ -20,7 +20,8 @@ BACKUPS = 'backups:%s'
 rules = [
     policy.DocumentedRuleDefault(
         name=BACKUPS % 'create',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Creates backup entry.',
         operations=[
             {
@@ -31,7 +32,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=BACKUPS % 'delete',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_OWNER,
+        scope_types=['project'],
         description='Delete backup.',
         operations=[
             {
@@ -42,7 +44,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=BACKUPS % 'get',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Show backups.',
         operations=[
             {
@@ -53,7 +56,8 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=BACKUPS % 'get_all',
-        check_str=base.UNPROTECTED,
+        check_str=base.ADMIN_OR_READER_OR_SERVICE,
+        scope_types=['project'],
         description='Lists backups.',
         operations=[
             {

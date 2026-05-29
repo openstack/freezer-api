@@ -1,0 +1,13 @@
+---
+upgrade:
+  - |
+    List upgrade notes here, or remove this section.  All of the list items in
+    this section are combined when the release notes are rendered, so the text
+    needs to be worded so that it does not depend on any information only
+    available in another section, such as the prelude. This may mean repeating
+    some details.
+security:
+  - |
+    Introduced secure RBAC policies for the API and updated default values for
+    the API v2 in order to keep reasonable and minimaly viable privileges
+    for API calls.

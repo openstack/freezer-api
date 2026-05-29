@@ -34,8 +34,9 @@ def setup_policy(conf):
         ENFORCER.load_rules()
 
 
-def can(rule, ctx, do_raise=True):
-    return ENFORCER.enforce(rule, {}, ctx.to_dict(), do_raise=do_raise,
+def can(rule, ctx, target=None, do_raise=True):
+    return ENFORCER.enforce(rule, target or {}, ctx.to_dict(),
+                            do_raise=do_raise,
                             exc=exceptions.AccessForbidden)
 
 
@@ -44,8 +45,15 @@ def enforce(rule):
     def decorator(func):
         @functools.wraps(func)
         def handler(*args, **kwargs):
-            ctx = args[1].env['freezer.context']
-            can(rule, ctx)
+            req = args[1]
+            ctx = req.env['freezer.context']
+
+            target = {}
+            if 'project_id' in kwargs:
+                target['project_id'] = kwargs['project_id']
+            if 'user_id' in kwargs:
+                target['user_id'] = kwargs['user_id']
+            can(rule, ctx, target=target)
             return func(*args, **kwargs)
         return handler
 
