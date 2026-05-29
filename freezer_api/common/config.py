@@ -72,30 +72,6 @@ def api_common_opts():
                     dest='bind_port',
                     help='Port number to listen on. Default is 9090'
                     ),
-        cfg.BoolOpt('enable_v1_api',
-                    default=False,
-                    help="""Default False, the v2 Freezer API will be deployed.
-                    When this option is set
-                    to ``True``, Freezer-API service will respond
-                    to requests on registered endpoints conforming
-                    to the v1 OpenStack Freezer api.
-
-                    The v1 OpenStack Freezer API functions
-                    as follows:
-
-                    * Multi-tenancy is not supported under this
-                      api version.
-                    * Everything is user based.
-                    * Freezer api v1 supports Oslo.db.
-                    * Use elasticsearch db with v1 api version
-
-                    The v2 OpenStack Freezer API functions
-                    as follows:
-
-                    * Multi-tenancy is supported under this api version.
-                    * Freezer api v2 supports Oslo.db.
-                    * Recommended to use oslo.db with api v2
-                    """)
     ]
 
     return _COMMON

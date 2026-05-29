@@ -19,7 +19,6 @@ from oslo_log import log
 from freezer_api.common import db_mappings
 from freezer_api.db import base as db_base
 from freezer_api.db.elasticsearch import es_manager
-from freezer_api.storage import elastic as db_session_v1
 from freezer_api.storage import elasticv2 as db_session_v2
 
 CONF = cfg.CONF
@@ -93,12 +92,8 @@ class ElasticSearchDB(db_base.DBDriver):
 
     def get_engine(self):
         if not self._engine:
-            if CONF.enable_v1_api:
-                self._engine = db_session_v1.\
-                    ElasticSearchEngine(self.backend)
-            else:
-                self._engine = db_session_v2.\
-                    ElasticSearchEngineV2(self.backend)
+            self._engine = db_session_v2.\
+                ElasticSearchEngineV2(self.backend)
         return self._engine
 
     def get_api(self):

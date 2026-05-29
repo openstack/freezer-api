@@ -22,7 +22,6 @@ from oslo_serialization import jsonutils as json
 
 
 from freezer_api.api.common import middleware
-from freezer_api.api import v1
 from freezer_api.api import v2
 
 CONF = cfg.CONF
@@ -30,8 +29,7 @@ LOG = log.getLogger(__name__)
 
 VERSIONS = {
     'versions': [
-        v2.VERSION,
-        v1.VERSION
+        v2.VERSION
     ]
 }
 
@@ -50,8 +48,7 @@ def api_versions(conf=None):
 class Resource(object):
 
     def _build_versions(self, host_url):
-        allowed_versions = {'v1': CONF.enable_v1_api,
-                            'v2': False if CONF.enable_v1_api else True}
+        allowed_versions = {'v2': True}
 
         updated_versions = {'versions': []}
         for version in VERSIONS['versions']:

@@ -24,7 +24,7 @@ rules = [
         description='Creates job.',
         operations=[
             {
-                'path': '/v1/jobs',
+                'path': '/v2/jobs',
                 'method': 'POST'
             }
         ]
@@ -35,7 +35,7 @@ rules = [
         description='Delete jobs.',
         operations=[
             {
-                'path': '/v1/jobs/{job_id}',
+                'path': '/v2/jobs/{job_id}',
                 'method': 'DELETE'
             }
         ]
@@ -46,7 +46,7 @@ rules = [
         description='Show jobs.',
         operations=[
             {
-                'path': '/v1/jobs/{job_id}',
+                'path': '/v2/jobs/{job_id}',
                 'method': 'GET'
             }
         ]
@@ -57,7 +57,7 @@ rules = [
         description='Lists jobs.',
         operations=[
             {
-                'path': '/v1/jobs',
+                'path': '/v2/jobs',
                 'method': 'GET'
             }
         ]
@@ -68,7 +68,7 @@ rules = [
         description='Lists all projects jobs.',
         operations=[
             {
-                'path': '/v1/jobs',
+                'path': '/v2/jobs',
                 'method': 'GET'
             }
         ]
@@ -79,7 +79,7 @@ rules = [
         description='Updates jobs.',
         operations=[
             {
-                'path': '/v1/jobs/{job_id}',
+                'path': '/v2/jobs/{job_id}',
                 'method': 'PATCH'
             }
         ]
@@ -90,7 +90,7 @@ rules = [
         description='Create an event on the specified job',
         operations=[
             {
-                'path': '/v1/jobs/{job_id}/event',
+                'path': '/v2/jobs/{job_id}/event',
                 'method': 'POST'
             }
         ]

@@ -73,7 +73,7 @@ class ClientsResource(resource.BaseResource):
 
     @policy.enforce('clients:get')
     def on_get(self, req, resp, project_id, client_id):
-        # GET /v1/clients(?limit,offset)
+        # GET /v2/clients(?limit,offset)
         # search in body
         user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_client(project_id=project_id,

@@ -12,14 +12,6 @@
 # Maximum value: 65535
 #bind_port = 9090
 
-# Default False, the v2 Freezer API will be deployed.
-#                     When this option is set
-#                     to ``True``, Freezer-api service will respond
-#                     to requests on registered endpoints conforming
-#                     to the v1 OpenStack Freezer api. For more information,
-# refer to the documentation. (boolean value)
-#enable_v1_api = false
-
 #
 # From oslo.log
 #
@@ -54,17 +46,6 @@
 # is ignored if log_config_append is set (string value)
 # Deprecated group/name - [DEFAULT]/logdir
 #log_dir = <None>
-
-# DEPRECATED: Uses logging handler designed to watch file system. When log file
-# is moved or removed this handler will open a new log file with specified path
-# instantaneously. It makes sense only if log_file option is specified and
-# Linux platform is used. This option is ignored if log_config_append is set
-# (boolean value)
-# This option is deprecated for removal.
-# Its value may be silently ignored in the future.
-# Reason: This function is known to have bene broken for long time, and depends
-# on the unmaintained library
-#watch_log_file = false
 
 # Use syslog for logging. Existing syslog format is DEPRECATED and will be
 # changed later to honor RFC5424. This option is ignored if log_config_append
@@ -147,7 +128,7 @@
 
 # List of package logging levels in logger=LEVEL pairs. This option is ignored
 # if log_config_append is set (list value)
-#default_log_levels = amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=WARN,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo_policy=INFO,dogpile.core.dogpile=INFO
+#default_log_levels = amqp=WARN,boto=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=WARN,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo_policy=INFO,dogpile.core.dogpile=INFO
 
 # Enables or disables publication of error events (boolean value)
 #publish_errors = false
@@ -238,6 +219,17 @@
 # database (string value)
 #asyncio_slave_connection = <None>
 
+# Whether or not to assume a reader context needs to guarantee it can read data
+# committed by a writer assuming replication lag is present; defaults to True.
+# When False, a reader context works the same as async_reader and will select
+# the slave database if present. When using a galera cluster, this can be set
+# to False only if you set mysql_wsrep_sync_wait to 1 (this will guarantee that
+# the reader will wait until writesets are committed).Note that this may incur
+# a performance degradation within the galera cluster. Note also that this
+# parameter has no effect if you do not set any slave_connection (boolean
+# value)
+#synchronous_reader = true
+
 # The SQL mode to be used for MySQL sessions. This option, including the
 # default, overrides any server-set SQL mode. To use whatever SQL mode is set
 # by the server configuration, set this to no value. Example: mysql_sql_mode=
@@ -310,11 +302,6 @@
 # From oslo.middleware
 #
 
-# DEPRECATED: The path to respond to healtcheck requests on (string value)
-# This option is deprecated for removal.
-# Its value may be silently ignored in the future.
-#path = /healthcheck
-
 # Show more detailed information as part of the response. Security note:
 # Enabling this option may expose sensitive details about the service being
 # monitored. Be sure to verify that it will not violate your security policies
@@ -357,27 +344,8 @@
 # "admin" endpoint, as it should be accessible by all end users.
 # Unauthenticated clients are redirected to this endpoint to authenticate.
 # Although this endpoint should ideally be unversioned, client support in the
-# wild varies. If you're using a versioned v2 endpoint here, then this should
-# *not* be the same endpoint the service user utilizes for validating tokens,
-# because normal end users may not be able to reach that endpoint (string
-# value)
-# Deprecated group/name - [keystone_authtoken]/auth_uri
+# wild varies (string value)
 #www_authenticate_uri = <None>
-
-# DEPRECATED: Complete "public" Identity API endpoint. This endpoint should not
-# be an "admin" endpoint, as it should be accessible by all end users.
-# Unauthenticated clients are redirected to this endpoint to authenticate.
-# Although this endpoint should ideally be unversioned, client support in the
-# wild varies. If you're using a versioned v2 endpoint here, then this should
-# *not* be the same endpoint the service user utilizes for validating tokens,
-# because normal end users may not be able to reach that endpoint. This option
-# is deprecated in favor of www_authenticate_uri and will be removed in the S
-# release (string value)
-# This option is deprecated for removal since Queens.
-# Its value may be silently ignored in the future.
-# Reason: The auth_uri option is deprecated in favor of www_authenticate_uri
-# and will be removed in the S  release.
-#auth_uri = <None>
 
 # API version of the Identity API endpoint (string value)
 #auth_version = <None>
@@ -445,6 +413,32 @@
 # used for key derivation (string value)
 #memcache_secret_key = <None>
 
+# (Optional) Global toggle for TLS usage when comunicating with the caching
+# servers (boolean value)
+#memcache_tls_enabled = false
+
+# (Optional) Path to a file of concatenated CA certificates in PEM format
+# necessary to establish the caching server's authenticity. If tls_enabled is
+# False, this option is ignored (string value)
+#memcache_tls_cafile = <None>
+
+# (Optional) Path to a single file in PEM format containing the client's
+# certificate as well as any number of CA certificates needed to establish the
+# certificate's authenticity. This file is only required when client side
+# authentication is necessary. If tls_enabled is False, this option is ignored
+# (string value)
+#memcache_tls_certfile = <None>
+
+# (Optional) Path to a single file containing the client's private key in.
+# Otherwhise the private key will be taken from the file specified in
+# tls_certfile. If tls_enabled is False, this option is ignored (string value)
+#memcache_tls_keyfile = <None>
+
+# (Optional) Set the available ciphers for sockets created with the TLS
+# context. It should be a string in the OpenSSL cipher list format. If not
+# specified, all OpenSSL enabled ciphers will be available (string value)
+#memcache_tls_allowed_ciphers = <None>
+
 # (Optional) Number of seconds memcached server is considered dead before it is
 # tried again (integer value)
 #memcache_pool_dead_retry = 300
@@ -491,54 +485,27 @@
 # allow_expired check (list value)
 #service_token_roles = service
 
-# For backwards compatibility reasons we must let valid service tokens pass
-# that don't pass the service_token_roles check as valid. Setting this true
-# will become the default in a future release and should be enabled if possible
-# (boolean value)
-#service_token_roles_required = false
+# When set to True, service tokens must contain a role from the
+# service_token_roles list to be considered valid. This prevents end-user
+# tokens from being used as service tokens and ensures proper service-to-
+# service authentication. Setting this to False is NOT RECOMMENDED as it allows
+# any valid token to be used as a service token, which can bypass access-rule
+# checks and weaken composite-auth protections (boolean value)
+#service_token_roles_required = true
 
 # The name or type of the service as it appears in the service catalog. This is
 # used to validate tokens that have restricted access rules (string value)
 #service_type = <None>
 
-# Prefix to prepend at the beginning of the path. Deprecated, use identity_uri
-# (string value)
-#auth_admin_prefix =
+# Enable the SASL(Simple Authentication and Security Layer) if the SASL_enable
+# is true, else disable (boolean value)
+#memcache_sasl_enabled = false
 
-# Host providing the admin Identity API endpoint. Deprecated, use identity_uri
-# (string value)
-#auth_host = 127.0.0.1
+# the user name for the SASL (string value)
+#memcache_username =
 
-# Port of the admin Identity API endpoint. Deprecated, use identity_uri
-# (integer value)
-#auth_port = 35357
-
-# Protocol of the admin Identity API endpoint. Deprecated, use identity_uri
-# (string value)
-# Possible values:
-# http - <No description provided>
-# https - <No description provided>
-#auth_protocol = https
-
-# Complete admin Identity API endpoint. This should specify the unversioned
-# root endpoint e.g. https://localhost:35357/ (string value)
-#identity_uri = <None>
-
-# This option is deprecated and may be removed in a future release. Single
-# shared secret with the Keystone configuration used for bootstrapping a
-# Keystone installation, or otherwise bypassing the normal authentication
-# process. This option should not be used, use `admin_user` and
-# `admin_password` instead (string value)
-#admin_token = <None>
-
-# Service username (string value)
-#admin_user = <None>
-
-# Service user password (string value)
-#admin_password = <None>
-
-# Service tenant name (string value)
-#admin_tenant_name = admin
+# the username password for SASL (string value)
+#memcache_password =
 
 # Authentication type to load (string value)
 # Deprecated group/name - [keystone_authtoken]/auth_plugin
@@ -554,9 +521,7 @@
 # From oslo.middleware
 #
 
-# The maximum body size for each  request, in bytes (integer value)
-# Deprecated group/name - [DEFAULT]/osapi_max_request_body_size
-# Deprecated group/name - [DEFAULT]/max_request_body_size
+# The maximum body size for each request, in bytes (integer value)
 #max_request_body_size = 114688
 
 # Whether the application is behind a proxy or not. This determines if the
@@ -653,9 +618,17 @@
 # From freezer-api
 #
 
-# Database backend section name. This section will be loaded by the proper
-# driver to connect to the database (string value)
-#backend = <None>
+# DEPRECATED: Database backend section name. This section will be loaded by the
+# proper driver to connect to the database (string value)
+# This option is deprecated for removal since 2026.2.
+# Its value may be silently ignored in the future.
+# Reason: Elasticsearch DB storage is deprecated and will be removed in the
+# next release. The only supported storage driver is SQLAlchemy.
+#backend = sqlalchemy
 
-# Database driver to be used (string value)
-#driver = elasticsearch
+# DEPRECATED: Database driver to be used (string value)
+# This option is deprecated for removal since 2026.2.
+# Its value may be silently ignored in the future.
+# Reason: Elasticsearch DB storage is deprecated and will be removed in the
+# next release. The only supported storage driver is SQLAlchemy.
+#driver = sqlalchemy

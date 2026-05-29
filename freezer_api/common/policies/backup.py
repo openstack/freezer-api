@@ -24,7 +24,7 @@ rules = [
         description='Creates backup entry.',
         operations=[
             {
-                'path': '/v1/backups',
+                'path': '/v2/backups',
                 'method': 'POST'
             }
         ]
@@ -35,7 +35,7 @@ rules = [
         description='Delete backup.',
         operations=[
             {
-                'path': '/v1/backups/{backup_id}',
+                'path': '/v2/backups/{backup_id}',
                 'method': 'DELETE'
             }
         ]
@@ -46,7 +46,7 @@ rules = [
         description='Show backups.',
         operations=[
             {
-                'path': '/v1/backups/{backup_id}',
+                'path': '/v2/backups/{backup_id}',
                 'method': 'GET'
             }
         ]
@@ -57,7 +57,7 @@ rules = [
         description='Lists backups.',
         operations=[
             {
-                'path': '/v1/backups',
+                'path': '/v2/backups',
                 'method': 'GET'
             }
         ]

@@ -24,7 +24,7 @@ rules = [
         description='Creates session.',
         operations=[
             {
-                'path': '/v1/sessions',
+                'path': '/v2/sessions',
                 'method': 'POST'
             }
         ]
@@ -35,7 +35,7 @@ rules = [
         description='Delete session.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}',
+                'path': '/v2/sessions/{session_id}',
                 'method': 'DELETE'
             }
         ]
@@ -46,7 +46,7 @@ rules = [
         description='Show sessions.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}',
+                'path': '/v2/sessions/{session_id}',
                 'method': 'GET'
             }
         ]
@@ -57,7 +57,7 @@ rules = [
         description='Lists sessions.',
         operations=[
             {
-                'path': '/v1/sessions',
+                'path': '/v2/sessions',
                 'method': 'GET'
             }
         ]
@@ -68,7 +68,7 @@ rules = [
         description='Updates sessions.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}',
+                'path': '/v2/sessions/{session_id}',
                 'method': 'PATCH'
             }
         ]
@@ -79,7 +79,7 @@ rules = [
         description='Creates/replaces the specified session.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}',
+                'path': '/v2/sessions/{session_id}',
                 'method': 'PUT'
             }
         ]
@@ -90,7 +90,7 @@ rules = [
         description='Executes an action on the specified session.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}/action',
+                'path': '/v2/sessions/{session_id}/action',
                 'method': 'POST'
             }
         ]
@@ -101,7 +101,7 @@ rules = [
         description='Adds a certain job to a session.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}/jobs/{job_id}',
+                'path': '/v2/sessions/{session_id}/jobs/{job_id}',
                 'method': 'PUT'
             }
         ]
@@ -112,7 +112,7 @@ rules = [
         description='Remove a job from a session.',
         operations=[
             {
-                'path': '/v1/sessions/{session_id}',
+                'path': '/v2/sessions/{session_id}',
                 'method': 'DELETE'
             }
         ]

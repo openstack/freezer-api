@@ -119,10 +119,7 @@ class DbBackupTestCase(base.DbTestCase):
                           project_id=self.fake_project_id)
 
     @patch('freezer_api.common.elasticv2_utils.BackupMetadataDoc')
-    @patch('freezer_api.common.utils.BackupMetadataDoc')
-    def test_raise_add_backup(self, mock1_BackupMetadataDoc,
-                              mock_BackupMetadataDoc):
-        mock1_BackupMetadataDoc().is_valid.return_value = None
+    def test_raise_add_backup(self, mock_BackupMetadataDoc):
         mock_BackupMetadataDoc().is_valid.return_value = None
         mock_doc = mock.MagicMock()
         self.assertRaises(freezer_api_exc.BadDataFormat,

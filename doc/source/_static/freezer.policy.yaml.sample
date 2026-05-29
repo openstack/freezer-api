@@ -1,41 +1,41 @@
 # Creates action.
-# POST  /v1/actions
+# POST  /v2/actions
 #"actions:create": ""
 
 # Delete action.
-# DELETE  /v1/actions/{action_id}
+# DELETE  /v2/actions/{action_id}
 #"actions:delete": ""
 
 # Show actions.
-# GET  /v1/actions/{action_id}
+# GET  /v2/actions/{action_id}
 #"actions:get": ""
 
 # Lists actions.
-# GET  /v1/actions
+# GET  /v2/actions
 #"actions:get_all": ""
 
 # Updates actions.
-# PATCH  /v1/actions/{action_id}
+# PATCH  /v2/actions/{action_id}
 #"actions:update": ""
 
 # Creates/replaces the specified action.
-# PUT  /v1/actions/{action_id}
+# PUT  /v2/actions/{action_id}
 #"actions:replace": ""
 
 # Creates backup entry.
-# POST  /v1/backups
+# POST  /v2/backups
 #"backups:create": ""
 
 # Delete backup.
-# DELETE  /v1/backups/{backup_id}
+# DELETE  /v2/backups/{backup_id}
 #"backups:delete": ""
 
 # Show backups.
-# GET  /v1/backups/{backup_id}
+# GET  /v2/backups/{backup_id}
 #"backups:get": ""
 
 # Lists backups.
-# GET  /v1/backups
+# GET  /v2/backups
 #"backups:get_all": ""
 
 #"context_is_admin": "role:admin"
@@ -45,82 +45,86 @@
 #"admin_or_service": "role:admin or role:service"
 
 # Create client entry.
-# POST  /v1/clients
+# POST  /v2/clients
 #"clients:create": ""
 
 # Delete specified client.
-# DELETE  /v1/clients/{client_id}
+# DELETE  /v2/clients/{client_id}
 #"clients:delete": ""
 
 # Show clients.
-# GET  /v1/clients/{client_id}
+# GET  /v2/clients/{client_id}
 #"clients:get": ""
 
 # List clients.
-# GET  /v1/clients
+# GET  /v2/clients
 #"clients:get_all": ""
 
+# Register a central scheduler client.
+# POST  /v2/{project_id}/clients
+#"clients:create_central": "rule:admin_or_service"
+
 # Creates job.
-# POST  /v1/jobs
+# POST  /v2/jobs
 #"jobs:create": ""
 
 # Delete jobs.
-# DELETE  /v1/jobs/{job_id}
+# DELETE  /v2/jobs/{job_id}
 #"jobs:delete": ""
 
 # Show jobs.
-# GET  /v1/jobs/{job_id}
+# GET  /v2/jobs/{job_id}
 #"jobs:get": ""
 
 # Lists jobs.
-# GET  /v1/jobs
+# GET  /v2/jobs
 #"jobs:get_all": ""
 
 # Lists all projects jobs.
-# GET  /v1/jobs
+# GET  /v2/jobs
 #"jobs:get_all_projects": "rule:admin_or_service"
 
 # Updates jobs.
-# PATCH  /v1/jobs/{job_id}
+# PATCH  /v2/jobs/{job_id}
 #"jobs:update": ""
 
 # Create an event on the specified job
-# POST  /v1/jobs/{job_id}/event
+# POST  /v2/jobs/{job_id}/event
 #"jobs:event:create": ""
 
 # Creates session.
-# POST  /v1/sessions
+# POST  /v2/sessions
 #"sessions:create": ""
 
 # Delete session.
-# DELETE  /v1/sessions/{session_id}
+# DELETE  /v2/sessions/{session_id}
 #"sessions:delete": ""
 
 # Show sessions.
-# GET  /v1/sessions/{session_id}
+# GET  /v2/sessions/{session_id}
 #"sessions:get": ""
 
 # Lists sessions.
-# GET  /v1/sessions
+# GET  /v2/sessions
 #"sessions:get_all": ""
 
 # Updates sessions.
-# PATCH  /v1/sessions/{session_id}
+# PATCH  /v2/sessions/{session_id}
 #"sessions:update": ""
 
 # Creates/replaces the specified session.
-# PUT  /v1/sessions/{session_id}
+# PUT  /v2/sessions/{session_id}
 #"sessions:replace": ""
 
 # Executes an action on the specified session.
-# POST  /v1/sessions/{session_id}/action
+# POST  /v2/sessions/{session_id}/action
 #"sessions:action:create": ""
 
 # Adds a certain job to a session.
-# PUT  /v1/sessions/{session_id}/jobs/{job_id}
+# PUT  /v2/sessions/{session_id}/jobs/{job_id}
 #"sessions:job:add": ""
 
 # Remove a job from a session.
-# DELETE  /v1/sessions/{session_id}
+# DELETE  /v2/sessions/{session_id}
 #"sessions:job:remove": ""
 

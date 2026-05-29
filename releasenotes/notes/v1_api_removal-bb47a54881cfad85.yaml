@@ -1,0 +1,8 @@
+---
+prelude: >
+  Freezer API v1 support was removed in this release.
+
+upgrade:
+  - |
+    Freezer API v1 support was removed and users are required to update their
+    code to use the v2 API instead.

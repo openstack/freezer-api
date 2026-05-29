@@ -33,7 +33,6 @@ from freezer_api.common.json_schemas import SUPPORTED_ACTIONS
 from freezer_api.common.json_schemas import SUPPORTED_ENGINES
 from freezer_api.common.json_schemas import SUPPORTED_MODES
 from freezer_api.common.json_schemas import SUPPORTED_STORAGES
-from freezer_api.common import utils as utilsv1
 from freezer_api.db.sqlalchemy import models
 
 
@@ -494,10 +493,8 @@ def get_client(user_id, project_id=None, client_id=None, offset=0,
 
 
 def add_client(user_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        client_doc = utilsv1.ClientDoc.create(doc, user_id)
-    else:
-        client_doc = utilsv2.ClientDoc.create(doc, project_id, user_id)
+
+    client_doc = utilsv2.ClientDoc.create(doc, project_id, user_id)
     client_id = client_doc['client']['client_id']
     values = {}
     client_json = client_doc.get('client', {})
@@ -625,10 +622,8 @@ def delete_action(user_id, action_id, project_id=None):
 
 
 def add_action(user_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        action_doc = utilsv1.ActionDoc.create(doc, user_id)
-    else:
-        action_doc = utilsv2.ActionDoc.create(doc, user_id, project_id)
+
+    action_doc = utilsv2.ActionDoc.create(doc, user_id, project_id)
 
     keyt = ['action', 'backup_name',
             'container', 'path_to_backup', 'timeout',
@@ -759,10 +754,7 @@ def search_action(user_id, project_id=None, offset=0,
 
 def update_action(user_id, action_id, patch_doc, project_id=None):
     # changes in user_id or action_id are not allowed
-    if CONF.enable_v1_api:
-        valid_patch = utilsv1.ActionDoc.create_patch(patch_doc)
-    else:
-        valid_patch = utilsv2.ActionDoc.create_patch(patch_doc)
+    valid_patch = utilsv2.ActionDoc.create_patch(patch_doc)
 
     keyt = ['action', 'backup_name', 'container',
             'path_to_backup', 'timeout', 'priority', 'mandatory', 'log_file']
@@ -793,11 +785,8 @@ def update_action(user_id, action_id, patch_doc, project_id=None):
 
 
 def replace_action(user_id, action_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        valid_doc = utilsv1.ActionDoc.update(doc, user_id, action_id)
-    else:
-        valid_doc = utilsv2.ActionDoc.update(doc, user_id, action_id,
-                                             project_id)
+
+    valid_doc = utilsv2.ActionDoc.update(doc, user_id, action_id, project_id)
     values = {}
     keyt = ['action', 'backup_name', 'container',
             'path_to_backup', 'timeout', 'priority', 'mandatory', 'log_file']
@@ -861,10 +850,7 @@ def delete_job(user_id, job_id, project_id=None):
 
 
 def add_job(user_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        job_doc = utilsv1.JobDoc.create(doc, user_id)
-    else:
-        job_doc = utilsv2.JobDoc.create(doc, project_id, user_id)
+    job_doc = utilsv2.JobDoc.create(doc, project_id, user_id)
 
     job_id = job_doc.get('job_id')
     # Check globally to avoid primary Key collision
@@ -980,10 +966,8 @@ def search_job(user_id, project_id=None, all_projects=False, offset=0,
 
 
 def update_job(user_id, job_id, patch_doc, project_id=None):
-    if CONF.enable_v1_api:
-        valid_patch = utilsv1.JobDoc.create_patch(patch_doc)
-    else:
-        valid_patch = utilsv2.JobDoc.create_patch(patch_doc)
+
+    valid_patch = utilsv2.JobDoc.create_patch(patch_doc)
 
     if 'job_actions' in valid_patch:
         client_id = valid_patch.get(
@@ -1014,10 +998,8 @@ def update_job(user_id, job_id, patch_doc, project_id=None):
 
 
 def replace_job(user_id, job_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        valid_doc = utilsv1.JobDoc.update(doc, user_id, job_id)
-    else:
-        valid_doc = utilsv2.JobDoc.update(doc, user_id, job_id, project_id)
+
+    valid_doc = utilsv2.JobDoc.update(doc, user_id, job_id, project_id)
 
     check_job_client(
         user_id=user_id,
@@ -1066,12 +1048,9 @@ def get_backup(user_id, backup_id, project_id=None):
 
 
 def add_backup(user_id, user_name, doc, project_id=None):
-    if CONF.enable_v1_api:
-        metadatadoc = utilsv1.BackupMetadataDoc(user_id, user_name,
-                                                doc)
-    else:
-        metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, user_name,
-                                                doc)
+
+    metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, user_name,
+                                            doc)
     if not metadatadoc.is_valid():
         raise freezer_api_exc.BadDataFormat(
             message='Bad Data Format')
@@ -1169,13 +1148,11 @@ def delete_session(user_id, session_id, project_id=None):
 
 
 def add_session(user_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        session_doc = utilsv1.SessionDoc.create(doc=doc,
-                                                user_id=user_id)
-    else:
-        session_doc = utilsv2.SessionDoc.create(doc=doc,
-                                                user_id=user_id,
-                                                project_id=project_id)
+
+    session_doc = utilsv2.SessionDoc.create(doc=doc,
+                                            user_id=user_id,
+                                            project_id=project_id)
+
     session_id = session_doc['session_id']
     schedulingjson = session_doc.get('schedule')
     existing = get_session(project_id=project_id, user_id=user_id,
@@ -1211,10 +1188,8 @@ def add_session(user_id, doc, project_id=None):
 
 
 def update_session(user_id, session_id, patch_doc, project_id=None):
-    if CONF.enable_v1_api:
-        valid_patch = utilsv1.SessionDoc.create_patch(patch_doc)
-    else:
-        valid_patch = utilsv2.SessionDoc.create_patch(patch_doc)
+
+    valid_patch = utilsv2.SessionDoc.create_patch(patch_doc)
 
     sessiont = get_session(project_id=project_id, user_id=user_id,
                            session_id=session_id)
@@ -1245,12 +1220,9 @@ def update_session(user_id, session_id, patch_doc, project_id=None):
 
 
 def replace_session(user_id, session_id, doc, project_id=None):
-    if CONF.enable_v1_api:
-        valid_doc = utilsv1.SessionDoc.update(doc, user_id, session_id)
 
-    else:
-        valid_doc = utilsv2.SessionDoc.update(doc, user_id, session_id,
-                                              project_id)
+    valid_doc = utilsv2.SessionDoc.update(doc, user_id, session_id,
+                                          project_id)
     values = {}
     valuesnew = {}
 

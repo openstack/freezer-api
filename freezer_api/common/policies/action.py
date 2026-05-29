@@ -24,7 +24,7 @@ rules = [
         description='Creates action.',
         operations=[
             {
-                'path': '/v1/actions',
+                'path': '/v2/actions',
                 'method': 'POST'
             }
         ]
@@ -35,7 +35,7 @@ rules = [
         description='Delete action.',
         operations=[
             {
-                'path': '/v1/actions/{action_id}',
+                'path': '/v2/actions/{action_id}',
                 'method': 'DELETE'
             }
         ]
@@ -46,7 +46,7 @@ rules = [
         description='Show actions.',
         operations=[
             {
-                'path': '/v1/actions/{action_id}',
+                'path': '/v2/actions/{action_id}',
                 'method': 'GET'
             }
         ]
@@ -57,7 +57,7 @@ rules = [
         description='Lists actions.',
         operations=[
             {
-                'path': '/v1/actions',
+                'path': '/v2/actions',
                 'method': 'GET'
             }
         ]
@@ -68,7 +68,7 @@ rules = [
         description='Updates actions.',
         operations=[
             {
-                'path': '/v1/actions/{action_id}',
+                'path': '/v2/actions/{action_id}',
                 'method': 'PATCH'
             }
         ]
@@ -79,7 +79,7 @@ rules = [
         description='Creates/replaces the specified action.',
         operations=[
             {
-                'path': '/v1/actions/{action_id}',
+                'path': '/v2/actions/{action_id}',
                 'method': 'PUT'
             }
         ]

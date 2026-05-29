@@ -26,7 +26,6 @@ from paste import httpserver
 
 from freezer_api.api.common import middleware
 from freezer_api.api.common import utils
-from freezer_api.api import v1
 from freezer_api.api import v2
 from freezer_api.common import _i18n
 from freezer_api.common import config
@@ -57,38 +56,12 @@ def configure_app(app, db=None):
         app.add_error_handler(exception_class, exception_class.handle)
 
     endpoint_catalog = [
-        ('', v1.public_endpoints(db))
+        ('', v2.public_endpoints(db))
     ]
     for version_path, endpoints in endpoint_catalog:
         for route, resource in endpoints:
             app.add_route(version_path + route, resource)
 
-    return app
-
-
-def build_app_v1():
-    """Building routes and forming the root freezer-api app
-
-    This uses the 'middleware' named argument to specify middleware for falcon
-    instead of the 'before' and 'after' hooks that were removed after 0.3.0
-    (both approaches were available for versions 0.2.0 - 0.3.0)
-
-    :return: falcon WSGI app
-    """
-    # injecting FreezerContext & hooks
-    middleware_list = [utils.FuncMiddleware(hook) for hook in
-                       utils.before_hooks()]
-    middleware_list.append(middleware.RequireJSON())
-
-    # The signature of falcon.App() differs between versions, suppress pylint:
-    # pylint: disable=unexpected-keyword-arg
-    app = falcon.App(middleware=middleware_list)
-    # Set options to keep behavior compatible to pre-2.0.0 falcon
-    app.req_options.auto_parse_qs_csv = True
-    app.req_options.keep_blank_qs_values = False
-    app.req_options.strip_url_path_trailing_slash = True
-
-    app = configure_app(app)
     return app
 
 

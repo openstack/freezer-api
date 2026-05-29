@@ -24,7 +24,7 @@ rules = [
         description='Create client entry.',
         operations=[
             {
-                'path': '/v1/clients',
+                'path': '/v2/clients',
                 'method': 'POST'
             }
         ]
@@ -35,7 +35,7 @@ rules = [
         description='Delete specified client.',
         operations=[
             {
-                'path': '/v1/clients/{client_id}',
+                'path': '/v2/clients/{client_id}',
                 'method': 'DELETE'
             }
         ]
@@ -46,7 +46,7 @@ rules = [
         description='Show clients.',
         operations=[
             {
-                'path': '/v1/clients/{client_id}',
+                'path': '/v2/clients/{client_id}',
                 'method': 'GET'
             }
         ]
@@ -57,7 +57,7 @@ rules = [
         description='List clients.',
         operations=[
             {
-                'path': '/v1/clients',
+                'path': '/v2/clients',
                 'method': 'GET'
             }
         ]

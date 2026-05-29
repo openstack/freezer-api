@@ -22,5 +22,4 @@ Backup and DR Service APIs
    :maxdepth: 2
 
    versions/index
-   v1/index
    v2/index

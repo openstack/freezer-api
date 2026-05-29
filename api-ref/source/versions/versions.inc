@@ -2,7 +2,7 @@
 API Versions
 ============
 
-Freezer API supports v1 and v2.
+Freezer API supports v2 only.
 
 
 List major versions

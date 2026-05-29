@@ -33,15 +33,10 @@ def root_app_factory(loader, global_conf, **local_conf):
     for a single freezer-api instance to support both v1 and v2 at a time,
     you need to add a new patch to implement it.
     """
-    if CONF.enable_v1_api and '/v1' in local_conf:
-        del local_conf['/v2']
-    else:
+    if '/v1' in local_conf:
         del local_conf['/v1']
+
     return urlmap.urlmap_factory(loader, global_conf, **local_conf)
-
-
-def freezer_appv1_factory(global_conf, **local_conf):
-    return api.build_app_v1()
 
 
 def freezer_appv2_factory(global_conf, **local_conf):
