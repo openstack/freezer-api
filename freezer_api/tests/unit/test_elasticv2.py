@@ -798,14 +798,12 @@ class TestElasticSearchEngineV2_backup(
         self.assertRaises(exceptions.BadDataFormat, self.eng.add_backup,
                           project_id='tecs',
                           user_id=common.fake_data_0_user_id,
-                          user_name=common.fake_data_0_user_name,
                           doc=common.fake_malformed_data_0_backup_metadata)
 
     def test_add_backup_ok(self):
         self.eng.backup_manager.search.return_value = []
         res = self.eng.add_backup(project_id='tecs',
                                   user_id=common.fake_data_0_user_id,
-                                  user_name=common.fake_data_0_user_name,
                                   doc=common.fake_data_0_backup_metadata)
         self.assertTrue(res)
 
@@ -817,7 +815,6 @@ class TestElasticSearchEngineV2_backup(
         self.assertRaises(exceptions.StorageEngineError, self.eng.add_backup,
                           project_id='tecs',
                           user_id=common.fake_data_0_user_id,
-                          user_name=common.fake_data_0_user_name,
                           doc=common.fake_data_0_backup_metadata)
 
     def test_delete_backup_ok(self):

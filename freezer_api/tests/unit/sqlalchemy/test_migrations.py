@@ -126,6 +126,11 @@ class MigrationsWalk(
         for added_column in self._30a3fd20ec97_added_columns:
             self.assertIn(added_column, columns)
 
+    def _check_4f8c679a1d3b(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        columns = [x['name'] for x in inspector.get_columns('backups')]
+        self.assertNotIn('user_name', columns)
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection

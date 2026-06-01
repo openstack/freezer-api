@@ -400,12 +400,12 @@ class ElasticSearchEngineV2(object):
                                           offset=offset,
                                           limit=limit)
 
-    def add_backup(self, project_id, user_id, user_name, doc):
+    def add_backup(self, project_id, user_id, doc):
         # raises if data is malformed (HTTP_400) or already present (HTTP_409)
         backup_metadata_doc = utils.BackupMetadataDoc(
             project_id,
             user_id,
-            user_name,
+            '',
             doc
         )
         if not backup_metadata_doc.is_valid():
