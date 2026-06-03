@@ -54,6 +54,8 @@ def configure_app(app, db=None):
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
+    app.add_error_handler(Exception,
+                          freezer_api_exc.handle_unexpected_exception)
 
     endpoint_catalog = [
         ('', v2.public_endpoints(db))
@@ -92,6 +94,8 @@ def build_app_v2():
 
     for exception_class in freezer_api_exc.exception_handlers_catalog:
         app.add_error_handler(exception_class, exception_class.handle)
+    app.add_error_handler(Exception,
+                          freezer_api_exc.handle_unexpected_exception)
 
     endpoint_catalog = [
         ('', v2.public_endpoints(db))
