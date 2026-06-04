@@ -118,3 +118,10 @@ exception_handlers_catalog = [
     UnprocessableEntity,
     MissingCredentialError,
 ]
+
+
+def handle_unexpected_exception(req, resp, ex, params):
+    logging.exception('An unexpected exception occurred: %s', ex)
+    raise falcon.HTTPInternalServerError(
+        title=_('Internal Server Error'),
+        description=_('An unexpected error occurred on the server.'))

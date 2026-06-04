@@ -86,3 +86,12 @@ class TestExceptions(common.FreezerBaseTestCase):
                     obj, exceptions.exception_handlers_catalog,
                     f"{name} is missing from exception_handlers_catalog"
                 )
+
+    @mock.patch('freezer_api.common.exceptions.logging.exception')
+    def test_handle_unexpected_exception(self, mock_log_exception):
+        ex = Exception('unexpected error')
+        self.assertRaises(falcon.HTTPInternalServerError,
+                          exceptions.handle_unexpected_exception,
+                          self.mock_req, self.mock_req, ex, None)
+        mock_log_exception.assert_called_once_with(
+            'An unexpected exception occurred: %s', ex)
