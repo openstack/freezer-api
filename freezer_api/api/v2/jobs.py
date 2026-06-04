@@ -37,11 +37,10 @@ class JobsBaseResource(resource.BaseResource):
     def __init__(self, storage_driver):
         self.db = storage_driver
 
-    def get_action(self, project_id, user_id, action_id):
+    def get_action(self, project_id, action_id):
         found_action = None
         try:
             found_action = self.db.get_action(project_id=project_id,
-                                              user_id=user_id,
                                               action_id=action_id)
         except freezer_api_exc.DocumentNotFound:
             pass
@@ -57,7 +56,6 @@ class JobsBaseResource(resource.BaseResource):
             if action.action_id:
                 # action has action_id, let's see if it's in the db
                 found_action_doc = self.get_action(project_id=project_id,
-                                                   user_id=user_id,
                                                    action_id=action.action_id)
                 if found_action_doc:
                     if action == Action(found_action_doc):
@@ -71,15 +69,14 @@ class JobsBaseResource(resource.BaseResource):
                                user_id=user_id,
                                doc=action.doc)
 
-    def _filter_pid(self, req, project_id, user_id, obj_list):
+    def _filter_pid(self, req, project_id, obj_list):
         context = req.env.get('freezer.context')
         if not isinstance(obj_list, list):
             obj_list = [obj_list]
 
         for obj in obj_list:
             client_id = obj.get('client_id')
-            client_info = self.db.get_client(user_id=user_id,
-                                             project_id=project_id,
+            client_info = self.db.get_client(project_id=project_id,
                                              client_id=client_id)
             client_owner = None
             if client_info:
@@ -89,7 +86,7 @@ class JobsBaseResource(resource.BaseResource):
                 if 'job_schedule' in obj:
                     obj['job_schedule'].pop('current_pid', None)
 
-    def _should_create_trust(self, project_id, user_id, job_doc):
+    def _should_create_trust(self, project_id, job_doc):
         """
         Implements internal logic on when trusts should be created.
         By default, we create trusts for clients registered as central,
@@ -107,7 +104,6 @@ class JobsBaseResource(resource.BaseResource):
         if not client_id:
             return False
         client_doc = self.db.get_client(project_id=project_id,
-                                        user_id=user_id,
                                         client_id=client_id)
         if client_doc and client_doc[0].get('client', {}).get('is_central'):
             return True
@@ -122,7 +118,6 @@ class JobsCollectionResource(JobsBaseResource):
     @policy.enforce('jobs:get_all')
     def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/jobs(?limit,offset)     Lists jobs
-        user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         all_projects = req.get_param_as_bool('all_projects') or False
@@ -132,12 +127,11 @@ class JobsCollectionResource(JobsBaseResource):
             do_raise=False
         )
         obj_list = self.db.search_job(project_id=project_id,
-                                      user_id=user_id,
                                       all_projects=all_projects,
                                       offset=offset, limit=limit,
                                       search=search)
         if not all_projects:
-            self._filter_pid(req, project_id, user_id, obj_list)
+            self._filter_pid(req, project_id, obj_list)
         resp.media = {'jobs': obj_list}
 
     @policy.enforce('jobs:create')
@@ -148,9 +142,9 @@ class JobsCollectionResource(JobsBaseResource):
         except KeyError:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         self.update_actions_in_job(project_id, user_id, job.doc)
-        if self._should_create_trust(project_id, user_id, job.doc):
+        if self._should_create_trust(project_id, job.doc):
             ks_client = req.env['freezer.context'].keystone_client
             trust = ks_client.create_trust(user_id, project_id)
             job.doc['user_credentials'] = {
@@ -171,13 +165,10 @@ class JobsResource(JobsBaseResource):
     @policy.enforce('jobs:get')
     def on_get(self, req, resp, project_id, job_id):
         # GET /v2/{project_id}/jobs/{job_id}     retrieves the specified job
-        user_id = req.get_header('X-User-ID') or ''
         all_projects = policy.can('jobs:get_all_projects',
                                   req.env['freezer.context'],
                                   do_raise=False)
-
-        obj = self.db.get_job(project_id=project_id,
-                              user_id=user_id, job_id=job_id,
+        obj = self.db.get_job(project_id=project_id, job_id=job_id,
                               all_projects=all_projects)
         if obj:
             all_projects = policy.can(
@@ -185,7 +176,7 @@ class JobsResource(JobsBaseResource):
                 do_raise=False
             )
             if not all_projects:
-                self._filter_pid(req, project_id, user_id, obj)
+                self._filter_pid(req, project_id, obj)
             resp.media = obj
         else:
             resp.status = falcon.HTTP_404
@@ -193,7 +184,7 @@ class JobsResource(JobsBaseResource):
     @policy.enforce('jobs:delete')
     def on_delete(self, req, resp, project_id, job_id):
         # DELETE /v2/{project_id}/jobs/{job_id}     Deletes the specified job
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         job_id, trust_id = self.db.delete_job(project_id=project_id,
                                               user_id=user_id, job_id=job_id)
         if trust_id:
@@ -207,7 +198,7 @@ class JobsResource(JobsBaseResource):
     @policy.enforce('jobs:update')
     def on_patch(self, req, resp, project_id, job_id):
         # PATCH /v2/{project_id}/jobs/{job_id}     updates the specified job
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
         job = Job(self.json_body(req))
         self.update_actions_in_job(project_id, user_id, job.doc)
         new_version = self.db.update_job(project_id=project_id,
@@ -220,7 +211,7 @@ class JobsResource(JobsBaseResource):
     def on_post(self, req, resp, project_id, job_id):
         # PUT /v2/{project_id}/jobs/{job_id}
         # Creates/Replaces the specified job
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
         job = Job(self.json_body(req))
         self.update_actions_in_job(project_id, user_id, job.doc)
         new_version = self.db.replace_job(project_id=project_id,
@@ -248,7 +239,6 @@ class JobsEvent(resource.BaseResource):
         # POST /v2/{project_id}/jobs/{job_id}/event
         # requests an event on the specified job
 
-        user_id = req.get_header('X-User-ID') or ''
         doc = self.json_body(req)
 
         try:
@@ -257,12 +247,12 @@ class JobsEvent(resource.BaseResource):
             raise freezer_api_exc.BadDataFormat("Bad event request format")
 
         job_doc = self.db.get_job(project_id=project_id,
-                                  user_id=user_id,
                                   job_id=job_id)
         job = Job(job_doc)
         result = job.execute_event(event, params)
 
         if job.need_update:
+            user_id = req.context.user_id
             self.db.replace_job(project_id=project_id,
                                 user_id=user_id,
                                 job_id=job_id,

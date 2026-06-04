@@ -741,14 +741,12 @@ class TestElasticSearchEngineV2_backup(
             common.fake_data_0_wrapped_backup_metadata
         )
         res = self.eng.get_backup(project_id='tecs',
-                                  user_id=common.fake_data_0_user_id,
                                   backup_id=common.fake_data_0_backup_id)
 
         self.assertEqual(common.fake_data_0_wrapped_backup_metadata, res)
         self.eng.backup_manager.get.assert_called_with(
             project_id=common.fake_data_0_wrapped_backup_metadata
             ['project_id'],
-            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
             doc_id=common.fake_data_0_wrapped_backup_metadata['backup_id']
         )
 
@@ -759,7 +757,6 @@ class TestElasticSearchEngineV2_backup(
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
         res = self.eng.search_backup(project_id='tecs',
-                                     user_id=common.fake_data_0_user_id,
                                      offset=3, limit=7,
                                      search=my_search)
         self.assertEqual(
@@ -770,7 +767,6 @@ class TestElasticSearchEngineV2_backup(
         )
         self.eng.backup_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
             search=my_search,
             limit=7, offset=3)
 
@@ -779,26 +775,22 @@ class TestElasticSearchEngineV2_backup(
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
         res = self.eng.search_backup(project_id='tecs',
-                                     user_id=common.fake_data_0_user_id,
                                      offset=3, limit=7,
                                      search=my_search)
         self.assertEqual([], res)
         self.eng.backup_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
             search=my_search,
             limit=7, offset=3)
 
     def test_get_backup_userid_and_backup_id_not_found_returns_empty(self):
         self.eng.backup_manager.get.return_value = None
         res = self.eng.get_backup(project_id='tecs',
-                                  user_id=common.fake_data_0_user_id,
                                   backup_id=common.fake_data_0_backup_id)
         self.assertIsNone(res)
         self.eng.backup_manager.get.assert_called_with(
             project_id=common.fake_data_0_wrapped_backup_metadata
             ['project_id'],
-            user_id=common.fake_data_0_wrapped_backup_metadata['user_id'],
             doc_id=common.fake_data_0_wrapped_backup_metadata['backup_id']
         )
 
@@ -872,14 +864,12 @@ class TestElasticSearchEngine_client(
                                {'description': 'some other text'}]}
         res = self.eng.get_client(
             project_id='tecs',
-            user_id=common.fake_client_entry_0['user_id'],
             client_id=common.fake_client_info_0['client_id'],
             offset=6, limit=15,
             search=my_search)
         self.assertEqual([common.fake_client_entry_0], res)
         self.eng.client_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_client_entry_0['user_id'],
             doc_id=common.fake_client_info_0['client_id'],
             search=my_search,
             limit=15, offset=6)
@@ -891,7 +881,6 @@ class TestElasticSearchEngine_client(
                                {'description': 'some other text'}]}
         res = self.eng.get_client(
             project_id='tecs',
-            user_id=common.fake_client_entry_0['user_id'],
             offset=6, limit=15,
             search=my_search)
         self.assertEqual(
@@ -901,7 +890,6 @@ class TestElasticSearchEngine_client(
             ], res)
         self.eng.client_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_client_entry_0['user_id'],
             doc_id=None,
             search=my_search,
             limit=15, offset=6)
@@ -912,13 +900,11 @@ class TestElasticSearchEngine_client(
                                {'description': 'some other text'}]}
         res = self.eng.get_client(
             project_id='tecs',
-            user_id=common.fake_client_entry_0['user_id'],
             offset=6, limit=15,
             search=my_search)
         self.assertEqual([], res)
         self.eng.client_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_client_entry_0['user_id'],
             doc_id=None,
             search=my_search,
             limit=15, offset=6)
@@ -1110,23 +1096,19 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
     def test_get_job_userid_and_job_id_return_doc(self):
         self.eng.job_manager.get.return_value = common.get_fake_job_0()
         res = self.eng.get_job(project_id='tecs',
-                               user_id=common.fake_job_0['user_id'],
                                job_id=common.fake_job_0['job_id'])
         self.assertEqual(common.fake_job_0, res)
         self.eng.job_manager.get.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_job_0['user_id'],
             doc_id=common.fake_job_0['job_id'], all_projects=False)
 
     def test_get_job_userid_and_job_id_return_none(self):
         self.eng.job_manager.get.return_value = None
         res = self.eng.get_job(project_id='tecs',
-                               user_id=common.fake_job_0['user_id'],
                                job_id=common.fake_job_0['job_id'])
         self.assertIsNone(res)
         self.eng.job_manager.get.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_job_0['user_id'],
             doc_id=common.fake_job_0['job_id'], all_projects=False)
 
     def test_get_job_with_userid_and_search_return_list(self):
@@ -1135,13 +1117,11 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
         res = self.eng.search_job(project_id='tecs',
-                                  user_id=common.fake_job_0['user_id'],
                                   offset=6, limit=15,
                                   search=my_search)
         self.assertEqual([common.fake_job_0, common.fake_job_0], res)
         self.eng.job_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_job_0['user_id'],
             all_projects=False,
             search=my_search,
             limit=15, offset=6)
@@ -1151,13 +1131,11 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
         res = self.eng.search_job(project_id='tecs',
-                                  user_id=common.fake_job_0['user_id'],
                                   offset=6, limit=15,
                                   search=my_search)
         self.assertEqual([], res)
         self.eng.job_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_job_0['user_id'],
             all_projects=False,
             search=my_search,
             limit=15, offset=6)
@@ -1293,23 +1271,19 @@ class TestElasticSearchEngine_action(
     def test_get_action_userid_and_action_id_return_doc(self):
         self.eng.action_manager.get.return_value = common.get_fake_action_0()
         res = self.eng.get_action(project_id='tecs',
-                                  user_id=common.fake_action_0['user_id'],
                                   action_id=common.fake_action_0['action_id'])
         self.assertEqual(common.fake_action_0, res)
         self.eng.action_manager.get.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_action_0['user_id'],
             doc_id=common.fake_action_0['action_id'])
 
     def test_get_action_userid_and_action_id_return_none(self):
         self.eng.action_manager.get.return_value = None
         res = self.eng.get_action(project_id='tecs',
-                                  user_id=common.fake_action_0['user_id'],
                                   action_id=common.fake_action_0['action_id'])
         self.assertIsNone(res)
         self.eng.action_manager.get.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_action_0['user_id'],
             doc_id=common.fake_action_0['action_id'])
 
     def test_get_action_with_userid_and_search_return_list(self):
@@ -1318,13 +1292,11 @@ class TestElasticSearchEngine_action(
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
         res = self.eng.search_action(project_id='tecs',
-                                     user_id=common.fake_action_0['user_id'],
                                      offset=6, limit=15,
                                      search=my_search)
         self.assertEqual([common.fake_action_0, common.fake_action_0], res)
         self.eng.action_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_action_0['user_id'],
             search=my_search,
             limit=15, offset=6)
 
@@ -1333,13 +1305,11 @@ class TestElasticSearchEngine_action(
         my_search = {'match': [{'some_field': 'some text'},
                                {'description': 'some other text'}]}
         res = self.eng.search_action(project_id='tecs',
-                                     user_id=common.fake_action_0['user_id'],
                                      offset=6, limit=15,
                                      search=my_search)
         self.assertEqual([], res)
         self.eng.action_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_action_0['user_id'],
             search=my_search,
             limit=15, offset=6)
 
@@ -1371,7 +1341,7 @@ class TestElasticSearchEngine_action(
             'action_id']
         res = self.eng.delete_action(
             project_id='tecs',
-            user_id=common.fake_action_0['action_id'],
+            user_id=common.fake_action_0['user_id'],
             action_id=common.fake_action_0['action_id'])
         self.assertEqual(common.fake_action_0['action_id'], res)
 
@@ -1415,7 +1385,7 @@ class TestElasticSearchEngine_action(
         self.eng.action_manager.update.return_value = 11
         res = self.eng.update_action(
             project_id='tecs',
-            user_id=common.fake_action_0['action_id'],
+            user_id=common.fake_action_0['user_id'],
             action_id=common.fake_action_0['action_id'],
             patch_doc=patch)
         self.assertEqual(11, res)
@@ -1437,7 +1407,7 @@ class TestElasticSearchEngine_action(
     #     )
     #     self.eng.action_manager.insert.return_value = (True, 1)
     #     res = self.eng.replace_action(
-    #         user_id=common.fake_action_0['action_id'],
+    #
     #         action_id=common.fake_action_0['action_id'],
     #         doc=common.get_fake_action_0())
     #     self.assertEqual(res, 1)
@@ -1447,7 +1417,7 @@ class TestElasticSearchEngine_action(
     #     self.eng.action_manager.get.return_value = common.get_fake_action_0()
     #     self.eng.action_manager.insert.return_value = (False, 3)
     #     res = self.eng.replace_action(
-    #         user_id=common.fake_action_0['action_id'],
+    #
     #         action_id=common.fake_action_0['action_id'],
     #         doc=common.get_fake_action_0())
     #     self.assertEqual(res, 3)
@@ -1473,25 +1443,21 @@ class TestElasticSearchEngine_session(
     def test_get_session_userid_and_session_id_return_doc(self):
         self.eng.session_manager.get.return_value = common.get_fake_session_0()
         res = self.eng.get_session(project_id='tecs',
-                                   user_id=common.fake_session_0['user_id'],
                                    session_id=common.fake_session_0[
                                        'session_id'])
         self.assertEqual(common.fake_session_0, res)
         self.eng.session_manager.get.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_session_0['user_id'],
             doc_id=common.fake_session_0['session_id'])
 
     def test_get_session_userid_and_session_id_return_none(self):
         self.eng.session_manager.get.return_value = None
         res = self.eng.get_session(project_id='tecs',
-                                   user_id=common.fake_session_0['user_id'],
                                    session_id=common.fake_session_0[
                                        'session_id'])
         self.assertIsNone(res)
         self.eng.session_manager.get.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_session_0['user_id'],
             doc_id=common.fake_session_0['session_id'])
 
     def test_get_session_with_userid_and_search_return_list(self):
@@ -1501,13 +1467,11 @@ class TestElasticSearchEngine_session(
                                {'description': 'some other text'}]}
         res = self.eng.search_session(
             project_id='tecs',
-            user_id=common.fake_session_0['user_id'],
             offset=6, limit=15,
             search=my_search)
         self.assertEqual([common.fake_session_0, common.fake_session_0], res)
         self.eng.session_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_session_0['user_id'],
             search=my_search,
             limit=15, offset=6)
 
@@ -1517,13 +1481,11 @@ class TestElasticSearchEngine_session(
                                {'description': 'some other text'}]}
         res = self.eng.search_session(
             project_id='tecs',
-            user_id=common.fake_session_0['user_id'],
             offset=6, limit=15,
             search=my_search)
         self.assertEqual([], res)
         self.eng.session_manager.search.assert_called_with(
             project_id='tecs',
-            user_id=common.fake_session_0['user_id'],
             search=my_search,
             limit=15, offset=6)
 
@@ -1555,7 +1517,7 @@ class TestElasticSearchEngine_session(
             'session_id']
         res = self.eng.delete_session(
             project_id='tecs',
-            user_id=common.fake_session_0['session_id'],
+            user_id=common.fake_session_0['user_id'],
             session_id=common.fake_session_0['session_id'])
         self.assertEqual(common.fake_session_0['session_id'], res)
 
@@ -1599,7 +1561,7 @@ class TestElasticSearchEngine_session(
         self.eng.session_manager.update.return_value = 11
         res = self.eng.update_session(
             project_id='tecs',
-            user_id=common.fake_session_0['session_id'],
+            user_id=common.fake_session_0['user_id'],
             session_id=common.fake_session_0['session_id'],
             patch_doc=patch)
         self.assertEqual(11, res)
@@ -1621,7 +1583,7 @@ class TestElasticSearchEngine_session(
         self.eng.session_manager.insert.return_value = (True, 1)
         res = self.eng.replace_session(
             project_id='tecs',
-            user_id=common.fake_session_0['session_id'],
+            user_id=common.fake_session_0['user_id'],
             session_id=common.fake_session_0['session_id'],
             doc=common.get_fake_session_0())
         self.assertEqual(1, res)
@@ -1631,7 +1593,7 @@ class TestElasticSearchEngine_session(
         self.eng.session_manager.insert.return_value = (False, 3)
         res = self.eng.replace_session(
             project_id='tecs',
-            user_id=common.fake_session_0['session_id'],
+            user_id=common.fake_session_0['user_id'],
             session_id=common.fake_session_0['session_id'],
             doc=common.get_fake_session_0())
         self.assertEqual(3, res)

@@ -46,8 +46,6 @@ class DbActionTestCase(base.DbTestCase):
         self.assertIsNotNone(action_id)
 
         result = self.dbapi.get_action(project_id=self.fake_project_id,
-                                       user_id=self.fake_action_0.
-                                       get('user_id'),
                                        action_id=action_id)
 
         self.assertIsNotNone(result)
@@ -83,18 +81,15 @@ class DbActionTestCase(base.DbTestCase):
                                           project_id=self.fake_project_id)
         self.assertIsNotNone(action_id)
 
-        result = self.dbapi.delete_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_0.
-                                          get('user_id'),
-                                          action_id=action_id)
+        result = self.dbapi.delete_action(
+            user_id=self.fake_action_0.get('user_id'),
+            project_id=self.fake_project_id, action_id=action_id)
 
         self.assertIsNotNone(result)
 
         self.assertEqual(result, action_id)
 
         result = self.dbapi.get_action(project_id=self.fake_project_id,
-                                       user_id=self.fake_action_0.
-                                       get('user_id'),
                                        action_id=action_id)
 
         self.assertEqual(len(result), 0)
@@ -109,9 +104,8 @@ class DbActionTestCase(base.DbTestCase):
 
         patch_doc = copy.deepcopy(self.fake_action_2)
 
-        result = self.dbapi.update_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_2.
-                                          get('user_id'),
+        result = self.dbapi.update_action(user_id=self.fake_user_id,
+                                          project_id=self.fake_project_id,
                                           patch_doc=patch_doc,
                                           action_id=action_id)
 
@@ -120,8 +114,6 @@ class DbActionTestCase(base.DbTestCase):
         self.assertEqual(result, action_id)
 
         result = self.dbapi.get_action(project_id=self.fake_project_id,
-                                       user_id=self.fake_action_2.
-                                       get('user_id'),
                                        action_id=action_id)
 
         self.assertEqual(result.get('max_retries'),
@@ -145,9 +137,8 @@ class DbActionTestCase(base.DbTestCase):
 
         patch_doc = copy.deepcopy(self.fake_action_2)
 
-        result = self.dbapi.replace_action(project_id=self.fake_project_id,
-                                           user_id=self.fake_action_2.
-                                           get('user_id'),
+        result = self.dbapi.replace_action(user_id=self.fake_user_id,
+                                           project_id=self.fake_project_id,
                                            doc=patch_doc,
                                            action_id=action_id)
 
@@ -156,8 +147,6 @@ class DbActionTestCase(base.DbTestCase):
         self.assertEqual(result, action_id)
 
         result = self.dbapi.get_action(project_id=self.fake_project_id,
-                                       user_id=self.fake_action_2.
-                                       get('user_id'),
                                        action_id=action_id)
 
         self.assertEqual(result.get('max_retries'),
@@ -173,15 +162,12 @@ class DbActionTestCase(base.DbTestCase):
 
         patch_doc1 = copy.deepcopy(self.fake_action_0)
 
-        result = self.dbapi.replace_action(project_id=self.fake_project_id,
-                                           user_id=self.fake_action_2.
-                                           get('user_id'),
+        result = self.dbapi.replace_action(user_id=self.fake_user_id,
+                                           project_id=self.fake_project_id,
                                            doc=patch_doc1,
                                            action_id=self.fake_action_id)
         self.assertIsNotNone(result)
         result = self.dbapi.get_action(project_id=self.fake_project_id,
-                                       user_id=self.fake_action_2.
-                                       get('user_id'),
                                        action_id=self.fake_action_id)
         self.assertEqual(result.get('action_id'), self.fake_action_id)
 
@@ -202,8 +188,6 @@ class DbActionTestCase(base.DbTestCase):
             count += 1
 
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=10,
                                           offset=0)
 
@@ -239,8 +223,6 @@ class DbActionTestCase(base.DbTestCase):
         search_opt = {'match_not': [{'mode': 'nova'}],
                       'match': [{'max_retries': 10}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)
@@ -277,8 +259,6 @@ class DbActionTestCase(base.DbTestCase):
         search_opt = {'match': [{'max_retries': 10},
                                 {'mode': 'nova'}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)
@@ -316,8 +296,6 @@ class DbActionTestCase(base.DbTestCase):
                       [{'mode': 'nova'},
                        {'max_retries': 5}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)
@@ -351,8 +329,6 @@ class DbActionTestCase(base.DbTestCase):
 
         search_opt = {'match': [{'_all': '[{"max_retries": 10}]'}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)
@@ -389,8 +365,6 @@ class DbActionTestCase(base.DbTestCase):
                         '[{"max_retries": 10}, '
                         '{"mode": "nova"}]'}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)
@@ -424,8 +398,6 @@ class DbActionTestCase(base.DbTestCase):
 
         search_opt = {'match': [{'_all': '{"max_retries": 10}'}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)
@@ -434,8 +406,6 @@ class DbActionTestCase(base.DbTestCase):
         self.assertEqual(len(result), 20)
         search_opt = {'match': [{'_all': 'max_retries=10'}]}
         result = self.dbapi.search_action(project_id=self.fake_project_id,
-                                          user_id=self.fake_action_3.
-                                          get('user_id'),
                                           limit=20,
                                           offset=0,
                                           search=search_opt)

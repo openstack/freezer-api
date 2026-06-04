@@ -1,0 +1,13 @@
+---
+prelude: >
+    Freezer API resources are no longer binded to ``user_id``, and are
+    available for all users who are authorized to view them within the
+    project.
+upgrade:
+  - |
+    Previously all backup resources (like jobs, job actions, etc) were
+    assigned to both ``project_id`` and ``user_id``, which made them
+    invisible for other users who were authorized in the project.
+    This is now changed, and Freezer is aligned with generic OpenStack
+    logic, where resources are pinned to the project, and not to a specific
+    user within a project.

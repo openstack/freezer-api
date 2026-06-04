@@ -37,13 +37,13 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
 
     def test_get_action_returns_found_action(self):
         self.mock_db.get_action.return_value = 'awesome_result'
-        result = self.resource.get_action('project-id', 'user-id', 'action-id')
+        result = self.resource.get_action('project-id', 'action-id')
         self.assertEqual('awesome_result', result)
 
     def test_get_action_returns_none_when_action_not_found(self):
         self.mock_db.get_action.side_effect = exceptions.DocumentNotFound(
             'regular test failure')
-        result = self.resource.get_action('project-id', 'user-id', 'action-id')
+        result = self.resource.get_action('project-id', 'action-id')
         self.assertIsNone(result)
 
     def test_update_actions_in_job_no_action_id(self):
@@ -135,20 +135,20 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
     @mock.patch.object(v2_jobs, 'CONF')
     def test_should_create_trust_disabled(self, mock_conf):
         mock_conf.centralized_scheduler.enabled = False
-        result = self.resource._should_create_trust('proj', 'user', {})
+        result = self.resource._should_create_trust('proj', {})
         self.assertFalse(result)
 
     @mock.patch.object(v2_jobs, 'CONF')
     def test_should_create_trust_enforced(self, mock_conf):
         mock_conf.centralized_scheduler.enforce_trusts = True
-        result = self.resource._should_create_trust('proj', 'user', {})
+        result = self.resource._should_create_trust('proj', {})
         self.assertTrue(result)
 
     @mock.patch.object(v2_jobs, 'CONF')
     def test_should_create_trust_no_client_id(self, mock_conf):
         mock_conf.centralized_scheduler.enabled = True
         mock_conf.centralized_scheduler.enforce_trusts = False
-        result = self.resource._should_create_trust('proj', 'user', {})
+        result = self.resource._should_create_trust('proj', {})
         self.assertFalse(result)
 
     @mock.patch.object(v2_jobs, 'CONF')
@@ -156,7 +156,7 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
         mock_conf.centralized_scheduler.enabled = True
         mock_conf.centralized_scheduler.enforce_trusts = False
         self.mock_db.get_client.return_value = []
-        result = self.resource._should_create_trust('proj', 'user',
+        result = self.resource._should_create_trust('proj',
                                                     {'client_id': 'cid'})
         self.assertFalse(result)
 
@@ -167,22 +167,22 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
         self.mock_db.get_client.return_value = [
             {'client': {'is_central': False}}
         ]
-        result = self.resource._should_create_trust('proj', 'user',
+        result = self.resource._should_create_trust('proj',
                                                     {'client_id': 'cid'})
         self.assertFalse(result)
 
     @mock.patch.object(v2_jobs, 'CONF')
     def test_should_create_trust_client_is_central(self, mock_conf):
+        mock_conf.centralized_scheduler.enabled = True
         mock_conf.centralized_scheduler.enforce_trusts = False
         self.mock_db.get_client.return_value = [
             {'client': {'is_central': True}}
         ]
-        result = self.resource._should_create_trust('proj', 'user',
+        result = self.resource._should_create_trust('proj',
                                                     {'client_id': 'cid'})
         self.assertTrue(result)
         self.mock_db.get_client.assert_called_with(
             project_id='proj',
-            user_id='user',
             client_id='cid'
         )
 
@@ -197,6 +197,8 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
         self.mock_req = mock.MagicMock()
         self.fake_context = common.FakeContext()
         self.fake_context.keystone_client = mock.Mock()
+        self.fake_context.user_id = common.fake_job_0_user_id
+        self.mock_req.context = self.fake_context
         self.mock_req.env.__getitem__.side_effect = (
             lambda k: self.fake_context if k == 'freezer.context'
             else common.get_req_items(k)
@@ -246,7 +248,6 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             ])
             self.mock_db.search_job.assert_called_with(
                 project_id=common.fake_job_0_project_id,
-                user_id=common.fake_job_0_user_id,
                 all_projects=True,
                 offset=0, limit=10,
                 search={}
@@ -333,6 +334,7 @@ class TestJobsResource(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_job_0_user_id
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.stream.read.return_value = {}
         self.mock_req.get_header.return_value = common.fake_job_0_user_id
@@ -382,7 +384,6 @@ class TestJobsResource(common.FreezerBaseTestCase):
             )
             self.mock_db.get_job.assert_called_with(
                 project_id=common.fake_job_0_project_id,
-                user_id=common.fake_job_0_user_id,
                 job_id=common.fake_job_0_job_id,
                 all_projects=True
             )
@@ -538,6 +539,7 @@ class TestJobsEvent(common.FreezerBaseTestCase):
         super().setUp()
         self.mock_db = mock.Mock()
         self.mock_req = mock.MagicMock()
+        self.mock_req.context.user_id = common.fake_session_0['user_id']
         self.mock_req.env.__getitem__.side_effect = common.get_req_items
         self.mock_req.get_header.return_value = common.fake_session_0[
             'user_id']

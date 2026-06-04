@@ -32,12 +32,10 @@ class ClientsCollectionResource(resource.BaseResource):
     @policy.enforce('clients:get_all')
     def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/clients(?limit,offset)     Lists clients
-        user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         search = self.json_body(req)
         obj_list = self.db.get_client(project_id=project_id,
-                                      user_id=user_id,
                                       offset=offset,
                                       limit=limit,
                                       search=search)
@@ -50,7 +48,7 @@ class ClientsCollectionResource(resource.BaseResource):
         if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
 
         # Schedulers claiming themselves as central can register as
         # central clients
@@ -75,9 +73,7 @@ class ClientsResource(resource.BaseResource):
     def on_get(self, req, resp, project_id, client_id):
         # GET /v2/clients(?limit,offset)
         # search in body
-        user_id = req.get_header('X-User-ID') or ''
         obj = self.db.get_client(project_id=project_id,
-                                 user_id=user_id,
                                  client_id=client_id)
         if obj:
             resp.media = obj[0]
@@ -88,7 +84,7 @@ class ClientsResource(resource.BaseResource):
     def on_delete(self, req, resp, project_id, client_id):
         # DELETE /v2/{project_id}/clients/{client_id}
         # Deletes the specified client
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         self.db.delete_client(project_id=project_id,
                               user_id=user_id,
                               client_id=client_id)

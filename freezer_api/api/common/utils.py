@@ -25,25 +25,28 @@ LOG = log.getLogger(__name__)
 
 
 def inject_context(req, resp, params):
-    user_id = req.get_header('X-USER-ID')
-    request_id = req.get_header('X-Openstack-Request-ID')
-    auth_token = req.get_header('X-AUTH-TOKEN')
-    tenant = req.get_header('X-TENANT-ID')
+    ctxt = req.env.get('freezer.context')
+    if not ctxt:
+        user_id = req.get_header('X-USER-ID')
+        request_id = req.get_header('X-Openstack-Request-ID')
+        auth_token = req.get_header('X-AUTH-TOKEN')
+        tenant = req.get_header('X-TENANT-ID')
 
-    roles = req.get_header('X-ROLES')
-    roles = roles and roles.split(',') or []
+        roles = req.get_header('X-ROLES')
+        roles = roles and roles.split(',') or []
 
-    auth_token_info = req.env.get('keystone.token_info')
+        auth_token_info = req.env.get('keystone.token_info')
 
-    ctxt = context.FreezerContext(auth_token=auth_token,
-                                  user=user_id,
-                                  tenant=tenant,
-                                  request_id=request_id,
-                                  roles=roles,
-                                  auth_token_info=auth_token_info,
-                                  )
+        ctxt = context.FreezerContext(auth_token=auth_token,
+                                      user=user_id,
+                                      tenant=tenant,
+                                      request_id=request_id,
+                                      roles=roles,
+                                      auth_token_info=auth_token_info,
+                                      )
 
-    req.env['freezer.context'] = ctxt
+        req.env['freezer.context'] = ctxt
+    req.context = ctxt
     LOG.info('Request context set')
 
 

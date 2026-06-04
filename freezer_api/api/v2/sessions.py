@@ -34,12 +34,10 @@ class SessionsCollectionResource(resource.BaseResource):
     @policy.enforce('sessions:get_all')
     def on_get(self, req, resp, project_id):
         # GET /v2/{project_id}/sessions(?limit,offset)     Lists sessions
-        user_id = req.get_header('X-User-ID')
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         search = self.json_body(req)
-        obj_list = self.db.search_session(project_id=project_id,
-                                          user_id=user_id, offset=offset,
+        obj_list = self.db.search_session(project_id=project_id, offset=offset,
                                           limit=limit, search=search)
         resp.media = {'sessions': obj_list}
 
@@ -50,7 +48,7 @@ class SessionsCollectionResource(resource.BaseResource):
         if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         session_id = self.db.add_session(project_id=project_id,
                                          user_id=user_id, doc=doc)
         resp.status = falcon.HTTP_201
@@ -70,9 +68,7 @@ class SessionsResource(resource.BaseResource):
         # GET /v2/{project_id}/sessions/{session_id}
         # Retrieves the specified session
         # Search in body
-        user_id = req.get_header('X-User-ID') or ''
-        obj = self.db.get_session(project_id=project_id,
-                                  user_id=user_id, session_id=session_id)
+        obj = self.db.get_session(project_id=project_id, session_id=session_id)
         if obj:
             resp.media = obj
         else:
@@ -82,7 +78,7 @@ class SessionsResource(resource.BaseResource):
     def on_delete(self, req, resp, project_id, session_id):
         # DELETE /v2/{project_id}/sessions/{session_id}
         # Deletes the specified session
-        user_id = req.get_header('X-User-ID')
+        user_id = req.context.user_id
         self.db.delete_session(project_id=project_id,
                                user_id=user_id, session_id=session_id)
         resp.media = {'session_id': session_id}
@@ -92,7 +88,7 @@ class SessionsResource(resource.BaseResource):
     def on_patch(self, req, resp, project_id, session_id):
         # PATCH /v2/{project_id}/sessions/{session_id}
         # Updates the specified session
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
         doc = self.json_body(req)
         new_version = self.db.update_session(project_id=project_id,
                                              user_id=user_id,
@@ -104,7 +100,7 @@ class SessionsResource(resource.BaseResource):
     def on_post(self, req, resp, project_id, session_id):
         # PUT /v2/{project_id}/sessions/{session_id}
         # Creates/Replaces the specified session
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
         doc = self.json_body(req)
         if not doc:
             raise freezer_api_exc.BadDataFormat(
@@ -130,7 +126,6 @@ class SessionsAction(resource.BaseResource):
         # POST /v2/{project_id}/sessions/{session_id}/action
         # executes an action on the specified session
 
-        user_id = req.get_header('X-User-ID') or ''
         doc = self.json_body(req)
 
         try:
@@ -139,12 +134,12 @@ class SessionsAction(resource.BaseResource):
             raise freezer_api_exc.BadDataFormat("Bad action request format")
 
         session_doc = self.db.get_session(project_id=project_id,
-                                          user_id=user_id,
                                           session_id=session_id)
         session = Session(session_doc)
         session.execute_action(action, params)
 
         if session.need_update:
+            user_id = req.context.user_id
             self.db.update_session(project_id=project_id,
                                    user_id=user_id,
                                    session_id=session_id,
@@ -303,11 +298,10 @@ class SessionsJob(resource.BaseResource):
         :return:
         """
 
-        user_id = req.get_header('X-User-ID', '')
+        user_id = req.context.user_id
 
         # --- update session object
-        job_doc = self.db.get_job(project_id=project_id,
-                                  user_id=user_id, job_id=job_id)
+        job_doc = self.db.get_job(project_id=project_id, job_id=job_id)
 
         job_schedule = job_doc.get('job_schedule', {})
         session_update_doc = {
@@ -327,8 +321,7 @@ class SessionsJob(resource.BaseResource):
                                session_id=session_id,
                                patch_doc=session_update_doc)
         # --- update job object
-        session_doc = self.db.get_session(user_id=user_id,
-                                          session_id=session_id,
+        session_doc = self.db.get_session(session_id=session_id,
                                           project_id=project_id)
         job_update_doc = {
             'session_id': session_id,
@@ -353,10 +346,9 @@ class SessionsJob(resource.BaseResource):
         :return:
         """
 
-        user_id = req.get_header('X-User-ID') or ''
+        user_id = req.context.user_id
 
         session_doc = self.db.get_session(project_id=project_id,
-                                          user_id=user_id,
                                           session_id=session_id)
         session_doc['jobs'].pop(job_id, None)
 
