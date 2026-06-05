@@ -1,0 +1,7 @@
+---
+
+other:
+  - |
+    User name is removed from the database schema. Storing user name did not add
+    any value to backups, user id is enough to identify the user. This also
+    reduces the amount of data stored in the database.

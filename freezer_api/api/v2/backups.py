@@ -46,11 +46,9 @@ class BackupsCollectionResource(resource.BaseResource):
         if not doc:
             raise freezer_api_exc.BadDataFormat(
                 message='Missing request body')
-        user_name = req.get_header('X-User-Name')
         user_id = req.context.user_id
         backup_id = self.db.add_backup(project_id=project_id,
                                        user_id=user_id,
-                                       user_name=user_name,
                                        doc=doc)
         resp.status = falcon.HTTP_201
         resp.media = {'backup_id': backup_id}

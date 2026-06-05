@@ -1038,15 +1038,14 @@ def get_backup(backup_id, project_id=None):
         values['project_id'] = result[0].get('project_id')
         values['backup_id'] = result[0].get('id')
         values['user_id'] = result[0].get('user_id')
-        values['user_name'] = result[0].get('user_name')
         values['backup_metadata'] = json_utils.\
             json_decode(result[0].get('backup_metadata'))
     return values
 
 
-def add_backup(user_id, user_name, doc, project_id=None):
+def add_backup(user_id, doc, project_id=None):
 
-    metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, user_name,
+    metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, '',
                                             doc)
     if not metadatadoc.is_valid():
         raise freezer_api_exc.BadDataFormat(
@@ -1067,7 +1066,6 @@ def add_backup(user_id, user_name, doc, project_id=None):
     backupvalue['project_id'] = project_id
     backupvalue['id'] = backup_id
     backupvalue['user_id'] = user_id
-    backupvalue['user_name'] = user_name
     backupvalue['job_id'] = backup_metadata.get('job_id')
     # The field backup_metadata is json, including :
     # hostname , backup_name , container etc
@@ -1098,7 +1096,6 @@ def search_backup(project_id=None, offset=0,
         backupmap['project_id'] = project_id
         backupmap['user_id'] = backup.user_id
         backupmap['backup_id'] = backup.id
-        backupmap['user_name'] = backup.user_name
         backupmap['backup_metadata'] = json_utils.\
             json_decode(backup.get('backup_metadata'))
         backups.append(backupmap)
