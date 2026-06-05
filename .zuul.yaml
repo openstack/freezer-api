@@ -1,5 +1,4 @@
 ---
-
 - project:
     templates:
       - check-requirements
@@ -10,10 +9,10 @@
     check:
       jobs:
         - openstack-tox-pylint
-#        - freezer-tempest-basic
-#        - freezer-tempest-ipv6-only
+        - freezer-tempest-basic
+        - freezer-tempest-ipv6-only
     gate:
       jobs:
         - openstack-tox-pylint
-#        - freezer-tempest-basic
-#        - freezer-tempest-ipv6-only
+        - freezer-tempest-basic
+        - freezer-tempest-ipv6-only
