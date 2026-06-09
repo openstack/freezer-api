@@ -109,7 +109,7 @@ function configure_freezer_api {
 
     # enable debugging
     iniset $FREEZER_API_CONF 'DEFAULT' debug True
-    iniset $FREEZER_API_CONF 'DEFAULT' log_file $FREEZER_API_LOG_DIR/freezer-api.log
+    iniset $FREEZER_API_CONF 'DEFAULT' use_stderr True
 
     # set paste configuration
     iniset $FREEZER_API_CONF 'paste_deploy' config_file $FREEZER_API_CONF_DIR/freezer-paste.ini
@@ -192,14 +192,10 @@ function start_freezer_api {
         enable_apache_site freezer-api
         restart_apache_server
 
-        # tail_log freezer-api /var/log/$APACHE_NAME/freezer-api.log
-
     elif [[ "${FREEZER_API_SERVER_TYPE}" == "apache2" ]]; then
 
         enable_apache_site freezer-api
         restart_apache_server
-        # tail_log freezer-api /var/log/$APACHE_NAME/freezer-api.log
-        # tail_log freezer-access /var/log/$APACHE_NAME/freezer-api_access.log
     fi
 }
 
