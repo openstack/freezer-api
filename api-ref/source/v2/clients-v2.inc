@@ -91,10 +91,16 @@ Request Parameters
 
 .. rest_parameters:: parameters.yaml
 
-  - hostname: hostname
-  - uuid: uuid
-  - client_id: client_id
-  - is_central: is_central
+  - client: client
+  - client.client_id: client.client_id
+  - client.hostname: client.hostname
+  - client.description: client.description
+  - client.uuid: client.uuid
+  - client.supported_actions: client.supported_actions
+  - client.supported_modes: client.supported_modes
+  - client.supported_storages: client.supported_storages
+  - client.supported_engines: client.supported_engines
+  - client.is_central: client.is_central
 
 Request Example
 ---------------
@@ -148,10 +154,16 @@ Response Parameters
 
   - project_id: project_id
   - user_id: user_id
-  - client_id: client_id
-  - is_central: is_central
-  - hostname: hostname
-  - uuid: uuid
+  - client: client
+  - client.client_id: client.client_id
+  - client.hostname: client.hostname
+  - client.description: client.description
+  - client.uuid: client.uuid
+  - client.supported_actions: client.supported_actions
+  - client.supported_modes: client.supported_modes
+  - client.supported_storages: client.supported_storages
+  - client.supported_engines: client.supported_engines
+  - client.is_central: client.is_central
 
 
 Response Example

@@ -108,7 +108,36 @@ Request Parameters
 
   - description: job_description_req
   - job_schedule: job_schedule_req
+  - job_schedule.time_created: job_schedule.time_created
+  - job_schedule.time_started: job_schedule.time_started
+  - job_schedule.time_ended: job_schedule.time_ended
+  - job_schedule.event: job_schedule.event
+  - job_schedule.status: job_schedule.status
+  - job_schedule.result: job_schedule.result
+  - job_schedule.schedule_date: job_schedule.schedule_date
+  - job_schedule.schedule_interval: job_schedule.schedule_interval
+  - job_schedule.schedule_start_date: job_schedule.schedule_start_date
+  - job_schedule.schedule_end_date: job_schedule.schedule_end_date
+  - job_schedule.schedule_year: job_schedule.schedule_year
+  - job_schedule.schedule_month: job_schedule.schedule_month
+  - job_schedule.schedule_day: job_schedule.schedule_day
+  - job_schedule.schedule_week: job_schedule.schedule_week
+  - job_schedule.schedule_day_of_week: job_schedule.schedule_day_of_week
+  - job_schedule.schedule_hour: job_schedule.schedule_hour
+  - job_schedule.schedule_minute: job_schedule.schedule_minute
+  - job_schedule.schedule_second: job_schedule.schedule_second
+  - job_schedule.current_pid: job_schedule.current_pid
   - job_actions: job_actions_req
+  - job_actions.max_retries: job_actions.max_retries
+  - job_actions.max_retries_interval: job_actions.max_retries_interval
+  - job_actions.mandatory: job_actions.mandatory
+  - job_actions.freezer_action: job_actions.freezer_action
+  - job_actions.freezer_action.action: job_actions.freezer_action.action
+  - job_actions.freezer_action.mode: job_actions.freezer_action.mode
+  - job_actions.freezer_action.path_to_backup: job_actions.freezer_action.path_to_backup
+  - job_actions.freezer_action.backup_name: job_actions.freezer_action.backup_name
+  - job_actions.freezer_action.container: job_actions.freezer_action.container
+  - job_actions.freezer_action.restore_abs_path: job_actions.freezer_action.restore_abs_path
 
 Request Example
 ---------------
@@ -161,7 +190,36 @@ Response Parameters
   - session_id: session_id
   - description: job_description_req
   - job_actions: job_actions_req
+  - job_actions.max_retries: job_actions.max_retries
+  - job_actions.max_retries_interval: job_actions.max_retries_interval
+  - job_actions.mandatory: job_actions.mandatory
+  - job_actions.freezer_action: job_actions.freezer_action
+  - job_actions.freezer_action.action: job_actions.freezer_action.action
+  - job_actions.freezer_action.mode: job_actions.freezer_action.mode
+  - job_actions.freezer_action.path_to_backup: job_actions.freezer_action.path_to_backup
+  - job_actions.freezer_action.backup_name: job_actions.freezer_action.backup_name
+  - job_actions.freezer_action.container: job_actions.freezer_action.container
+  - job_actions.freezer_action.restore_abs_path: job_actions.freezer_action.restore_abs_path
   - job_schedule: job_schedule_req
+  - job_schedule.time_created: job_schedule.time_created
+  - job_schedule.time_started: job_schedule.time_started
+  - job_schedule.time_ended: job_schedule.time_ended
+  - job_schedule.event: job_schedule.event
+  - job_schedule.status: job_schedule.status
+  - job_schedule.result: job_schedule.result
+  - job_schedule.schedule_date: job_schedule.schedule_date
+  - job_schedule.schedule_interval: job_schedule.schedule_interval
+  - job_schedule.schedule_start_date: job_schedule.schedule_start_date
+  - job_schedule.schedule_end_date: job_schedule.schedule_end_date
+  - job_schedule.schedule_year: job_schedule.schedule_year
+  - job_schedule.schedule_month: job_schedule.schedule_month
+  - job_schedule.schedule_day: job_schedule.schedule_day
+  - job_schedule.schedule_week: job_schedule.schedule_week
+  - job_schedule.schedule_day_of_week: job_schedule.schedule_day_of_week
+  - job_schedule.schedule_hour: job_schedule.schedule_hour
+  - job_schedule.schedule_minute: job_schedule.schedule_minute
+  - job_schedule.schedule_second: job_schedule.schedule_second
+  - job_schedule.current_pid: job_schedule.current_pid
 
 Response Example
 ----------------
@@ -215,7 +273,36 @@ Request Parameters
 
   - description: job_description_req
   - job_schedule: job_schedule_req
+  - job_schedule.time_created: job_schedule.time_created
+  - job_schedule.time_started: job_schedule.time_started
+  - job_schedule.time_ended: job_schedule.time_ended
+  - job_schedule.event: job_schedule.event
+  - job_schedule.status: job_schedule.status
+  - job_schedule.result: job_schedule.result
+  - job_schedule.schedule_date: job_schedule.schedule_date
+  - job_schedule.schedule_interval: job_schedule.schedule_interval
+  - job_schedule.schedule_start_date: job_schedule.schedule_start_date
+  - job_schedule.schedule_end_date: job_schedule.schedule_end_date
+  - job_schedule.schedule_year: job_schedule.schedule_year
+  - job_schedule.schedule_month: job_schedule.schedule_month
+  - job_schedule.schedule_day: job_schedule.schedule_day
+  - job_schedule.schedule_week: job_schedule.schedule_week
+  - job_schedule.schedule_day_of_week: job_schedule.schedule_day_of_week
+  - job_schedule.schedule_hour: job_schedule.schedule_hour
+  - job_schedule.schedule_minute: job_schedule.schedule_minute
+  - job_schedule.schedule_second: job_schedule.schedule_second
+  - job_schedule.current_pid: job_schedule.current_pid
   - job_actions: job_actions_req
+  - job_actions.max_retries: job_actions.max_retries
+  - job_actions.max_retries_interval: job_actions.max_retries_interval
+  - job_actions.mandatory: job_actions.mandatory
+  - job_actions.freezer_action: job_actions.freezer_action
+  - job_actions.freezer_action.action: job_actions.freezer_action.action
+  - job_actions.freezer_action.mode: job_actions.freezer_action.mode
+  - job_actions.freezer_action.path_to_backup: job_actions.freezer_action.path_to_backup
+  - job_actions.freezer_action.backup_name: job_actions.freezer_action.backup_name
+  - job_actions.freezer_action.container: job_actions.freezer_action.container
+  - job_actions.freezer_action.restore_abs_path: job_actions.freezer_action.restore_abs_path
 
 Request Example
 ---------------

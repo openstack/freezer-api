@@ -33,3 +33,6 @@ releasenotes/build
 
 # Alembic test db
 freezer.db
+
+# Generated API reference parameters file
+api-ref/source/v2/parameters.yaml

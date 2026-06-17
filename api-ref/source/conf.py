@@ -50,6 +50,8 @@ sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('./'))
 
+import generate_parameters
+
 # -- General configuration ----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -233,3 +235,5 @@ latex_documents = [
 
 # If false, no module index is generated.
 # latex_use_modindex = True
+
+generate_parameters.generate_parameters_yaml()

@@ -100,8 +100,25 @@ Request Parameters
   - hold_off: session_hold_off
   - session_tag: session_tag
   - schedule: session_schedule
-  - schedule_internval: session_schedule_internval
-  - event: session_event
+  - schedule.time_created: schedule.time_created
+  - schedule.time_started: schedule.time_started
+  - schedule.time_ended: schedule.time_ended
+  - schedule.event: schedule.event
+  - schedule.status: schedule.status
+  - schedule.result: schedule.result
+  - schedule.schedule_date: schedule.schedule_date
+  - schedule.schedule_interval: schedule.schedule_interval
+  - schedule.schedule_start_date: schedule.schedule_start_date
+  - schedule.schedule_end_date: schedule.schedule_end_date
+  - schedule.schedule_year: schedule.schedule_year
+  - schedule.schedule_month: schedule.schedule_month
+  - schedule.schedule_day: schedule.schedule_day
+  - schedule.schedule_week: schedule.schedule_week
+  - schedule.schedule_day_of_week: schedule.schedule_day_of_week
+  - schedule.schedule_hour: schedule.schedule_hour
+  - schedule.schedule_minute: schedule.schedule_minute
+  - schedule.schedule_second: schedule.schedule_second
+  - schedule.current_pid: schedule.current_pid
 
 Request Example
 ---------------
@@ -156,6 +173,25 @@ Response Parameters
   - user_id: user_id
   - description: session_description
   - schedule: session_schedule
+  - schedule.time_created: schedule.time_created
+  - schedule.time_started: schedule.time_started
+  - schedule.time_ended: schedule.time_ended
+  - schedule.event: schedule.event
+  - schedule.status: schedule.status
+  - schedule.result: schedule.result
+  - schedule.schedule_date: schedule.schedule_date
+  - schedule.schedule_interval: schedule.schedule_interval
+  - schedule.schedule_start_date: schedule.schedule_start_date
+  - schedule.schedule_end_date: schedule.schedule_end_date
+  - schedule.schedule_year: schedule.schedule_year
+  - schedule.schedule_month: schedule.schedule_month
+  - schedule.schedule_day: schedule.schedule_day
+  - schedule.schedule_week: schedule.schedule_week
+  - schedule.schedule_day_of_week: schedule.schedule_day_of_week
+  - schedule.schedule_hour: schedule.schedule_hour
+  - schedule.schedule_minute: schedule.schedule_minute
+  - schedule.schedule_second: schedule.schedule_second
+  - schedule.current_pid: schedule.current_pid
   - session_tag: session_tag
   - session_id: session_id
   - hold_off: session_hold_off
@@ -205,8 +241,25 @@ Request Parameters
   - hold_off: session_hold_off
   - session_tag: session_tag
   - schedule: session_schedule
-  - schedule_internval: session_schedule_internval
-  - event: session_event
+  - schedule.time_created: schedule.time_created
+  - schedule.time_started: schedule.time_started
+  - schedule.time_ended: schedule.time_ended
+  - schedule.event: schedule.event
+  - schedule.status: schedule.status
+  - schedule.result: schedule.result
+  - schedule.schedule_date: schedule.schedule_date
+  - schedule.schedule_interval: schedule.schedule_interval
+  - schedule.schedule_start_date: schedule.schedule_start_date
+  - schedule.schedule_end_date: schedule.schedule_end_date
+  - schedule.schedule_year: schedule.schedule_year
+  - schedule.schedule_month: schedule.schedule_month
+  - schedule.schedule_day: schedule.schedule_day
+  - schedule.schedule_week: schedule.schedule_week
+  - schedule.schedule_day_of_week: schedule.schedule_day_of_week
+  - schedule.schedule_hour: schedule.schedule_hour
+  - schedule.schedule_minute: schedule.schedule_minute
+  - schedule.schedule_second: schedule.schedule_second
+  - schedule.current_pid: schedule.current_pid
   - session_id: session_id_path
 
 Request Example

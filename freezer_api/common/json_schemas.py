@@ -32,60 +32,78 @@ SUPPORTED_ENGINES = ['tar', 'rsync', 'rsyncv2', 'nova', 'osbrick',
 freezer_action_properties = {
     "action": {
         "id": "action",
-        "pattern": r"^[\w-]+$",
-        "type": "string"
+        "type": "string",
+        "enum": SUPPORTED_ACTIONS,
+        "description": "The action type."
     },
     "mode": {
         "id": "mode",
-        "pattern": r"^[\w-]+$",
-        "type": ["string", "null"]
+        "type": ["string", "null"],
+        "enum": SUPPORTED_MODES + [None],
+        "description": "The mode of the backup/restore operation."
     },
     "path_to_backup": {
         "id": "path_to_backup",
-        "type": ["string", "null"]
+        "type": ["string", "null"],
+        "description": "The absolute file/directory path to backup."
     },
     "backup_name": {
         "id": "backup_name",
-        "type": ["string", "null"]
+        "type": ["string", "null"],
+        "description": "The name of the backup."
     },
     "container": {
         "id": "container",
-        "type": ["string", "null"]
+        "type": ["string", "null"],
+        "description": (
+            "The swift or S3 container name where the "
+            "backup is stored."
+        )
     },
     "restore_abs_path": {
         "id": "restore_abs_path",
-        "type": ["string", "null"]
+        "type": ["string", "null"],
+        "description": (
+            "The absolute path on the client machine where "
+            "the backup will be restored."
+        )
     },
 }
 
 schedule_properties = {
     "time_created": {
         "id": "time_created",
-        "type": "integer"
+        "type": "integer",
+        "description": "The epoch timestamp when the resource was created."
     },
     "time_started": {
         "id": "time_started",
-        "type": "integer"
+        "type": "integer",
+        "description": "The epoch timestamp when the execution started."
     },
     "time_ended": {
         "id": "time_ended",
-        "type": "integer"
+        "type": "integer",
+        "description": "The epoch timestamp when the execution ended."
     },
     "event": {
         "id": "event",
         "type": "string",
-        "enum": ["", "stop", "start", "abort", "remove"]
+        "enum": ["", "stop", "start", "abort", "remove"],
+        "description": "An event trigger to control execution."
     },
     "status": {
         "id": "status",
         "type": "string",
         "enum": ["", "completed", "stop", "scheduled",
-                 "running", "aborting", "removed"]
+                 "running", "aborting", "removed"],
+        "description": "The status of the scheduled resource."
     },
     "result": {
         "id": "result",
         "type": "string",
-        "enum": ["", "success", "fail", "aborted"]
+        "enum": ["", "success", "fail", "aborted"],
+        "description": "The result status of the execution."
     },
     "schedule_date": {
         "id": "schedule_date",
@@ -93,13 +111,22 @@ schedule_properties = {
         "pattern": r"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
                    r"-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])"
                    r":([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
-                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
+                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$",
+        "description": (
+            "The date and time when the schedule starts. Must match "
+            "ISO 8601 date-time format (e.g., ``YYYY-MM-DDThh:mm:ss``)."
+        )
     },
     "schedule_interval": {
         "id": "schedule_interval",
         "type": "string",
         "pattern": r"^(continuous|(\d+ +(weeks|days|"
-                   r"hours|minutes|seconds)))$"
+                   r"hours|minutes|seconds)))$",
+        "description": (
+            "The execution interval. Must match interval format "
+            "(e.g., ``continuous``, ``5 minutes``, ``2 hours``, "
+            "``1 days``)."
+        )
     },
     "schedule_start_date": {
         "id": "schedule_start_date",
@@ -107,7 +134,11 @@ schedule_properties = {
         "pattern": r"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
                    r"-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):"
                    r"([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
-                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
+                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$",
+        "description": (
+            "The date and time when the schedule starts. Must match "
+            "ISO 8601 date-time format (e.g., ``YYYY-MM-DDThh:mm:ss``)."
+        )
     },
     "schedule_end_date": {
         "id": "schedule_end_date",
@@ -115,24 +146,35 @@ schedule_properties = {
         "pattern": r"^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])"
                    r"-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9])"
                    r":([0-5][0-9]):([0-5][0-9])(\.[0-9]+)?(Z|[+-]"
-                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$"
+                   r"(?:2[0-3]|[01][0-9]):[0-5][0-9])?$",
+        "description": (
+            "The date and time when the schedule ends. Must match "
+            "ISO 8601 date-time format (e.g., ``YYYY-MM-DDThh:mm:ss``)."
+        )
     },
     "schedule_year": {
         "id": "schedule_year",
         "type": "string",
-        "pattern": r"^\d{4}$"
+        "pattern": r"^\d{4}$",
+        "description": (
+            "The schedule year. Must match a 4-digit year format "
+            "(e.g., ``YYYY``)."
+        )
     },
     "schedule_month": {
         "id": "schedule_month",
-        "type": "string"
+        "type": "string",
+        "description": "The schedule_month property."
     },
     "schedule_day": {
         "id": "schedule_day",
-        "type": "string"
+        "type": "string",
+        "description": "The schedule_day property."
     },
     "schedule_week": {
         "id": "schedule_week",
-        "type": "string"
+        "type": "string",
+        "description": "The schedule_week property."
     },
     "schedule_day_of_week": {
         "id": "schedule_day_of_week",
@@ -152,7 +194,8 @@ schedule_properties = {
     },
     "current_pid": {
         "id": "current_pid",
-        "type": "integer"
+        "type": "integer",
+        "description": "The OS process ID of the running execution."
     }
 }
 
@@ -170,13 +213,24 @@ job_schema = {
                     "$ref": "#/definitions/freezer_action"
                 },
                 "max_retries": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": (
+                        "The maximum number of retries in case of "
+                        "execution failure."
+                    )
                 },
                 "max_retries_interval": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": (
+                        "The interval (in seconds) to wait between retries."
+                    )
                 },
                 "mandatory": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": (
+                        "Whether the action is mandatory for the "
+                        "job execution."
+                    )
                 }
             },
             "additionalProperties": True
@@ -190,12 +244,17 @@ job_schema = {
             "properties": {
                 "trust_id": {
                     "id": "trust_id",
-                    "type": "string"
+                    "type": "string",
+                    "description": (
+                        "The OpenStack trust ID used for client "
+                        "authentication."
+                    )
                 },
                 "trustor_user_id": {
                     "id": "trustor_user_id",
                     "pattern": r"^[\w-]+$",
-                    "type": "string"
+                    "type": "string",
+                    "description": "The OpenStack user ID of the trustor."
                 },
             },
             "additionalProperties": True,
@@ -500,16 +559,22 @@ client_info = {
     "client_id": {
         "id": "client_id",
         "pattern": client_id_regex,
-        "type": "string"
+        "type": "string",
+        "description": (
+            "The client ID. Must match client ID format "
+            "(e.g., ``[project_id_]hostname``)."
+        )
     },
     "hostname": {
         "id": "hostname",
         "pattern": fqdn_regex,
-        "type": "string"
+        "type": "string",
+        "description": "The hostname of the client machine."
     },
     "description": {
         "id": "description",
-        "type": "string"
+        "type": "string",
+        "description": "A user-defined description of the resource."
     },
     "uuid": {
         "id": "uuid",
@@ -522,6 +587,7 @@ client_info = {
             "type": "string",
             "enum": SUPPORTED_ACTIONS,
         },
+        "description": "List of actions supported by this client."
     },
     "supported_modes": {
         "id": "supported_modes",
@@ -530,6 +596,7 @@ client_info = {
             "type": "string",
             "enum": SUPPORTED_MODES,
         },
+        "description": "List of modes supported by this client."
     },
     "supported_storages": {
         "id": "supported_storages",
@@ -538,6 +605,7 @@ client_info = {
             "type": "string",
             "enum": SUPPORTED_STORAGES,
         },
+        "description": "List of storages supported by this client."
     },
     "supported_engines": {
         "id": "supported_engines",
@@ -546,10 +614,12 @@ client_info = {
             "type": "string",
             "enum": SUPPORTED_ENGINES,
         },
+        "description": "List of engines supported by this client."
     },
     "is_central": {
         "id": "is_central",
-        "type": "boolean"
+        "type": "boolean",
+        "description": "Whether the client is registered as a central client."
     },
 }
 

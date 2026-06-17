@@ -97,6 +97,12 @@ Request Parameters
 .. rest_parameters:: parameters.yaml
 
   - freezer_action: freezer_action
+  - freezer_action.action: freezer_action.action
+  - freezer_action.mode: freezer_action.mode
+  - freezer_action.path_to_backup: freezer_action.path_to_backup
+  - freezer_action.backup_name: freezer_action.backup_name
+  - freezer_action.container: freezer_action.container
+  - freezer_action.restore_abs_path: freezer_action.restore_abs_path
   - max_retries: max_retries
   - max_retries_interval: max_retries_interval
 
@@ -151,6 +157,12 @@ Response Parameters
 .. rest_parameters:: parameters.yaml
 
   - freezer_action: freezer_action
+  - freezer_action.action: freezer_action.action
+  - freezer_action.mode: freezer_action.mode
+  - freezer_action.path_to_backup: freezer_action.path_to_backup
+  - freezer_action.backup_name: freezer_action.backup_name
+  - freezer_action.container: freezer_action.container
+  - freezer_action.restore_abs_path: freezer_action.restore_abs_path
   - max_retries: max_retries
   - max_retries_interval: max_retries_interval
   - user_id: user_id
@@ -197,6 +209,12 @@ Response Parameters
 .. rest_parameters:: parameters.yaml
 
   - freezer_action: freezer_action
+  - freezer_action.action: freezer_action.action
+  - freezer_action.mode: freezer_action.mode
+  - freezer_action.path_to_backup: freezer_action.path_to_backup
+  - freezer_action.backup_name: freezer_action.backup_name
+  - freezer_action.container: freezer_action.container
+  - freezer_action.restore_abs_path: freezer_action.restore_abs_path
   - max_retries: max_retries
   - max_retries_interval: max_retries_interval
   - action_id: action_id
