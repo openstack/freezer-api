@@ -38,23 +38,23 @@ freezer_action_properties = {
     "mode": {
         "id": "mode",
         "pattern": r"^[\w-]+$",
-        "type": "string"
+        "type": ["string", "null"]
     },
     "path_to_backup": {
         "id": "path_to_backup",
-        "type": "string"
+        "type": ["string", "null"]
     },
     "backup_name": {
         "id": "backup_name",
-        "type": "string"
+        "type": ["string", "null"]
     },
     "container": {
         "id": "container",
-        "type": "string"
+        "type": ["string", "null"]
     },
     "restore_abs_path": {
         "id": "restore_abs_path",
-        "type": "string"
+        "type": ["string", "null"]
     },
 }
 
@@ -228,7 +228,7 @@ job_schema = {
         "session_id": {
             "id": "session_id",
             "pattern": r"^[\w-]*$",
-            "type": "string"
+            "type": ["string", "null"]
         },
         "session_tag": {
             "id": "session_tag",
@@ -236,7 +236,7 @@ job_schema = {
         },
         "session_name": {
             "id": "session_name",
-            "type": "string"
+            "type": ["string", "null"]
         },
         "user_id": {
             "id": "user_id",
@@ -250,7 +250,7 @@ job_schema = {
         },
         "description": {
             "id": "description",
-            "type": "string"
+            "type": ["string", "null"]
         },
         "_version": {
             "id": "_version",
@@ -327,7 +327,7 @@ job_patch_schema = {
         "session_id": {
             "id": "session_id",
             "pattern": r"^[\w-]*$",
-            "type": "string"
+            "type": ["string", "null"]
         },
         "session_tag": {
             "id": "session_tag",
@@ -335,7 +335,7 @@ job_patch_schema = {
         },
         "session_name": {
             "id": "session_name",
-            "type": "string"
+            "type": ["string", "null"]
         },
         "user_id": {
             "id": "user_id",
@@ -349,7 +349,7 @@ job_patch_schema = {
         },
         "description": {
             "id": "description",
-            "type": "string"
+            "type": ["string", "null"]
         },
         "_version": {
             "id": "_version",
