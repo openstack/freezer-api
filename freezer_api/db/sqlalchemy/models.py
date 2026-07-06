@@ -147,7 +147,6 @@ class Job(BASE, FreezerBase):
     session_id = Column(String(36), ForeignKey('sessions.id'), nullable=False)
     session_tag = Column(Integer, default=0)
     description = Column(String(255))
-    job_actions = Column(Text)
     client = relationship(Client, backref='jobs',
                           foreign_keys=client_id,
                           primaryjoin='and_('
@@ -166,6 +165,27 @@ class Job(BASE, FreezerBase):
                                     primaryjoin='and_('
                                     'Job.id == UserCredentials.job_id,'
                                     'Job.deleted == False)')
+    # Actions assigned to a job used to be stored as a JSON blob in the
+    # ``job_actions`` TEXT column, duplicating the whole action definition.
+    # They now live in the ``job_actions`` child table, linked by foreign key,
+    # so assignments are relational, keep their order and can be queried.
+    job_actions = relationship("JobAction",
+                               order_by="JobAction.position",
+                               cascade="all, delete-orphan",
+                               lazy="selectin",
+                               foreign_keys="JobAction.job_id",
+                               primaryjoin='and_('
+                               'Job.id == JobAction.job_id,'
+                               'JobAction.deleted == False)')
+
+
+class JobAction(BASE, FreezerBase):
+    __tablename__ = 'job_actions'
+
+    id = Column(String(36), primary_key=True)
+    job_id = Column(String(36), ForeignKey('jobs.id'), nullable=False)
+    action_id = Column(String(36), ForeignKey('actions.id'), nullable=False)
+    position = Column(Integer, default=0)
 
 
 class UserCredentials(BASE, FreezerBase):
@@ -203,14 +223,14 @@ class Backup(BASE, FreezerBase):
 
 
 def register_models(engine):
-    _models = (Client, Action, Job, Session,
+    _models = (Client, Action, Job, JobAction, Session,
                ActionReport, Backup, UserCredentials)
     for _model in _models:
         _model.metadata.create_all(engine)
 
 
 def unregister_models(engine):
-    _models = (Client, Action, Job, Session,
+    _models = (Client, Action, Job, JobAction, Session,
                ActionReport, Backup, UserCredentials)
     for _model in _models:
         _model.metadata.drop_all(engine)

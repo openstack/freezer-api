@@ -499,7 +499,10 @@ class ElasticSearchEngineV2(object):
             raise freezer_api_exc.UnprocessableEntity(
                 message='Client not found with ID {0}'.format(client_id))
         client = client_list[0]
-        check_client_capabilities(job_actions, client)
+        check_client_capabilities(
+            [a['freezer_action'] for a in (job_actions or [])
+             if a.get('freezer_action')],
+            client)
 
     def get_job(self, project_id, job_id, all_projects=False):
         return self.job_manager.get(

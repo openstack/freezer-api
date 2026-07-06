@@ -1,0 +1,14 @@
+---
+upgrade:
+  - |
+    A job's actions are no longer stored as one JSON blob on the job. Each
+    action is now a row in a new ``job_actions`` table, linked to the job and
+    kept in order. A database migration moves existing data and drops the old
+    column, so upgrade all API nodes together.
+  - |
+    Deleting an action now also removes it from any job that still uses it.
+features:
+  - |
+    When creating, updating or replacing a job, an action can be given by its
+    ``action_id`` alone instead of repeating the full action definition.
+    Sending the full definition still works.

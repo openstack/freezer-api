@@ -17,25 +17,23 @@ from freezer_api.common import exceptions
 from freezer_api.tests.unit import common
 
 
-SUPPORTED_JOB_ACTIONS = [
+# check_client_capabilities takes freezer_action definitions directly,
+# not the wrapping job_actions entries.
+SUPPORTED_FREEZER_ACTIONS = [
     {
-        "freezer_action": {
-            "action": "backup",
-            "mode": "cindernative",
-            "storage": "",
-            "engine": "",
-        },
+        "action": "backup",
+        "mode": "cindernative",
+        "storage": "",
+        "engine": "",
     },
 ]
 
-UNSUPPORTED_JOB_ACTIONS = [
+UNSUPPORTED_FREEZER_ACTIONS = [
     {
-        "freezer_action": {
-            "action": "exec",
-            "mode": "fs",
-            "storage": "local",
-            "engine": "tar",
-        },
+        "action": "exec",
+        "mode": "fs",
+        "storage": "local",
+        "engine": "tar",
     },
 ]
 
@@ -53,12 +51,12 @@ TEST_CLIENT = {
 class TestCheck(common.FreezerBaseTestCase):
     def test_client_capabilities_supported(self):
         # Check passes when no exception is raised
-        check_client_capabilities(SUPPORTED_JOB_ACTIONS, TEST_CLIENT)
+        check_client_capabilities(SUPPORTED_FREEZER_ACTIONS, TEST_CLIENT)
 
     def test_client_capabilities_unsupported(self):
         self.assertRaises(
             exceptions.UnprocessableEntity,
             check_client_capabilities,
-            UNSUPPORTED_JOB_ACTIONS,
+            UNSUPPORTED_FREEZER_ACTIONS,
             TEST_CLIENT,
         )

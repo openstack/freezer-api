@@ -131,6 +131,20 @@ class MigrationsWalk(
         columns = [x['name'] for x in inspector.get_columns('backups')]
         self.assertNotIn('user_name', columns)
 
+    _a1b2c3d4e5f6_columns = ('id', 'job_id', 'action_id', 'position')
+
+    def _check_a1b2c3d4e5f6(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        # the job_actions link table is created with the expected columns
+        self.assertIn('job_actions', inspector.get_table_names())
+        columns = [x['name'] for x in inspector.get_columns('job_actions')]
+        for column in self._a1b2c3d4e5f6_columns:
+            self.assertIn(column, columns)
+        # the old JSON blob column is gone from jobs
+        self.assertNotIn(
+            'job_actions',
+            [x['name'] for x in inspector.get_columns('jobs')])
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection

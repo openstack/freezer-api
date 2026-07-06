@@ -15,19 +15,17 @@
 from freezer_api.common import exceptions
 
 
-def check_client_capabilities(job_actions, client):
-    # Check if the client has the capabilities to execute the job.
-    # Using job_actions instead of the full job document for compatibility
-    # with both create and update API endpoint handlers.
+def check_client_capabilities(freezer_actions: list[dict], client):
+    # Check whether the client can execute every action of the job.
+    # Takes the list of ``freezer_action`` definitions (not the full job
+    # document) so it works the same for create, update and replace handlers.
     capabilities = ["action", "mode", "storage", "engine"]
     client = client["client"]
-    for action in job_actions:
+    for freezer_action in freezer_actions:
+        if not freezer_action:
+            continue
         for capability in capabilities:
-            if "freezer_action" not in action:
-                raise exceptions.BadDataFormat(
-                    "job_actions: missing 'freezer_action' in job_actions"
-                    "list item")
-            option = action["freezer_action"].get(capability, None)
+            option = freezer_action.get(capability, None)
             # if option is not set, we don't need to check
             if not option:
                 continue

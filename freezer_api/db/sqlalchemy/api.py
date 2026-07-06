@@ -23,6 +23,7 @@ from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
 from oslo_utils import timeutils
 from sqlalchemy import or_
+from typing import NamedTuple
 import uuid
 
 from freezer_api.api.common import utils as json_utils
@@ -613,17 +614,27 @@ def delete_client(user_id, client_id, project_id=None):
     return client_id
 
 
-def delete_action(user_id, action_id, project_id=None):
+def delete_action(user_id: str, action_id: str,
+                  project_id: str | None = None) -> str:
+    # An action may still be referenced by jobs. Soft-delete those JobAction
+    # rows in the same transaction so the jobs stop listing a deleted action
+    # (the Job.job_actions relationship filters out deleted rows) instead of
+    # keeping a dangling reference.
+    with session_for_write() as session:
+        job_actions = model_query(
+            session, models.JobAction).filter_by(action_id=action_id).all()
+        for job_action in job_actions:
+            job_action.delete(session)
 
-    tupleid = delete_tuple(tablename=models.Action, user_id=user_id,
-                           tuple_id=action_id, project_id=project_id)
+        delete_tuple(tablename=models.Action, user_id=user_id,
+                     tuple_id=action_id, project_id=project_id)
+        delete_tuple(tablename=models.ActionReport, user_id=user_id,
+                     tuple_id=action_id, project_id=project_id)
+    return action_id
 
-    tupleid = delete_tuple(tablename=models.ActionReport, user_id=user_id,
-                           tuple_id=action_id, project_id=project_id)
-    return tupleid
 
-
-def add_action(user_id, doc, project_id=None):
+def add_action(user_id: str, doc: dict,
+               project_id: str | None = None) -> str:
 
     action_doc = utilsv2.ActionDoc.create(doc, user_id, project_id)
 
@@ -685,33 +696,53 @@ def add_action(user_id, doc, project_id=None):
     return action_id
 
 
-def get_action(action_id, project_id=None):
-
-    result = get_tuple(tablename=models.Action,
-                       tuple_id=action_id, project_id=project_id)
-
-    values = {}
-    if 1 == len(result):
-        values['project_id'] = result[0].get('project_id')
-        values['action_id'] = result[0].get('id')
-        values['user_id'] = result[0].get('user_id')
-        values['max_retries'] = result[0].get('max_retries')
-        values['max_retries_interval'] = result[0].\
-            get('max_retries_interval')
-        values['freezer_action'] = json_utils.\
-            json_decode(result[0].get('backup_metadata'))
-        values['freezer_action']['backup_name'] = result[0].\
-            get('backup_name')
-        values['freezer_action']['action'] = result[0].get('action')
-        values['freezer_action']['mode'] = result[0].get('actionmode')
-        values['freezer_action']['container'] = result[0].\
-            get('container')
-        values['freezer_action']['timeout'] = result[0].get('timeout')
-        values['freezer_action']['priority'] = result[0].get('priority')
-        values['freezer_action']['path_to_backup'] = result[0].\
-            get('path_to_backup')
-        values['freezer_action']['log_file'] = result[0].get('log_file')
+def convert_action_to_dict(action: models.Action) -> dict:
+    values = dict()
+    values['project_id'] = action.get('project_id')
+    values['action_id'] = action.get('id')
+    values['user_id'] = action.get('user_id')
+    values['max_retries'] = action.get('max_retries')
+    values['max_retries_interval'] = action.\
+        get('max_retries_interval')
+    values['freezer_action'] = json_utils.\
+        json_decode(action.get('backup_metadata') or '{}') or {}
+    values['freezer_action']['backup_name'] = action.\
+        get('backup_name')
+    values['freezer_action']['action'] = action.get('action')
+    values['freezer_action']['mode'] = action.get('actionmode')
+    values['freezer_action']['container'] = action.\
+        get('container')
+    values['freezer_action']['timeout'] = action.get('timeout')
+    values['freezer_action']['priority'] = action.get('priority')
+    values['freezer_action']['path_to_backup'] = action.\
+        get('path_to_backup')
+    values['freezer_action']['log_file'] = action.get('log_file')
     return values
+
+
+def get_action(action_id: str, project_id: str | None = None) -> dict:
+    actions = get_tuple(tablename=models.Action,
+                        tuple_id=action_id, project_id=project_id)
+    if len(actions) == 1:
+        return convert_action_to_dict(actions[0])
+    return {}
+
+
+def _get_actions_by_id(action_ids: list[str],
+                       project_id: str | None = None) -> dict:
+    """Fetch the given actions in a single query (avoids an N+1).
+
+    Returns ``{action_id: action dict}`` (see convert_action_to_dict). Rows are
+    converted inside the session to avoid detached-instance access afterwards.
+    """
+    if not action_ids:
+        return {}
+    with session_for_read() as session:
+        actions = model_query(
+            session, models.Action, project_id=project_id
+        ).filter(models.Action.id.in_(action_ids))
+        return {action.get('id'): convert_action_to_dict(action)
+                for action in actions}
 
 
 def search_action(project_id=None, offset=0,
@@ -816,7 +847,8 @@ def replace_action(user_id, action_id, doc, project_id=None):
     return action_id
 
 
-def check_job_client(project_id, job_actions, client_id):
+def check_job_client(project_id: str, freezer_actions: list[dict],
+                     client_id: str) -> None:
     client_list = get_client(
         project_id=project_id,
         client_id=client_id)
@@ -824,7 +856,107 @@ def check_job_client(project_id, job_actions, client_id):
         raise freezer_api_exc.UnprocessableEntity(
             message='Client not found with ID {0}'.format(client_id))
     client = client_list[0]
-    check_client_capabilities(job_actions, client)
+    check_client_capabilities(freezer_actions, client)
+
+
+class ResolvedAction(NamedTuple):
+    action_id: str
+    freezer_action: dict
+
+
+def _resolve_actions_from_job_actions(
+        job_actions: list[dict], user_id: str,
+        project_id: str) -> list[ResolvedAction]:
+    """Resolve each job_actions entry to a ResolvedAction.
+
+    Entries that reference an existing action by ``action_id`` take their
+    definition from the actions table (fetched in one query to avoid an N+1);
+    inline entries create the action from their ``freezer_action``. The
+    original order is preserved and an unknown ``action_id`` is rejected.
+    """
+    # Fetch every referenced action up front in a single query. The read
+    # session is closed before any add_action() below, since oslo.db forbids
+    # upgrading a reader transaction to a writer mid-scope.
+    action_ids = [job_action['action_id'] for job_action in job_actions
+                  if job_action.get('action_id')]
+    referenced_actions = _get_actions_by_id(action_ids, project_id)
+
+    resolved_actions = []
+    for job_action in job_actions:
+        action_id = job_action.get('action_id')
+        if action_id:
+            action = referenced_actions.get(action_id)
+            if action is None:
+                raise freezer_api_exc.UnprocessableEntity(
+                    message='Action id: {0} not found.'.format(action_id))
+            freezer_action = action['freezer_action']
+        else:
+            action_id = add_action(user_id=user_id, doc=job_action,
+                                   project_id=project_id)
+            freezer_action = job_action.get('freezer_action') or {}
+        resolved_actions.append(
+            ResolvedAction(action_id=action_id, freezer_action=freezer_action))
+
+    return resolved_actions
+
+
+def _build_job_action_rows(
+        job_id: str,
+        resolved_actions: list[ResolvedAction]) -> list[models.JobAction]:
+    """Build the ordered JobAction rows from the resolved actions."""
+    return [
+        models.JobAction(
+            id=uuid.uuid4().hex,
+            job_id=job_id,
+            action_id=r.action_id,
+            position=position,
+        )
+        for position, r in enumerate(resolved_actions)
+    ]
+
+
+def _job_actions_from_rows(rows: list[models.JobAction],
+                           project_id: str | None = None) -> list[dict]:
+    """Rebuild the ``job_actions`` list from a job's JobAction rows.
+
+    Rows are already ordered by ``position``. The referenced actions are
+    loaded in a single query (avoiding an N+1); a row whose action is missing
+    (e.g. soft-deleted) is logged rather than dropped silently.
+    """
+    action_ids = [row.action_id for row in rows]
+    actions_by_id = _get_actions_by_id(action_ids, project_id)
+
+    job_actions = []
+    for row in rows:
+        action = actions_by_id.get(row.action_id)
+        if action is None:
+            LOG.warning('JobAction %s references missing action %s; '
+                        'skipping', row.id, row.action_id)
+            continue
+        job_actions.append(action)
+    return job_actions
+
+
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
+def _replace_job_actions(job_id: str,
+                         resolved: list[ResolvedAction]) -> None:
+    """Replace all of a job's JobAction rows with a fresh set."""
+    rows = _build_job_action_rows(job_id, resolved)
+    with session_for_write() as session:
+        try:
+            session.query(models.JobAction).\
+                filter_by(job_id=job_id).delete()
+            for row in rows:
+                session.add(row)
+        except db_exc.DBError:
+            message = "Database operation failed."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
+        except Exception:
+            message = "An unexpected error occurred."
+            LOG.exception(message)
+            raise freezer_api_exc.StorageEngineError(message=message)
 
 
 def delete_job(user_id, job_id, project_id=None):
@@ -837,6 +969,7 @@ def delete_job(user_id, job_id, project_id=None):
                 if job.user_credentials:
                     trust_id = job.user_credentials.trust_id
                     job.user_credentials.delete(session)
+                job.job_actions = []
                 job.delete(session)
         except db_exc.DBError:
             message = "Database operation failed."
@@ -860,12 +993,6 @@ def add_job(user_id, doc, project_id=None):
         raise freezer_api_exc.\
             DocumentExists(message='Job already registered with ID {0}'.
                            format(job_id))
-
-    check_job_client(
-        project_id=project_id,
-        job_actions=job_doc.get('job_actions', []),
-        client_id=job_doc.get('client_id'))
-
     job = models.Job()
     jobvalue = {}
     jobvalue['id'] = job_id
@@ -877,18 +1004,33 @@ def add_job(user_id, doc, project_id=None):
     jobvalue['session_id'] = job_doc.pop('session_id', '')
     jobvalue['session_tag'] = job_doc.pop('session_tag', 0)
     jobvalue['description'] = job_doc.pop('description', '')
-    jobvalue['job_actions'] = json_utils.\
-        json_encode(job_doc.pop('job_actions', ''))
     job.update(jobvalue)
 
-    if 'user_credentials' in job_doc:
-        job.user_credentials = models.UserCredentials(
-            id=uuid.uuid4().hex,
-            trust_id=job_doc['user_credentials']['trust_id'],
-            trustor_user_id=job_doc['user_credentials']['trustor_user_id'],
-            job_id=job_id)
+    job_actions = job_doc.pop('job_actions', []) or []
+    # A single write transaction so that the actions created for inline
+    # entries, the job row and its JobAction rows either all commit or all
+    # roll back together. Nested session_for_write()/session_for_read() calls
+    # in the helpers below join this transaction (oslo.db enginefacade).
+    with session_for_write():
+        resolved_actions = _resolve_actions_from_job_actions(
+            job_actions, user_id, project_id)
 
-    add_tuple(tuple=job)
+        check_job_client(
+            project_id=project_id,
+            freezer_actions=[r.freezer_action for r in resolved_actions],
+            client_id=job_doc.get('client_id'))
+
+        job.job_actions = _build_job_action_rows(job_id, resolved_actions)
+
+        if 'user_credentials' in job_doc:
+            job.user_credentials = models.UserCredentials(
+                id=uuid.uuid4().hex,
+                trust_id=job_doc['user_credentials']['trust_id'],
+                trustor_user_id=job_doc['user_credentials'][
+                    'trustor_user_id'],
+                job_id=job_id)
+
+        add_tuple(tuple=job)
 
     LOG.info('Job registered, job_id: {0}'.format(job_id))
 
@@ -911,8 +1053,8 @@ def get_job(job_id, project_id=None, all_projects=False):
         values['session_id'] = result[0].get('session_id')
         values['session_tag'] = result[0].get('session_tag')
         values['description'] = result[0].get('description')
-        values['job_actions'] = json_utils.\
-            json_decode(result[0].get('job_actions'))
+        values['job_actions'] = _job_actions_from_rows(
+            result[0].job_actions, project_id=result[0].get('project_id'))
         user_credentials = result[0].get('user_credentials', None)
         if user_credentials:
             values['user_credentials'] = {
@@ -947,8 +1089,8 @@ def search_job(project_id=None, all_projects=False, offset=0,
         jobmap['session_id'] = job.get('session_id')
         jobmap['session_tag'] = job.get('session_tag')
         jobmap['description'] = job.get('description')
-        jobmap['job_actions'] = json_utils.json_decode(
-            job.get('job_actions'))
+        jobmap['job_actions'] = _job_actions_from_rows(
+            job.job_actions, project_id=job.get('project_id'))
         user_credentials = job.get('user_credentials', None)
         if user_credentials:
             jobmap['user_credentials'] = {
@@ -964,20 +1106,10 @@ def search_job(project_id=None, all_projects=False, offset=0,
     return jobs
 
 
-def update_job(user_id, job_id, patch_doc, project_id=None):
+def update_job(user_id: str, job_id: str, patch_doc: dict,
+               project_id: str | None = None) -> int:
 
     valid_patch = utilsv2.JobDoc.create_patch(patch_doc)
-
-    if 'job_actions' in valid_patch:
-        client_id = valid_patch.get(
-            'client_id',
-            get_job(project_id=project_id, job_id=job_id
-                    ).get('client_id')
-        )
-        check_job_client(
-            project_id=project_id,
-            job_actions=valid_patch.get('job_actions', []),
-            client_id=client_id)
 
     values = {}
     for key in valid_patch.keys():
@@ -985,24 +1117,43 @@ def update_job(user_id, job_id, patch_doc, project_id=None):
             values['schedule'] = json_utils.\
                 json_encode(valid_patch.get(key, None))
         elif key == 'job_actions':
-            values[key] = json_utils.json_encode(valid_patch.get(key, None))
+            # actions are stored as JobAction rows, handled below
+            continue
         else:
             values[key] = valid_patch.get(key, None)
 
-    update_tuple(tablename=models.Job, user_id=user_id, tuple_id=job_id,
-                 tuple_values=values, project_id=project_id)
+    # Single write transaction: created actions, the job update and the
+    # replaced JobAction rows commit or roll back together.
+    with session_for_write():
+        resolved_actions = None
+        if 'job_actions' in valid_patch:
+            client_id = valid_patch.get(
+                'client_id',
+                get_job(project_id=project_id, job_id=job_id
+                        ).get('client_id')
+            )
+            resolved_actions = _resolve_actions_from_job_actions(
+                valid_patch.get('job_actions') or [], user_id, project_id)
+            check_job_client(
+                project_id=project_id,
+                freezer_actions=[r.freezer_action for r in resolved_actions],
+                client_id=client_id)
+
+        update_tuple(tablename=models.Job, user_id=user_id, tuple_id=job_id,
+                     tuple_values=values, project_id=project_id)
+
+        if resolved_actions is not None:
+            _replace_job_actions(job_id, resolved_actions)
 
     return 0
 
 
-def replace_job(user_id, job_id, doc, project_id=None):
+def replace_job(user_id: str, job_id: str, doc: dict,
+                project_id: str | None = None) -> str:
 
     valid_doc = utilsv2.JobDoc.update(doc, user_id, job_id, project_id)
 
-    check_job_client(
-        project_id=project_id,
-        job_actions=valid_doc.get('job_actions', []),
-        client_id=valid_doc.get('client_id'))
+    job_actions = valid_doc.pop('job_actions', []) or []
 
     values = {}
     valuesnew = {}
@@ -1016,16 +1167,28 @@ def replace_job(user_id, job_id, doc, project_id=None):
     values['session_id'] = valid_doc.pop('session_id', '')
     values['session_tag'] = valid_doc.pop('session_tag', 0)
     values['description'] = valid_doc.pop('description', '')
-    values['job_actions'] = json_utils.\
-        json_encode(valid_doc.pop('job_actions', ''))
 
     for key in values:
         if values[key] is not None:
             valuesnew[key] = values[key]
 
-    replace_tuple(tablename=models.Job, user_id=user_id,
-                  tuple_id=job_id, tuple_values=valuesnew,
-                  project_id=project_id)
+    # Single write transaction: created actions, the job replacement and the
+    # replaced JobAction rows commit or roll back together.
+    with session_for_write():
+        resolved_actions = _resolve_actions_from_job_actions(
+            job_actions, user_id, project_id)
+
+        check_job_client(
+            project_id=project_id,
+            freezer_actions=[r.freezer_action for r in resolved_actions],
+            client_id=valid_doc.get('client_id'))
+
+        replace_tuple(tablename=models.Job, user_id=user_id,
+                      tuple_id=job_id, tuple_values=valuesnew,
+                      project_id=project_id)
+
+        _replace_job_actions(job_id, resolved_actions)
+
     LOG.info('job replaced, job_id: {0}'.format(job_id))
     return job_id
 
