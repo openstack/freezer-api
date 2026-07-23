@@ -61,6 +61,58 @@ Response Example
    :language: javascript
 
 
+Create backup(v2)
+=================
+
+.. rest_method::  POST /v2/{project_id}/backups
+
+Creates backup entry.
+
+This operation creates a new backup entry.
+
+Normal response codes: 201
+
+Error response codes:
+
+- BadRequest (400)
+- Unauthorized (401)
+- Forbidden (403)
+
+
+Query Parameters
+-----------------
+
+.. rest_parameters:: parameters.yaml
+
+  - project_id: project_id_path
+
+Request Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - backup_metadata: backup_metadata
+
+Request Example
+---------------
+
+.. literalinclude:: samples/backup-create-request.json
+   :language: javascript
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - backup_id: backup_id
+
+Response Example
+----------------
+
+.. literalinclude:: samples/backup-create-response.json
+   :language: javascript
+
+
 Show backups(v2)
 ================
 
@@ -108,7 +160,7 @@ Response Example
 Delete backups(v2)
 ==================
 
-.. rest_method::  DELETE /v2/{project_id}/actions/{backup_id}
+.. rest_method::  DELETE /v2/{project_id}/backups/{backup_id}
 
 Delete backups in a project.
 
@@ -130,3 +182,4 @@ Query Parameters
   - backup_id: backup_id_path
 
 There is no response for this operation.
+
