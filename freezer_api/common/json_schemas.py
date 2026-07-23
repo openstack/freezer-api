@@ -68,6 +68,14 @@ freezer_action_properties = {
             "the backup will be restored."
         )
     },
+    "cindernative_freezer_only": {
+        "id": "cindernative_freezer_only",
+        "type": ["boolean", "null"],
+        "description": (
+            "If true (default), only backups created by Freezer "
+            "are considered during cindernative rotation."
+        )
+    },
 }
 
 schedule_properties = {
