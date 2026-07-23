@@ -35,7 +35,7 @@
       },
       "client_id": "backup-node1",
       "backup_uuid": "9598dd99e1ce42019e498c5493ae1f84",
-      "user_name": "os_backup"
+      "status": "available"
     },
     {
       "project_id": "752d8bd43d654e7a840bbfda77ce41af",
@@ -72,7 +72,7 @@
       },
       "client_id": "backup-node1",
       "backup_uuid": "2ba51cb9eff543d4b9a530b3c0d2f7cc",
-      "user_name": "os_backup"
+      "status": "available"
     }
   ]
 }

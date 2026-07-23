@@ -405,7 +405,6 @@ class ElasticSearchEngineV2(object):
         backup_metadata_doc = utils.BackupMetadataDoc(
             project_id,
             user_id,
-            '',
             doc
         )
         if not backup_metadata_doc.is_valid():
@@ -419,6 +418,29 @@ class ElasticSearchEngineV2(object):
         return self.backup_manager.delete(project_id=project_id,
                                           doc_id=backup_id,
                                           user_id=user_id)
+
+    def update_backup(self, user_id, backup_id, patch_doc, project_id=None):
+        backup = self.get_backup(project_id, backup_id)
+        if not backup:
+            raise freezer_api_exc.DocumentNotFound(
+                message=f'Backup not registered with ID {backup_id}')
+        valid_patch = utils.BackupMetadataDoc.create_patch(patch_doc)
+        existing_metadata = backup.get('backup_metadata', {})
+        patch_metadata = valid_patch.get('backup_metadata', {})
+        if isinstance(patch_metadata, dict):
+            existing_metadata.update(patch_metadata)
+
+        status = valid_patch.get('status', backup.get('status', 'available'))
+        doc_body = {
+            'status': status,
+            'backup_metadata': existing_metadata
+        }
+        if 'job_id' in existing_metadata:
+            doc_body['job_id'] = existing_metadata['job_id']
+
+        self.backup_manager.update(backup_id, doc_body)
+        LOG.info('Backup updated, backup_id: {0}'.format(backup_id))
+        return backup_id
 
     def get_client(self, project_id, client_id=None,
                    offset=0, limit=10, search=None):

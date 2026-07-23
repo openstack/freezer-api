@@ -80,3 +80,20 @@ class BackupsResource(resource.BaseResource):
                               backup_id=backup_id)
         resp.media = {'backup_id': backup_id}
         resp.status = falcon.HTTP_204
+
+    @policy.enforce('backups:update')
+    def on_patch(self, req, resp, project_id, backup_id):
+        # PATCH /v2/{project_id}/backups/{backup_id}
+        # Updates the specified backup entry
+        user_id = req.context.user_id
+        doc = self.json_body(req)
+        if not doc:
+            raise freezer_api_exc.BadDataFormat(
+                message='Missing request body')
+        self.db.update_backup(project_id=project_id,
+                              user_id=user_id,
+                              backup_id=backup_id,
+                              patch_doc=doc)
+        obj = self.db.get_backup(project_id=project_id, backup_id=backup_id)
+        resp.media = obj
+        resp.status = falcon.HTTP_200

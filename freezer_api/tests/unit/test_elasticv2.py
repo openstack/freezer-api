@@ -836,6 +836,35 @@ class TestElasticSearchEngineV2_backup(
                           user_id=common.fake_data_0_user_id,
                           backup_id=common.fake_data_0_backup_id)
 
+    def test_update_backup_ok(self):
+        self.eng.backup_manager.get.return_value = (
+            common.fake_data_0_wrapped_backup_metadata
+        )
+        self.eng.backup_manager.update.return_value = 1
+        res = self.eng.update_backup(user_id=common.fake_data_0_user_id,
+                                     backup_id=common.fake_data_0_backup_id,
+                                     patch_doc={'status': 'available'},
+                                     project_id='tecs')
+        self.assertEqual(common.fake_data_0_backup_id, res)
+        self.eng.backup_manager.update.assert_called_with(
+            common.fake_data_0_backup_id,
+            {
+                'status': 'available',
+                'backup_metadata':
+                    common.fake_data_0_wrapped_backup_metadata[
+                        'backup_metadata']
+            }
+        )
+
+    def test_update_backup_raises_when_not_found(self):
+        self.eng.backup_manager.get.return_value = None
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.eng.update_backup,
+                          user_id=common.fake_data_0_user_id,
+                          backup_id='nonexistent_id',
+                          patch_doc={'status': 'available'},
+                          project_id='tecs')
+
 
 class TestElasticSearchEngine_client(
     common.FreezerBaseTestCase, ElasticSearchDB

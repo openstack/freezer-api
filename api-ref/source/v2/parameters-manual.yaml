@@ -235,6 +235,13 @@ username:
   description: |
     The username.
 
+status:
+  type: string
+  in: body
+  required: false
+  description: |
+    The status of the resource (one of: ``creating``, ``available``, ``error``, ``deleting``, ``deleted``).
+
 version_doc:
   type: int
   in: body

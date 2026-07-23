@@ -129,3 +129,22 @@ class TestBackupsResource(common.FreezerBaseTestCase):
         expected_result = {'backup_id': common.fake_data_0_backup_id}
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
+
+    def test_on_patch_raises_when_missing_body(self):
+        self.mock_json_body.return_value = None
+        self.assertRaises(exceptions.BadDataFormat, self.resource.on_patch,
+                          self.mock_req, self.mock_req,
+                          common.fake_data_0_wrapped_backup_metadata[
+                              'project_id'],
+                          common.fake_data_0_backup_id)
+
+    def test_on_patch_updates_data(self):
+        fake_meta = common.fake_data_0_wrapped_backup_metadata
+        self.mock_json_body.return_value = {'status': 'available'}
+        self.mock_db.update_backup.return_value = common.fake_data_0_backup_id
+        self.mock_db.get_backup.return_value = fake_meta
+        self.resource.on_patch(self.mock_req, self.mock_req,
+                               fake_meta['project_id'],
+                               common.fake_data_0_backup_id)
+        self.assertEqual(fake_meta, self.mock_req.media)
+        self.assertEqual(falcon.HTTP_200, self.mock_req.status)

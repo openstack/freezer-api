@@ -117,3 +117,74 @@ class DbBackupTestCase(base.DbTestCase):
                           self.dbapi.add_backup, self.fake_user_id,
                           mock_doc,
                           project_id=self.fake_project_id)
+
+    def test_update_backup(self):
+        backup_doc = copy.deepcopy(self.fake_backup_metadata)
+        backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                          doc=backup_doc,
+                                          project_id=self.fake_project_id)
+        self.assertIsNotNone(backup_id)
+
+        patch_doc = {
+            'status': 'available',
+            'backup_metadata': {'cinder_backup_id': 'cinder_123'}
+        }
+        result = self.dbapi.update_backup(user_id=self.fake_user_id,
+                                          backup_id=backup_id,
+                                          patch_doc=patch_doc,
+                                          project_id=self.fake_project_id)
+        self.assertEqual(result, backup_id)
+
+        updated = self.dbapi.get_backup(project_id=self.fake_project_id,
+                                        backup_id=backup_id)
+        self.assertEqual(updated.get('status'), 'available')
+        backup_metadata = updated.get('backup_metadata', {})
+        self.assertEqual(backup_metadata.get('cinder_backup_id'), 'cinder_123')
+
+    def test_update_backup_not_found(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.update_backup,
+                          self.fake_user_id, 'non_existent_id',
+                          {'status': 'available'},
+                          project_id=self.fake_project_id)
+
+    def test_search_backup_by_status(self):
+        doc1 = copy.deepcopy(self.fake_backup_metadata)
+        doc1['status'] = 'creating'
+        id1 = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                    doc=doc1,
+                                    project_id=self.fake_project_id)
+        self.assertIsNotNone(id1)
+
+        doc2 = copy.deepcopy(self.fake_backup_metadata)
+        doc2['status'] = 'available'
+        id2 = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                    doc=doc2,
+                                    project_id=self.fake_project_id)
+
+        search = {'match': [{'status': 'available'}]}
+        result = self.dbapi.search_backup(project_id=self.fake_project_id,
+                                          search=search)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['backup_id'], id2)
+        self.assertEqual(result[0]['status'], 'available')
+
+    def test_add_backup_invalid_status(self):
+        doc = copy.deepcopy(self.fake_backup_metadata)
+        doc['status'] = 'completed'
+        self.assertRaises(freezer_api_exc.BadDataFormat,
+                          self.dbapi.add_backup,
+                          self.fake_user_id, doc,
+                          project_id=self.fake_project_id)
+
+    def test_update_backup_invalid_status(self):
+        backup_doc = copy.deepcopy(self.fake_backup_metadata)
+        backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                          doc=backup_doc,
+                                          project_id=self.fake_project_id)
+        self.assertIsNotNone(backup_id)
+        self.assertRaises(freezer_api_exc.BadDataFormat,
+                          self.dbapi.update_backup,
+                          self.fake_user_id, backup_id,
+                          {'status': 'completed'},
+                          project_id=self.fake_project_id)

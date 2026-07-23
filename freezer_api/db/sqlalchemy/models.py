@@ -23,6 +23,7 @@ from sqlalchemy import Column, Integer, String, Text, TIMESTAMP
 from sqlalchemy import BLOB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey, DateTime, Boolean
+from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
 
 from freezer_api.common.json_schemas import SUPPORTED_ACTIONS
@@ -219,6 +220,7 @@ class Backup(BASE, FreezerBase):
     job_id = Column(String(36))
     project_id = Column(String(36))
     user_id = Column(String(64), nullable=False)
+    status = Column(String(64), nullable=False, default='available')
     backup_metadata = Column(Text)
 
 
@@ -237,7 +239,6 @@ def unregister_models(engine):
 
 
 def get_tables(engine):
-    from sqlalchemy import MetaData
     _meta = MetaData()
     _meta.reflect(engine)
     return _meta.tables.keys()

@@ -1,4 +1,5 @@
 {
+    "status": "creating",
     "action": "backup",
     "always_level": "",
     "backup_media": "fs",

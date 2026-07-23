@@ -60,7 +60,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=self._make_valid_data(),
         )
         self.assertTrue(doc.is_valid())
@@ -69,7 +68,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='',
             user_id='user1',
-            user_name='John',
             data=self._make_valid_data(),
         )
         self.assertFalse(doc.is_valid())
@@ -78,7 +76,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='',
-            user_name='John',
             data=self._make_valid_data(),
         )
         self.assertFalse(doc.is_valid())
@@ -89,7 +86,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=data,
         )
         self.assertFalse(doc.is_valid())
@@ -100,7 +96,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=data,
         )
         self.assertFalse(doc.is_valid())
@@ -111,7 +106,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=data,
         )
         self.assertFalse(doc.is_valid())
@@ -122,7 +116,6 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=data,
         )
         self.assertFalse(doc.is_valid())
@@ -131,21 +124,18 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=self._make_valid_data(),
         )
         result = doc.serialize()
         self.assertIn('backup_id', result)
         self.assertEqual('proj1', result['project_id'])
         self.assertEqual('user1', result['user_id'])
-        self.assertEqual('John', result['user_name'])
         self.assertIn('backup_metadata', result)
 
     def test_serialize_backup_id_is_non_empty_hex(self):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=self._make_valid_data(),
         )
         result = doc.serialize()
@@ -156,11 +146,42 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',
             user_id='user1',
-            user_name='John',
             data=data,
         )
         result = doc.serialize()
         self.assertEqual(data, result['backup_metadata'])
+
+    def test_serialize_includes_status(self):
+        data = self._make_valid_data()
+        data['status'] = 'creating'
+        doc = elasticv2_utils.BackupMetadataDoc(
+            project_id='proj1',
+            user_id='user1',
+            data=data,
+        )
+        result = doc.serialize()
+        self.assertEqual('creating', result['status'])
+
+    def test_create_patch_removes_forbidden_fields(self):
+        patch = {
+            'user_id': 'u1',
+            'backup_id': 'b1',
+            'project_id': 'p1',
+            'status': 'available'
+        }
+        res = elasticv2_utils.BackupMetadataDoc.create_patch(patch)
+        self.assertNotIn('user_id', res)
+        self.assertNotIn('backup_id', res)
+        self.assertNotIn('project_id', res)
+        self.assertEqual('available', res['status'])
+
+    def test_create_patch_raises_on_invalid_status(self):
+        patch = {'status': 'invalid_status'}
+        self.assertRaises(
+            freezer_api_exc.BadDataFormat,
+            elasticv2_utils.BackupMetadataDoc.create_patch,
+            patch,
+        )
 
 
 class TestActionDocCreate(common.FreezerBaseTestCase):

@@ -20,7 +20,7 @@ BACKUPS = 'backups:%s'
 rules = [
     policy.DocumentedRuleDefault(
         name=BACKUPS % 'create',
-        check_str=base.ADMIN_OR_OWNER,
+        check_str=base.ADMIN_OR_OWNER_OR_SERVICE,
         scope_types=['project'],
         description='Creates backup entry.',
         operations=[
@@ -32,7 +32,7 @@ rules = [
     ),
     policy.DocumentedRuleDefault(
         name=BACKUPS % 'delete',
-        check_str=base.ADMIN_OR_OWNER,
+        check_str=base.ADMIN_OR_OWNER_OR_SERVICE,
         scope_types=['project'],
         description='Delete backup.',
         operations=[
@@ -63,6 +63,18 @@ rules = [
             {
                 'path': '/v2/backups',
                 'method': 'GET'
+            }
+        ]
+    ),
+    policy.DocumentedRuleDefault(
+        name=BACKUPS % 'update',
+        check_str=base.ADMIN_OR_OWNER_OR_SERVICE,
+        scope_types=['project'],
+        description='Update backup entry.',
+        operations=[
+            {
+                'path': '/v2/backups/{backup_id}',
+                'method': 'PATCH'
             }
         ]
     )

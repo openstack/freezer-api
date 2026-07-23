@@ -211,9 +211,6 @@ backups_mapping = {
             "index": "not_analyzed",
             "type": "string"
         },
-        "user_name": {
-            "type": "string"
-        },
         "client_id": {
             "index": "not_analyzed",
             "type": "string"

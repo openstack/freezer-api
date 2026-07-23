@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Added ``status`` field to the ``/backups`` API.
+    Allowed values for the ``status`` field are: ``[available,
+    creating, restoring, deleting, error]``.
+
+  - |
+    Added PATCH method to update ``/backups/<backup_id>`` metadata.

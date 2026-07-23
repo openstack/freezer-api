@@ -2,7 +2,7 @@
         "project_id": "752d8bd43d654e7a840bbfda77ce41af",
         "user_id": "0cd44caf6db5486b94a04b33256a5ff4",
         "backup_id": "96a5946a6e994a38a3d1008fbc6f3406",
-        "user_name": "demo",
+        "status": "available",
         "backup_metadata":
         {
             "ssh_port": 22,

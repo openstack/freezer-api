@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import copy
 import time
 import uuid
 
@@ -31,31 +32,50 @@ class BackupMetadataDoc(object):
     Wraps a backup_metadata dict and adds some utility methods,
     and fields
     """
-    def __init__(self, project_id='', user_id='', user_name='', data={}):
+    backup_doc_validator = jsonschema.Draft4Validator(
+        schema=json_schemas.backup_schema)
+    backup_patch_validator = jsonschema.Draft4Validator(
+        schema=json_schemas.backup_patch_schema)
+
+    def __init__(self, project_id='', user_id='', data=None):
         self.project_id = project_id
         self.user_id = user_id
-        self.user_name = user_name
         self.backup_id = uuid.uuid4().hex
-        self.data = data
+        self.data = data if data is not None else {}
+
+    @staticmethod
+    def validate_patch(doc):
+        try:
+            BackupMetadataDoc.backup_patch_validator.validate(doc)
+        except Exception as e:
+            raise freezer_api_exc.BadDataFormat(str(e).splitlines()[0])
 
     def is_valid(self):
         try:
             assert (self.project_id != '')
             assert (self.backup_id != '')
             assert (self.user_id != '')
-            assert (self.data['container'] != '')
-            assert (self.data['hostname'] != '')
-            assert (self.data['backup_name'] != '')
+            BackupMetadataDoc.backup_doc_validator.validate(self.data)
         except Exception:
             return False
         return True
 
     def serialize(self):
+        data = copy.deepcopy(self.data)
+        status = data.pop('status', 'available')
         return {'backup_id': self.backup_id,
                 'user_id': self.user_id,
                 'project_id': self.project_id,
-                'user_name': self.user_name,
-                'backup_metadata': self.data}
+                'status': status,
+                'backup_metadata': data}
+
+    @staticmethod
+    def create_patch(doc):
+        doc.pop('user_id', None)
+        doc.pop('backup_id', None)
+        doc.pop('project_id', None)
+        BackupMetadataDoc.validate_patch(doc)
+        return doc
 
 
 class JobDoc(object):

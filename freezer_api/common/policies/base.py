@@ -19,6 +19,7 @@ from oslo_policy import policy
 
 ADMIN_OR_SERVICE = 'rule:admin_or_service'
 ADMIN_OR_OWNER = 'rule:admin_or_owner'
+ADMIN_OR_OWNER_OR_SERVICE = 'rule:admin_or_owner_or_service'
 PROJECT_MEMBER = 'rule:project_member'
 PROJECT_READER = 'rule:project_reader'
 ADMIN_OR_READER_OR_SERVICE = 'rule:admin_or_reader_or_service'
@@ -30,8 +31,13 @@ rules = [
         scope_types=['project']),
     policy.RuleDefault(
         "admin_or_owner",
-        "is_admin:True or project_id:%(project_id)s",
+        "rule:context_is_admin or rule:project_member",
         scope_types=['project']),
+    policy.RuleDefault(
+        "admin_or_owner_or_service",
+        "rule:admin_or_service or rule:project_member",
+        scope_types=['project']),
+
     policy.RuleDefault(
         "admin_or_service",
         "role:admin or role:service",
@@ -46,7 +52,7 @@ rules = [
         scope_types=['project']),
     policy.RuleDefault(
         "admin_or_reader_or_service",
-        "rule:admin_or_owner or rule:project_reader or role:service",
+        "rule:admin_or_owner_or_service or rule:project_reader",
         scope_types=['project']),
 ]
 

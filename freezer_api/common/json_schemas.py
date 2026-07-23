@@ -28,6 +28,9 @@ SUPPORTED_MODES = ['fs', 'mongo', 'mysql', 'sqlserver', 'cinder',
 SUPPORTED_STORAGES = ['local', 'swift', 'ssh', 's3', 'ftp', 'ftps']
 SUPPORTED_ENGINES = ['tar', 'rsync', 'rsyncv2', 'nova', 'osbrick',
                      'glance']
+SUPPORTED_BACKUP_STATUSES = ['creating', 'available', 'error',
+                             'deleting', 'deleted']
+
 
 freezer_action_properties = {
     "action": {
@@ -652,4 +655,54 @@ client_schema = {
         "client",
         "user_id"
     ]
+}
+
+backup_patch_schema = {
+    "id": "/",
+    "type": "object",
+    "properties": {
+        "backup_metadata": {
+            "id": "backup_metadata",
+            "type": "object"
+        },
+        "status": {
+            "id": "status",
+            "type": "string",
+            "enum": SUPPORTED_BACKUP_STATUSES
+        }
+    },
+    "additionalProperties": True
+}
+
+backup_schema = {
+    "id": "/",
+    "type": "object",
+    "properties": {
+        "container": {
+            "id": "container",
+            "type": "string",
+            "minLength": 1
+        },
+        "hostname": {
+            "id": "hostname",
+            "type": "string",
+            "minLength": 1
+        },
+        "backup_name": {
+            "id": "backup_name",
+            "type": "string",
+            "minLength": 1
+        },
+        "status": {
+            "id": "status",
+            "type": "string",
+            "enum": SUPPORTED_BACKUP_STATUSES
+        }
+    },
+    "required": [
+        "container",
+        "hostname",
+        "backup_name"
+    ],
+    "additionalProperties": True
 }

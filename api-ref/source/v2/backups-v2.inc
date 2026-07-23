@@ -146,7 +146,7 @@ Response Parameters
   - project_id: project_id
   - user_id: user_id
   - backup_id: backup_id
-  - username: username
+  - status: status
   - backup_metadata: backup_metadata
 
 
@@ -154,6 +154,61 @@ Response Example
 ----------------
 
 .. literalinclude:: samples/backup-get-response.json
+   :language: javascript
+
+
+Update backup(v2)
+=================
+
+.. rest_method::  PATCH /v2/{project_id}/backups/{backup_id}
+
+Updates a backup entry.
+
+This operation updates an existing backup entry.
+
+Normal response codes: 200
+
+Error response codes:
+
+- BadRequest (400)
+- Unauthorized (401)
+- Forbidden (403)
+- NotFound (404)
+
+
+Query Parameters
+-----------------
+
+.. rest_parameters:: parameters.yaml
+
+  - project_id: project_id_path
+  - backup_id: backup_id_path
+
+Request Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - status: status
+  - backup_metadata: backup_metadata
+
+Request Example
+---------------
+
+.. literalinclude:: samples/backup-update-request.json
+   :language: javascript
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: parameters.yaml
+
+  - backup_id: backup_id
+
+Response Example
+----------------
+
+.. literalinclude:: samples/backup-update-response.json
    :language: javascript
 
 

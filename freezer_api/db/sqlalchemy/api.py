@@ -1201,6 +1201,7 @@ def get_backup(backup_id, project_id=None):
         values['project_id'] = result[0].get('project_id')
         values['backup_id'] = result[0].get('id')
         values['user_id'] = result[0].get('user_id')
+        values['status'] = result[0].get('status')
         values['backup_metadata'] = json_utils.\
             json_decode(result[0].get('backup_metadata'))
     return values
@@ -1208,8 +1209,7 @@ def get_backup(backup_id, project_id=None):
 
 def add_backup(user_id, doc, project_id=None):
 
-    metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, '',
-                                            doc)
+    metadatadoc = utilsv2.BackupMetadataDoc(project_id, user_id, doc)
     if not metadatadoc.is_valid():
         raise freezer_api_exc.BadDataFormat(
             message='Bad Data Format')
@@ -1230,6 +1230,7 @@ def add_backup(user_id, doc, project_id=None):
     backupvalue['id'] = backup_id
     backupvalue['user_id'] = user_id
     backupvalue['job_id'] = backup_metadata.get('job_id')
+    backupvalue['status'] = backupjson.get('status', 'available')
     # The field backup_metadata is json, including :
     # hostname , backup_name , container etc
     backupvalue['backup_metadata'] = json_utils.json_encode(backup_metadata)
@@ -1247,6 +1248,35 @@ def delete_backup(user_id, backup_id, project_id=None):
     return tupleid
 
 
+def update_backup(user_id, backup_id, patch_doc, project_id=None):
+
+    valid_patch = utilsv2.BackupMetadataDoc.create_patch(patch_doc)
+
+    existing = get_backup(project_id=project_id, backup_id=backup_id)
+    if not existing:
+        raise freezer_api_exc.DocumentNotFound(
+            message=f'Backup not registered with ID {backup_id}')
+
+    existing_metadata = existing.get('backup_metadata', {})
+    patch_metadata = valid_patch.get('backup_metadata', {})
+    if isinstance(patch_metadata, dict):
+        existing_metadata.update(patch_metadata)
+
+    values = {
+        'status': valid_patch.get('status') or existing.get('status'),
+        'backup_metadata': json_utils.json_encode(existing_metadata)
+    }
+    if 'job_id' in existing_metadata:
+        values['job_id'] = existing_metadata['job_id']
+
+    update_tuple(tablename=models.Backup, user_id=user_id,
+                 tuple_id=backup_id, tuple_values=values,
+                 project_id=project_id)
+
+    LOG.info('Backup updated, backup_id: {0}'.format(backup_id))
+    return backup_id
+
+
 def search_backup(project_id=None, offset=0,
                   limit=100, search=None):
     backups = []
@@ -1259,6 +1289,7 @@ def search_backup(project_id=None, offset=0,
         backupmap['project_id'] = project_id
         backupmap['user_id'] = backup.user_id
         backupmap['backup_id'] = backup.id
+        backupmap['status'] = backup.status
         backupmap['backup_metadata'] = json_utils.\
             json_decode(backup.get('backup_metadata'))
         backups.append(backupmap)

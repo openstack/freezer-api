@@ -145,6 +145,11 @@ class MigrationsWalk(
             'job_actions',
             [x['name'] for x in inspector.get_columns('jobs')])
 
+    def _check_5c9d21e87f34(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        columns = [x['name'] for x in inspector.get_columns('backups')]
+        self.assertIn('status', columns)
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection
