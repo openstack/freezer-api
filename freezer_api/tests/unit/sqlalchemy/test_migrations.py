@@ -150,6 +150,19 @@ class MigrationsWalk(
         columns = [x['name'] for x in inspector.get_columns('backups')]
         self.assertIn('status', columns)
 
+    def _check_7a3b9c1d2e4f(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        # Verify user_id is now VARCHAR(64) in both jobs and sessions tables
+        jobs_columns = {
+            x['name']: x for x in inspector.get_columns('jobs')}
+        sessions_columns = {
+            x['name']: x for x in inspector.get_columns('sessions')}
+        # Check the column length is at least 64
+        self.assertGreaterEqual(
+            jobs_columns['user_id']['type'].length, 64)
+        self.assertGreaterEqual(
+            sessions_columns['user_id']['type'].length, 64)
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection

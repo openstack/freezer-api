@@ -127,7 +127,7 @@ class Session(BASE, FreezerBase):
     schedule = Column(Text)
     job = Column(Text)
     project_id = Column(String(36))
-    user_id = Column(String(36), nullable=False)
+    user_id = Column(String(64), nullable=False)
     time_start = Column(Integer, default=-1)
     time_end = Column(Integer, default=-1)
     time_started = Column(Integer, default=-1)
@@ -142,7 +142,7 @@ class Job(BASE, FreezerBase):
     __tablename__ = 'jobs'
     id = Column(String(36), primary_key=True)
     project_id = Column(String(36))
-    user_id = Column(String(36), nullable=False)
+    user_id = Column(String(64), nullable=False)
     schedule = Column(Text)
     client_id = Column(String(255), ForeignKey('clients.id'), nullable=False)
     session_id = Column(String(36), ForeignKey('sessions.id'), nullable=False)

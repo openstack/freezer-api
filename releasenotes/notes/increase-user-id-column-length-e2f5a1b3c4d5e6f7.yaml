@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Increased the ``user_id`` column length from VARCHAR(36) to VARCHAR(64)
+    in the ``jobs`` and ``sessions`` tables so that Freezer API can store
+    Keystone user IDs longer than 36 characters (e.g. from LDAP-backed
+    identity). Operators must run ``freezer-manage db sync`` to apply the
+    migration.
+upgrade:
+  - |
+    The ``user_id`` columns in the ``jobs`` and ``sessions`` tables have been
+    widened from VARCHAR(36) to VARCHAR(64). Run ``freezer-manage db sync``
+    to apply the migration to existing deployments.
