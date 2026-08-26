@@ -58,13 +58,14 @@ class JobsBaseResource(resource.BaseResource):
                 found_action_doc = self.get_action(project_id=project_id,
                                                    action_id=action.action_id)
                 if found_action_doc:
-                    if action == Action(found_action_doc):
-                        # action already present in the db, do nothing
+                    # action is already present in the db, do nothing
+                    if 'freezer_action' not in action.doc:
                         continue
-                    else:
-                        # action is different, generate new action_id
-                        action.action_id = ''
-                # action not found in db, leave current action_id
+                    if action == Action(found_action_doc):
+                        continue
+                    # action is different, generate new action_id
+                    action.action_id = ''
+            # action not found in db, leave current action_id
             self.db.add_action(project_id=project_id,
                                user_id=user_id,
                                doc=action.doc)
@@ -277,10 +278,16 @@ class Action(object):
         self.doc['action_id'] = uuid.uuid4().hex
 
     def __eq__(self, other):
-        # return self.doc == other.doc
+        if isinstance(other, Action):
+            other_doc = other.doc
+        elif isinstance(other, dict):
+            other_doc = other
+        else:
+            return False
+
         dont_care_keys = ['_version', 'user_id']
-        lh = self.doc.get('freezer_action', None)
-        rh = other.doc.get('freezer_action', None)
+        lh = self.doc.get('freezer_action') or {}
+        rh = other_doc.get('freezer_action') or {}
         diffkeys = [k for k in lh if lh[k] != rh.get(k)]
         diffkeys += [k for k in rh if rh[k] != lh.get(k)]
         for k in diffkeys:

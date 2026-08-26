@@ -84,6 +84,26 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
                                                    user_id='duder',
                                                    doc=action_doc)
 
+    def test_update_actions_in_job_action_id_only_found(self):
+        self.resource.get_action = mock.Mock()
+        action_doc = {
+            "action_id": "ottonero"
+        }
+        found_action = {
+            "action_id": "ottonero",
+            "freezer_action": {
+                "mode": "mysql",
+                "container": "freezer_backup_test"
+            },
+            "max_retries": 3
+        }
+        job_doc = {"job_actions": [action_doc.copy()],
+                   "description": "three actions backup"
+                   }
+        self.resource.get_action.return_value = found_action
+        self.resource.update_actions_in_job('tecs', 'duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_not_called()
+
     def test_update_actions_in_job_action_id_found_and_same_action(self):
         self.resource.get_action = mock.Mock()
         action_doc = {
@@ -131,6 +151,23 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
         self.mock_db.add_action.assert_called_with(project_id='tecs',
                                                    user_id='duder',
                                                    doc=new_doc)
+
+    def test_action_equality_with_none_or_missing_freezer_action(self):
+        action_ref = v2_jobs.Action({'action_id': 'abc'})
+        action_none = v2_jobs.Action(
+            {'action_id': 'abc', 'freezer_action': None})
+        action_full = v2_jobs.Action({
+            'action_id': 'abc',
+            'freezer_action': {'action': 'backup', 'mode': 'cindernative'}
+        })
+        self.assertFalse(action_ref == action_full)
+        self.assertFalse(action_full == action_ref)
+        self.assertTrue(action_ref != action_full)
+        self.assertTrue(action_ref == v2_jobs.Action({'action_id': 'abc'}))
+        self.assertTrue(action_none == action_ref)
+        self.assertFalse(action_none == action_full)
+        self.assertFalse(action_full == action_none)
+        self.assertFalse(action_ref == "not-an-action")
 
     @mock.patch.object(v2_jobs, 'CONF')
     def test_should_create_trust_disabled(self, mock_conf):
@@ -287,6 +324,19 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
                               common.fake_job_0_project_id)
         self.assertEqual(falcon.HTTP_201, self.mock_req.status)
         self.assertEqual(expected_result, self.mock_req.media)
+
+    def test_on_post_with_referenced_action_id(self):
+        job = common.get_fake_job_0()
+        job['job_actions'] = [
+            {'action_id': '08d2c834494b4b90b79129cf1630fda2'}]
+        self.mock_json_body.return_value = job
+        self.mock_db.get_action.return_value = common.fake_action_0
+        self.mock_db.add_job.return_value = 'pjiofrdslaikfunr'
+        self.resource.on_post(self.mock_req, self.mock_req,
+                              common.fake_job_0_project_id)
+        self.assertEqual(falcon.HTTP_201, self.mock_req.status)
+        self.assertEqual({'job_id': 'pjiofrdslaikfunr'}, self.mock_req.media)
+        self.mock_db.add_action.assert_not_called()
 
     @mock.patch.object(v2_jobs, 'CONF')
     def test_on_post_centralized_scheduler_success(self, mock_conf):
