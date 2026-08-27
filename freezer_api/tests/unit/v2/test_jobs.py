@@ -79,10 +79,12 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
         job_doc = {"job_actions": [action_doc.copy()],
                    "description": "three actions backup"
                    }
-        self.resource.update_actions_in_job('tecs', 'duder', job_doc=job_doc)
-        self.mock_db.add_action.assert_called_with(project_id='tecs',
-                                                   user_id='duder',
-                                                   doc=action_doc)
+        # an action_id always references an existing action, so an unknown
+        # one is an error rather than an id to create the action under
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.resource.update_actions_in_job,
+                          'tecs', 'duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_not_called()
 
     def test_update_actions_in_job_action_id_only_found(self):
         self.resource.get_action = mock.Mock()
@@ -144,13 +146,27 @@ class TestJobsBaseResource(common.FreezerBaseTestCase):
             "max_retries": 4
         }
 
-        new_doc = action_doc.copy()
-        new_doc['action_id'] = ''
         self.resource.get_action.return_value = found_action
-        self.resource.update_actions_in_job('tecs', 'duder', job_doc=job_doc)
-        self.mock_db.add_action.assert_called_with(project_id='tecs',
-                                                   user_id='duder',
-                                                   doc=new_doc)
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.resource.update_actions_in_job,
+                          'tecs', 'duder', job_doc=job_doc)
+        # the conflicting action is rejected, not forked into a new one
+        self.mock_db.add_action.assert_not_called()
+        self.assertEqual('ottonero',
+                         job_doc['job_actions'][0]['action_id'])
+
+    def test_update_actions_in_job_action_id_only_not_found(self):
+        """An id-only entry for an unknown action is rejected, not created."""
+        self.resource.get_action = mock.Mock(return_value=None)
+        action_doc = {"action_id": "ottonero"}
+        job_doc = {"job_actions": [action_doc.copy()],
+                   "description": "one action backup"
+                   }
+
+        self.assertRaises(exceptions.UnprocessableEntity,
+                          self.resource.update_actions_in_job,
+                          'tecs', 'duder', job_doc=job_doc)
+        self.mock_db.add_action.assert_not_called()
 
     def test_action_equality_with_none_or_missing_freezer_action(self):
         action_ref = v2_jobs.Action({'action_id': 'abc'})

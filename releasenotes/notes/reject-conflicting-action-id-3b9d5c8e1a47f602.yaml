@@ -1,0 +1,18 @@
+---
+upgrade:
+  - |
+    Creating, updating or replacing a job with a ``job_actions`` entry whose
+    ``action_id`` refers to an existing action, but whose inline
+    ``freezer_action`` differs from the stored definition, is now rejected
+    with ``422 Unprocessable Entity``. Previously the API silently copied the
+    action under a freshly generated ``action_id`` and pointed the job at the
+    copy, leaving the referenced action untouched -- which was easy to
+    mistake for an in-place edit. An ``action_id`` that is not in the actions
+    table at all is now rejected the same way, instead of the action being
+    created under the client-supplied id.
+
+    To change an action, update it directly through
+    ``PATCH /v2/{project_id}/actions/{action_id}``. To add a new one, omit
+    ``action_id`` and let the API assign it. Entries that reference an
+    existing action by ``action_id`` alone, and entries that repeat the
+    stored definition unchanged, are unaffected.
