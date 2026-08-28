@@ -16,9 +16,10 @@ limitations under the License.
 
 """
 
-import falcon
 from unittest import mock
 
+import falcon
+from falcon import testing
 from oslo_serialization import jsonutils as json
 
 from freezer_api.api import v2
@@ -32,10 +33,26 @@ class TestVersionResource(common.FreezerBaseTestCase):
         super().setUp()
         self.resource = versions.Resource()
         self.req = mock.Mock()
-        self.req.url = "{0}"
+        self.req.url = "http://127.0.0.1:9090/"
+        self.resp = mock.Mock()
 
     def test_on_get_return_versions(self):
-        self.resource.on_get(self.req, self.req)
-        self.assertEqual(falcon.HTTP_300, self.req.status)
-        expected_result = json.dumps({'versions': [v2.VERSION]})
-        self.assertEqual(expected_result, self.req.data)
+        self.resource.on_get(self.req, self.resp)
+        self.assertEqual(falcon.HTTP_300, self.resp.status)
+        self.assertEqual(falcon.MEDIA_JSON, self.resp.content_type)
+        expected_version = json.loads(json.dumps(v2.VERSION))
+        expected_version['links'][0]['href'] = 'http://127.0.0.1:9090/v2/'
+        expected_result = json.dumps({'versions': [expected_version]})
+        self.assertEqual(expected_result, self.resp.text)
+
+    def test_api_versions_simulate_get(self):
+        app = versions.api_versions()
+        client = testing.TestClient(app)
+        res = client.simulate_get('/', host='10.202.51.229:9090')
+        self.assertEqual(300, res.status_code)
+        body = json.loads(res.text)
+        self.assertEqual(
+            'http://10.202.51.229:9090/v2/',
+            body['versions'][0]['links'][0]['href']
+        )
+        self.assertEqual(v2.VERSION['links'][0]['href'], '{0}v2/')

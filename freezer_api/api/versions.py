@@ -15,6 +15,8 @@ limitations under the License.
 
 """
 
+import copy
+
 import falcon
 from oslo_config import cfg
 from oslo_log import log
@@ -52,16 +54,17 @@ class Resource(object):
 
         updated_versions = {'versions': []}
         for version in VERSIONS['versions']:
-            if allowed_versions[version['id']]:
-                version['links'][0]['href'] = \
-                    version['links'][0]['href'].format(host_url)
-                updated_versions['versions'].append(version)
+            if allowed_versions.get(version['id']):
+                ver = copy.deepcopy(version)
+                ver['links'][0]['href'] = \
+                    ver['links'][0]['href'].format(host_url.rstrip('/') + '/')
+                updated_versions['versions'].append(ver)
         return json.dumps(updated_versions, ensure_ascii=False)
 
     def on_get(self, req, resp):
-        resp.data = self._build_versions(req.url)
-
+        resp.text = self._build_versions(req.url)
         resp.status = falcon.HTTP_300
+        resp.content_type = falcon.MEDIA_JSON
 
 
 class VersionNegotiator(middleware.Middleware):
