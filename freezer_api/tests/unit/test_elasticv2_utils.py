@@ -120,6 +120,44 @@ class TestBackupMetadataDoc(common.FreezerBaseTestCase):
         )
         self.assertFalse(doc.is_valid())
 
+    def test_is_valid_returns_true_when_creating_without_container(self):
+        data = self._make_valid_data()
+        data['status'] = 'creating'
+        data.pop('container')
+        data.pop('hostname')
+        doc = elasticv2_utils.BackupMetadataDoc(
+            project_id='proj1',
+            user_id='user1',
+            data=data,
+        )
+        self.assertTrue(doc.is_valid())
+
+    def test_is_valid_returns_true_when_creating_with_none_container(self):
+        data = self._make_valid_data()
+        data['status'] = 'creating'
+        data['container'] = None
+        data['hostname'] = None
+        doc = elasticv2_utils.BackupMetadataDoc(
+            project_id='proj1',
+            user_id='user1',
+            data=data,
+        )
+        self.assertTrue(doc.is_valid())
+
+    def test_is_valid_returns_true_when_error_or_deleting_without_container(
+            self):
+        for status in ('error', 'deleting'):
+            data = self._make_valid_data()
+            data['status'] = status
+            data['container'] = None
+            data['hostname'] = None
+            doc = elasticv2_utils.BackupMetadataDoc(
+                project_id='proj1',
+                user_id='user1',
+                data=data,
+            )
+            self.assertTrue(doc.is_valid())
+
     def test_serialize_returns_expected_keys(self):
         doc = elasticv2_utils.BackupMetadataDoc(
             project_id='proj1',

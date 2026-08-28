@@ -31,6 +31,8 @@ SUPPORTED_ENGINES = ['tar', 'rsync', 'rsyncv2', 'nova', 'osbrick',
 SUPPORTED_BACKUP_STATUSES = ['creating', 'available', 'error',
                              'deleting', 'deleted']
 
+SCHEMA_DRAFT7 = "http://json-schema.org/draft-07/schema#"
+
 
 freezer_action_properties = {
     "action": {
@@ -683,17 +685,19 @@ backup_patch_schema = {
 }
 
 backup_schema = {
+    "$schema": SCHEMA_DRAFT7,
     "id": "/",
+    "$id": "/",
     "type": "object",
     "properties": {
         "container": {
             "id": "container",
-            "type": "string",
+            "type": ["string", "null"],
             "minLength": 1
         },
         "hostname": {
             "id": "hostname",
-            "type": "string",
+            "type": ["string", "null"],
             "minLength": 1
         },
         "backup_name": {
@@ -708,9 +712,32 @@ backup_schema = {
         }
     },
     "required": [
-        "container",
-        "hostname",
         "backup_name"
     ],
+    "if": {
+        "properties": {
+            "status": {
+                "not": {
+                    "enum": ["creating", "error", "deleting"]
+                }
+            }
+        }
+    },
+    "then": {
+        "required": [
+            "container",
+            "hostname"
+        ],
+        "properties": {
+            "container": {
+                "type": "string",
+                "minLength": 1
+            },
+            "hostname": {
+                "type": "string",
+                "minLength": 1
+            }
+        }
+    },
     "additionalProperties": True
 }

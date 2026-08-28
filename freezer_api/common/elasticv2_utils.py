@@ -32,7 +32,7 @@ class BackupMetadataDoc(object):
     Wraps a backup_metadata dict and adds some utility methods,
     and fields
     """
-    backup_doc_validator = jsonschema.Draft4Validator(
+    backup_doc_validator = jsonschema.Draft7Validator(
         schema=json_schemas.backup_schema)
     backup_patch_validator = jsonschema.Draft4Validator(
         schema=json_schemas.backup_patch_schema)
@@ -56,7 +56,9 @@ class BackupMetadataDoc(object):
             assert (self.backup_id != '')
             assert (self.user_id != '')
             BackupMetadataDoc.backup_doc_validator.validate(self.data)
-        except Exception:
+        except Exception as e:
+            LOG.warning("BackupMetadataDoc validation failed: %s; data=%s",
+                        e, self.data)
             return False
         return True
 
