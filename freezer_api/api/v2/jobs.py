@@ -57,15 +57,24 @@ class JobsBaseResource(resource.BaseResource):
                 # action has action_id, let's see if it's in the db
                 found_action_doc = self.get_action(project_id=project_id,
                                                    action_id=action.action_id)
-                if found_action_doc:
-                    # action is already present in the db, do nothing
-                    if 'freezer_action' not in action.doc:
-                        continue
-                    if action == Action(found_action_doc):
-                        continue
-                    # action is different, generate new action_id
-                    action.action_id = ''
-            # action not found in db, leave current action_id
+                if not found_action_doc:
+                    # an action_id always references an existing action, it
+                    # is never a client-chosen id for one to be created under
+                    raise freezer_api_exc.UnprocessableEntity(
+                        message='Action id: {0} not found.'.format(
+                            action.action_id))
+                # action is already present in the db, do nothing
+                if 'freezer_action' not in action.doc:
+                    continue
+                if action == Action(found_action_doc):
+                    continue
+                # the action differs from the stored one: reject it rather
+                # than silently forking a copy under a new action_id
+                raise freezer_api_exc.UnprocessableEntity(
+                    message='Action id: {0} already exists with a different '
+                            'definition. Update the action directly, or omit '
+                            'action_id to create a new one.'.format(
+                                action.action_id))
             self.db.add_action(project_id=project_id,
                                user_id=user_id,
                                doc=action.doc)
