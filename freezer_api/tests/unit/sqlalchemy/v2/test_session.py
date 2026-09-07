@@ -89,6 +89,13 @@ class DbSessionTestCase(base.DbTestCase):
                                         session_id=session_id)
         self.assertEqual(len(result), 0)
 
+    def test_delete_session_not_found(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_session,
+                          user_id=self.fake_user_id,
+                          project_id=self.fake_session_0.get('project_id'),
+                          session_id='non-existent-session-id')
+
     def test_add_and_update_session(self):
         session_doc = copy.deepcopy(self.fake_session_0)
         session_id = self.dbapi.add_session(project_id=self.fake_session_0.

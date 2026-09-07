@@ -97,6 +97,19 @@ class ApiTestCase(base.DbTestCase):
                           api.delete_tuple, models.Job, self.fake_user_id,
                           self.fake_job_id, project_id=self.fake_project_id)
 
+    def test_delete_tuple_not_found(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          api.delete_tuple, models.Job, self.fake_user_id,
+                          'non-existent-tuple-id',
+                          project_id=self.fake_project_id)
+
+    def test_delete_tuple_not_found_no_raise(self):
+        res = api.delete_tuple(models.Job, self.fake_user_id,
+                               'non-existent-tuple-id',
+                               project_id=self.fake_project_id,
+                               raise_if_missing=False)
+        self.assertEqual('non-existent-tuple-id', res)
+
     def test_delete_tuple(self):
         job_doc1 = copy.deepcopy(self.fake_job_0)
         job_doc2 = copy.deepcopy(self.fake_job_0)

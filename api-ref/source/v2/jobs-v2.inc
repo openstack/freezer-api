@@ -332,6 +332,7 @@ Error response codes:
 
 - Unauthorized (401)
 - Forbidden (403)
+- Item not found (404)
 
 Query Parameters
 -----------------

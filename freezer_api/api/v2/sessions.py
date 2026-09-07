@@ -350,7 +350,14 @@ class SessionsJob(resource.BaseResource):
 
         session_doc = self.db.get_session(project_id=project_id,
                                           session_id=session_id)
-        session_doc['jobs'].pop(job_id, None)
+        if not session_doc:
+            raise freezer_api_exc.DocumentNotFound(
+                message='Session not found with ID {0}'.format(session_id))
+        if job_id not in session_doc.get('jobs', {}):
+            raise freezer_api_exc.DocumentNotFound(
+                message='Job {0} not found in session {1}'.format(
+                    job_id, session_id))
+        session_doc['jobs'].pop(job_id)
 
         # when replacing, db might raise a VersionConflictEngineException
         self.db.replace_session(project_id=project_id,

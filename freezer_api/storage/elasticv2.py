@@ -168,6 +168,9 @@ class TypeManagerV2(object):
         except Exception as e:
             raise freezer_api_exc.StorageEngineError(
                 message='Scan operation failed: {0}'.format(e))
+        if not results:
+            raise freezer_api_exc.DocumentNotFound(
+                message='No document found with ID {0}'.format(doc_id))
         id = None
         for res in results:
             id = res.get('_id')
