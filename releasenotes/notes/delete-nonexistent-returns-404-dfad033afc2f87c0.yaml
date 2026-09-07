@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Deleting non-existent resources (``backups``, ``jobs``, ``actions``,
+    ``sessions``, and ``clients``) now returns ``HTTP 404 Not Found``
+    (``DocumentNotFound``) instead of ``HTTP 204 No Content``, properly
+    indicating when a resource cannot be deleted because it does not exist.

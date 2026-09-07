@@ -101,6 +101,13 @@ class DbJobTestCase(base.DbTestCase):
                                     job_id=job_id)
         self.assertEqual(len(result), 0)
 
+    def test_delete_job_not_found(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_job,
+                          user_id=self.fake_user_id,
+                          job_id='non-existent-job-id',
+                          project_id=self.fake_project_id)
+
     def test_trust_rotation_with_multiple_jobs(self):
         trust_id = 'fake_trust_id'
         job_doc_0 = copy.deepcopy(self.fake_job_0)

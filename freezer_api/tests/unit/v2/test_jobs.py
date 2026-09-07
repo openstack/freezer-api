@@ -553,6 +553,15 @@ class TestJobsResource(common.FreezerBaseTestCase):
         self.assertEqual(expected_result, self.mock_req.media)
         self.assertFalse(mock_keystone.called)
 
+    def test_on_delete_raises_DocumentNotFound_when_not_found(self):
+        self.mock_db.delete_job.side_effect = exceptions.DocumentNotFound(
+            'Job not found')
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          common.fake_job_0_project_id,
+                          'non-existent-job-id')
+
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)
         self.mock_db.update_job.return_value = new_version

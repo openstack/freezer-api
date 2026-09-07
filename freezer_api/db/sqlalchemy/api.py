@@ -145,7 +145,8 @@ def model_query(session, model,
 
 @db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
                       inc_retry_interval=False, retry_on_deadlock=True)
-def delete_tuple(tablename, user_id, tuple_id, project_id=None):
+def delete_tuple(tablename, user_id, tuple_id, project_id=None,
+                 raise_if_missing=True):
     with session_for_write() as session:
         try:
             query = model_query(session, tablename, project_id=project_id)
@@ -160,6 +161,12 @@ def delete_tuple(tablename, user_id, tuple_id, project_id=None):
                 LOG.info('Tuple delete, Tuple_id: '
                          '{0} not found in Table {1}'.
                          format(tuple_id, tablename))
+                if raise_if_missing:
+                    raise freezer_api_exc.DocumentNotFound(
+                        message='Tuple not found with ID {0} in Table {1}'.
+                        format(tuple_id, tablename))
+        except freezer_api_exc.DocumentNotFound:
+            raise
         except db_exc.DBError:
             message = "Database operation failed."
             LOG.exception(message)
@@ -611,6 +618,9 @@ def delete_client(user_id, client_id, project_id=None):
     else:
         LOG.info('Client delete, client_id: {0} not found'.
                  format(client_id))
+        raise freezer_api_exc.DocumentNotFound(
+            message='Client not found with ID {0}'.format(client_id)
+        )
     return client_id
 
 
@@ -627,9 +637,11 @@ def delete_action(user_id: str, action_id: str,
             job_action.delete(session)
 
         delete_tuple(tablename=models.Action, user_id=user_id,
-                     tuple_id=action_id, project_id=project_id)
+                     tuple_id=action_id, project_id=project_id,
+                     raise_if_missing=True)
         delete_tuple(tablename=models.ActionReport, user_id=user_id,
-                     tuple_id=action_id, project_id=project_id)
+                     tuple_id=action_id, project_id=project_id,
+                     raise_if_missing=False)
     return action_id
 
 
@@ -971,6 +983,11 @@ def delete_job(user_id, job_id, project_id=None):
                     job.user_credentials.delete(session)
                 job.job_actions = []
                 job.delete(session)
+            else:
+                raise freezer_api_exc.DocumentNotFound(
+                    message='Job not registered with ID {0}'.format(job_id))
+        except freezer_api_exc.DocumentNotFound:
+            raise
         except db_exc.DBError:
             message = "Database operation failed."
             LOG.exception(message)

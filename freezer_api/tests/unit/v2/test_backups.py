@@ -130,6 +130,16 @@ class TestBackupsResource(common.FreezerBaseTestCase):
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
 
+    def test_on_delete_raises_DocumentNotFound_when_not_found(self):
+        self.mock_db.delete_backup.side_effect = exceptions.DocumentNotFound(
+            'Backup not found')
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          common.fake_data_0_wrapped_backup_metadata[
+                              'project_id'],
+                          'non-existent-backup-id')
+
     def test_on_patch_raises_when_missing_body(self):
         self.mock_json_body.return_value = None
         self.assertRaises(exceptions.BadDataFormat, self.resource.on_patch,
