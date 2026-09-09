@@ -94,6 +94,13 @@ class DbActionTestCase(base.DbTestCase):
 
         self.assertEqual(len(result), 0)
 
+    def test_delete_action_not_found(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_action,
+                          user_id=self.fake_action_0.get('user_id'),
+                          project_id=self.fake_project_id,
+                          action_id='non-existent-action-id')
+
     def test_add_and_update_action(self):
         action_doc = copy.deepcopy(self.fake_action_0)
         action_id = self.dbapi.add_action(user_id=self.fake_action_0.

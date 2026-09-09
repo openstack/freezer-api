@@ -252,13 +252,14 @@ class TypeManagerV2(common.FreezerBaseTestCase):
                           self.type_manager.delete, project_id='tecs',
                           user_id='my_user_id', doc_id=doc_id)
 
-    def test_delete_return_none_when_nothing_is_deleted(self):
+    def test_delete_raises_DocumentNotFound_when_nothing_is_deleted(self):
         doc_id = 'mydocid345'
         ret_data = {"hits": {"hits": []}}
         self.mock_es.search.return_value = ret_data
-        res = self.type_manager.delete(project_id='tecs',
-                                       user_id='my_user_id', doc_id=doc_id)
-        self.assertIsNone(res, 'invalid res {0}'.format(res))
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.type_manager.delete,
+                          project_id='tecs',
+                          user_id='my_user_id', doc_id=doc_id)
 
     def test_delete_return_correct_id_on_success(self):
         doc_id = 'mydocid345'

@@ -122,6 +122,15 @@ class TestActionsResource(common.FreezerBaseTestCase):
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
 
+    def test_on_delete_raises_DocumentNotFound_when_not_found(self):
+        self.mock_db.delete_action.side_effect = exceptions.DocumentNotFound(
+            'Action not found')
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          common.fake_action_0['project_id'],
+                          'non-existent-action-id')
+
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)
         self.mock_db.update_action.return_value = new_version

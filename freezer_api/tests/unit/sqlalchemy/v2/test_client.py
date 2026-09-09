@@ -94,6 +94,13 @@ class DbClientTestCase(base.DbTestCase):
 
         self.assertEqual(len(result), 0)
 
+    def test_delete_client_not_found(self):
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.dbapi.delete_client,
+                          user_id=self.fake_user_id,
+                          project_id=self.fake_project_id,
+                          client_id='non-existent-client-id')
+
     def test_add_and_search_client(self):
         count = 0
         clientids = []

@@ -159,6 +159,15 @@ class TestClientsResource(common.FreezerBaseTestCase):
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
 
+    def test_on_delete_raises_DocumentNotFound_when_not_found(self):
+        self.mock_db.delete_client.side_effect = exceptions.DocumentNotFound(
+            'Client not found')
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          common.fake_client_info_0['project_id'],
+                          'non-existent-client-id')
+
     @mock.patch('freezer_api.policy.can')
     def test_on_delete_policy_denied(self, mock_policy_can):
         mock_policy_can.side_effect = exceptions.AccessForbidden("Forbidden")

@@ -124,6 +124,15 @@ class TestSessionsResource(common.FreezerBaseTestCase):
         self.assertEqual(falcon.HTTP_204, self.mock_req.status)
         self.assertEqual(expected_result, result)
 
+    def test_on_delete_raises_DocumentNotFound_when_not_found(self):
+        self.mock_db.delete_session.side_effect = exceptions.DocumentNotFound(
+            'Session not found')
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          common.fake_session_0['project_id'],
+                          'non-existent-session-id')
+
     def test_on_patch_ok_with_some_fields(self):
         new_version = random.randint(0, 99)
         self.mock_db.update_session.return_value = new_version
@@ -479,7 +488,7 @@ class TestSessionsJobs(common.FreezerBaseTestCase):
     def test_on_delete_removes_session_info_from_job_and_stops_job(self):
         session = common.get_fake_session_0()
         job = common.get_fake_job_0()
-
+        session['jobs'][job['job_id']] = {}
         self.mock_db.get_session.return_value = session
         self.mock_db.get_job.return_value = job
 
@@ -499,3 +508,19 @@ class TestSessionsJobs(common.FreezerBaseTestCase):
         self.mock_db.update_job.assert_called_with(
             user_id=session['user_id'], project_id=session['project_id'],
             job_id=job['job_id'], patch_doc=job_update_doc)
+
+    def test_on_delete_raises_DocumentNotFound_when_session_not_found(self):
+        self.mock_db.get_session.return_value = None
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          'some_proj', 'some_session', 'some_job')
+
+    def test_on_delete_raises_DocumentNotFound_when_job_not_in_session(self):
+        session = common.get_fake_session_0()
+        self.mock_db.get_session.return_value = session
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.resource.on_delete,
+                          self.mock_req, self.mock_req,
+                          session['project_id'], session['session_id'],
+                          'non-existent-job-in-session')

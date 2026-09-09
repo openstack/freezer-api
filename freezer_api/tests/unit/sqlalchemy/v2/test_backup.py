@@ -76,6 +76,13 @@ class DbBackupTestCase(base.DbTestCase):
                                        backup_id=backup_id)
         self.assertEqual(len(result), 0)
 
+    def test_delete_backup_not_found(self):
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_backup,
+                          user_id=self.fake_user_id,
+                          project_id=self.fake_project_id,
+                          backup_id='non-existent-backup-id')
+
     def test_add_and_search_backup(self):
         count = 0
         backupids = []
