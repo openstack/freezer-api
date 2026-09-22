@@ -41,9 +41,6 @@ class TypeManagerV2(object):
         search = search or {}
         project_id_filter = {"term": {"project_id": project_id}}
         base_filter = [project_id_filter]
-        if user_id:
-            user_id_filter = {"term": {"user_id": user_id}}
-            base_filter.append(user_id_filter)
         if all_projects:
             base_filter = []
 
@@ -84,11 +81,6 @@ class TypeManagerV2(object):
         if not all_projects and doc['project_id'] != project_id:
             raise freezer_api_exc.AccessForbidden("You are not allowed to"
                                                   " access")
-        if not all_projects and user_id:
-            if doc['user_id'] != user_id:
-                raise freezer_api_exc.AccessForbidden(
-                    "Document access forbidden"
-                )
         if '_version' in res:
             doc['_version'] = res['_version']
         return doc
@@ -158,7 +150,6 @@ class TypeManagerV2(object):
     def delete(self, project_id, doc_id, user_id=None):
         query_dsl = self.get_search_query(
             project_id=project_id,
-            user_id=user_id,
             doc_id=doc_id
         )
         try:
@@ -419,11 +410,10 @@ class ElasticSearchEngineV2(object):
 
     def delete_backup(self, project_id, user_id, backup_id):
         return self.backup_manager.delete(project_id=project_id,
-                                          doc_id=backup_id,
-                                          user_id=user_id)
+                                          doc_id=backup_id)
 
     def update_backup(self, user_id, backup_id, patch_doc, project_id=None):
-        backup = self.get_backup(project_id, backup_id)
+        backup = self.get_backup(project_id=project_id, backup_id=backup_id)
         if not backup:
             raise freezer_api_exc.DocumentNotFound(
                 message=f'Backup not registered with ID {backup_id}')
@@ -435,6 +425,7 @@ class ElasticSearchEngineV2(object):
 
         status = valid_patch.get('status', backup.get('status', 'available'))
         doc_body = {
+            'user_id': user_id,
             'status': status,
             'backup_metadata': existing_metadata
         }
@@ -462,7 +453,6 @@ class ElasticSearchEngineV2(object):
         # Determine if client already exists to get its document ID for update
         query_dsl = self.client_manager.get_search_query(
             project_id=project_id,
-            user_id=user_id,
             doc_id=client_id,
             all_projects=is_central  # Consistency with SQLAlchemy
         )
@@ -515,7 +505,6 @@ class ElasticSearchEngineV2(object):
     def delete_client(self, project_id, user_id, client_id):
         return self.client_manager.delete(
             project_id=project_id,
-            user_id=user_id,
             doc_id=client_id)
 
     def check_job_client(self, project_id, job_actions, client_id):
@@ -557,17 +546,16 @@ class ElasticSearchEngineV2(object):
         return job_id
 
     def delete_job(self, user_id, job_id, project_id):
-        return self.job_manager.delete(user_id=user_id,
-                                       doc_id=job_id,
+        return self.job_manager.delete(doc_id=job_id,
                                        project_id=project_id)
 
     def update_job(self, user_id, job_id, patch_doc, project_id):
         valid_patch = utils.JobDoc.create_patch(patch_doc)
+        valid_patch['user_id'] = user_id
 
         # check that document exists
-        assert (self.job_manager.get(user_id=user_id,
-                                     doc_id=job_id,
-                                     project_id=project_id
+        assert (self.job_manager.get(project_id=project_id,
+                                     doc_id=job_id
                                      )
                 )
 
@@ -589,12 +577,9 @@ class ElasticSearchEngineV2(object):
         return version
 
     def replace_job(self, user_id, job_id, doc, project_id):
-        # check that no document exists with
-        # same job_id and different user_id
         try:
-            self.job_manager.get(user_id=user_id,
-                                 doc_id=job_id,
-                                 project_id=project_id)
+            self.job_manager.get(project_id=project_id,
+                                 doc_id=job_id)
         except freezer_api_exc.DocumentNotFound:
             pass
 
@@ -634,13 +619,13 @@ class ElasticSearchEngineV2(object):
         return action_id
 
     def delete_action(self, user_id, action_id, project_id):
-        return self.action_manager.delete(user_id=user_id,
-                                          doc_id=action_id,
+        return self.action_manager.delete(doc_id=action_id,
                                           project_id=project_id
                                           )
 
     def update_action(self, user_id, action_id, patch_doc, project_id):
         valid_patch = utils.ActionDoc.create_patch(patch_doc)
+        valid_patch['user_id'] = user_id
 
         # check that document exists
         assert (self.action_manager.get(project_id=project_id,
@@ -693,12 +678,12 @@ class ElasticSearchEngineV2(object):
         return session_id
 
     def delete_session(self, user_id, session_id, project_id):
-        return self.session_manager.delete(user_id=user_id,
-                                           doc_id=session_id,
+        return self.session_manager.delete(doc_id=session_id,
                                            project_id=project_id)
 
     def update_session(self, user_id, session_id, patch_doc, project_id):
         valid_patch = utils.SessionDoc.create_patch(patch_doc)
+        valid_patch['user_id'] = user_id
 
         # check that document exists
         assert (self.session_manager.get(doc_id=session_id,

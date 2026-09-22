@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import elasticsearch
 from unittest import mock
 from unittest.mock import patch
@@ -44,11 +45,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
             {
                 'term': {
                     'project_id': 'tecs'
-                }
-            },
-            {
-                'term': {
-                    'user_id': 'my_user_id'
                 }
             },
             {
@@ -112,12 +108,12 @@ class TypeManagerV2(common.FreezerBaseTestCase):
                           project_id='tecs1',
                           doc_id=common.fake_job_0_job_id)
 
-    def test_get_raises_AccessForbidden_when_user_id_not_match(self):
+    def test_get_different_user_same_project_success(self):
         self.mock_es.get.return_value = common.fake_job_0_elasticsearch_found
-        self.assertRaises(exceptions.AccessForbidden, self.type_manager.get,
-                          project_id='tecs',
-                          user_id='obluraschi',
-                          doc_id=common.fake_job_0_job_id)
+        res = self.type_manager.get(project_id='tecs',
+                                    user_id='obluraschi',
+                                    doc_id=common.fake_job_0_job_id)
+        self.assertEqual(common.fake_job_0, res)
 
     def test_search_ok(self):
         self.mock_es.search.return_value = common.fake_data_0_elasticsearch_hit
@@ -130,11 +126,6 @@ class TypeManagerV2(common.FreezerBaseTestCase):
                                 {
                                     'term': {
                                         'project_id': 'tecs'
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'user_id': 'my_user_id'
                                     }
                                 },
                                 {
@@ -272,6 +263,20 @@ class TypeManagerV2(common.FreezerBaseTestCase):
         self.assertEqual(
             'cicciopassamilolio', res, 'invalid res {0}'.format(res)
         )
+        called_body = self.mock_es.search.call_args[1]['body']
+        must_filters = (
+            called_body['query']['filtered']['filter']['bool']['must']
+        )
+        self.assertNotIn({'term': {'user_id': 'my_user_id'}}, must_filters)
+
+    def test_delete_raises_DocumentNotFound_when_project_not_match(self):
+        doc_id = 'mydocid345'
+        ret_data = {"hits": {"hits": []}}
+        self.mock_es.search.return_value = ret_data
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.type_manager.delete,
+                          project_id='other_project',
+                          doc_id=doc_id)
 
 
 class TestBackupManagerV2(common.FreezerBaseTestCase):
@@ -298,11 +303,6 @@ class TestBackupManagerV2(common.FreezerBaseTestCase):
                                 {
                                     'term': {
                                         'project_id': 'tecs'
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'user_id': 'my_user_id'
                                     }
                                 },
                                 {
@@ -378,11 +378,6 @@ class ClientTypeManagerV2(common.FreezerBaseTestCase):
                                     }
                                 },
                                 {
-                                    'term': {
-                                        'user_id': 'my_user_id'
-                                    }
-                                },
-                                {
                                     'query': {
                                         'bool': {
                                             'must_not': [],
@@ -439,11 +434,6 @@ class JobTypeManagerV2(common.FreezerBaseTestCase):
                                 {
                                     'term': {
                                         'project_id': 'tecs'
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'user_id': 'my_user_id'
                                     }
                                 },
                                 {
@@ -541,11 +531,6 @@ class ActionTypeManagerV2(common.FreezerBaseTestCase):
                                     }
                                 },
                                 {
-                                    'term': {
-                                        'user_id': 'my_user_id'
-                                    }
-                                },
-                                {
                                     'query': {
                                         'bool': {
                                             'must_not': [],
@@ -639,11 +624,6 @@ class SessionTypeManagerV2(common.FreezerBaseTestCase):
                                 {
                                     'term': {
                                         'project_id': 'tecs'
-                                    }
-                                },
-                                {
-                                    'term': {
-                                        'user_id': 'my_user_id'
                                     }
                                 },
                                 {
@@ -826,6 +806,10 @@ class TestElasticSearchEngineV2_backup(
                                      user_id=common.fake_data_0_user_id,
                                      backup_id=common.fake_data_0_backup_id)
         self.assertEqual(common.fake_data_0_backup_id, res)
+        self.eng.backup_manager.delete.assert_called_with(
+            project_id='tecs',
+            doc_id=common.fake_data_0_backup_id
+        )
 
     def test_delete_backup_raises_when_es_delete_raises(self):
         self.eng.backup_manager.delete.side_effect = (
@@ -850,12 +834,65 @@ class TestElasticSearchEngineV2_backup(
         self.eng.backup_manager.update.assert_called_with(
             common.fake_data_0_backup_id,
             {
+                'user_id': common.fake_data_0_user_id,
                 'status': 'available',
                 'backup_metadata':
                     common.fake_data_0_wrapped_backup_metadata[
                         'backup_metadata']
             }
         )
+
+    def test_add_backup_ignores_user_id_in_doc(self):
+        self.eng.backup_manager.search.return_value = []
+        doc = copy.deepcopy(common.fake_data_0_backup_metadata)
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.add_backup(project_id='tecs',
+                            user_id=common.fake_data_0_user_id,
+                            doc=doc)
+        call_args = self.eng.backup_manager.insert.call_args[0]
+        self.assertEqual(common.fake_data_0_user_id, call_args[0]['user_id'])
+
+    def test_update_backup_ignores_user_id_in_patch_and_updates_user_id(self):
+        self.eng.backup_manager.get.return_value = (
+            common.fake_data_0_wrapped_backup_metadata
+        )
+        self.eng.backup_manager.update.return_value = 1
+        res = self.eng.update_backup(user_id='user_2',
+                                     backup_id=common.fake_data_0_backup_id,
+                                     patch_doc={'user_id': 'spoofed_user_id',
+                                                'status': 'available'},
+                                     project_id='tecs')
+        self.assertEqual(common.fake_data_0_backup_id, res)
+        self.eng.backup_manager.update.assert_called_with(
+            common.fake_data_0_backup_id,
+            {
+                'user_id': 'user_2',
+                'status': 'available',
+                'backup_metadata':
+                    common.fake_data_0_wrapped_backup_metadata[
+                        'backup_metadata']
+            }
+        )
+
+    def test_update_backup_cross_project_fails(self):
+        self.eng.backup_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.update_backup,
+                          user_id=common.fake_data_0_user_id,
+                          backup_id=common.fake_data_0_backup_id,
+                          patch_doc={'status': 'available'},
+                          project_id='other_project')
+
+    def test_delete_backup_cross_project_fails(self):
+        self.eng.backup_manager.delete.side_effect = (
+            exceptions.DocumentNotFound('Document not found')
+        )
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.eng.delete_backup,
+                          project_id='other_project',
+                          user_id=common.fake_data_0_user_id,
+                          backup_id=common.fake_data_0_backup_id)
 
     def test_update_backup_raises_when_not_found(self):
         self.eng.backup_manager.get.return_value = None
@@ -966,6 +1003,30 @@ class TestElasticSearchEngine_client(
         self.eng.client_manager.update.assert_called_with(
             'existing_id', mock.ANY)
 
+    def test_add_client_update_by_different_user_in_same_project(self):
+        self.eng.es.search.return_value = {
+            'hits': {
+                'hits': [
+                    {
+                        '_id': 'existing_id',
+                        '_source': {
+                            'project_id': 'tecs',
+                            'user_id': 'user_1',
+                            'client': {'description': 'old description'}
+                        }
+                    }
+                ]
+            }
+        }
+        doc = common.fake_client_info_0.copy()
+        doc['description'] = 'new description'
+        res = self.eng.add_client(project_id='tecs',
+                                  user_id='user_2',
+                                  doc=doc)
+        self.assertEqual(common.fake_client_info_0['client_id'], res)
+        self.eng.client_manager.update.assert_called_with(
+            'existing_id', mock.ANY)
+
     def test_add_client_update_forbidden(self):
         # Mocking es.search to return an existing document with different
         # project_id
@@ -1052,7 +1113,6 @@ class TestElasticSearchEngine_client(
         # Verify it searched only within the project
         self.eng.client_manager.get_search_query.assert_called_with(
             project_id='project_2',
-            user_id='user_2',
             doc_id=mock.ANY,
             all_projects=False
         )
@@ -1092,6 +1152,30 @@ class TestElasticSearchEngine_client(
                                      client_id=common.fake_client_info_0[
                                          'client_id'])
         self.assertEqual(common.fake_client_info_0['client_id'], res)
+        self.eng.client_manager.delete.assert_called_with(
+            project_id='tecs',
+            doc_id=common.fake_client_info_0['client_id']
+        )
+
+    def test_add_client_ignores_user_id_in_doc(self):
+        self.eng.es.search.return_value = {'hits': {'hits': []}}
+        doc = common.fake_client_info_0.copy()
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.add_client(project_id='tecs',
+                            user_id=common.fake_data_0_user_id,
+                            doc=doc)
+        call_args = self.eng.client_manager.insert.call_args[0]
+        self.assertEqual(common.fake_data_0_user_id, call_args[0]['user_id'])
+
+    def test_delete_client_cross_project_fails(self):
+        self.eng.client_manager.delete.side_effect = (
+            exceptions.DocumentNotFound('Document not found')
+        )
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.eng.delete_client,
+                          project_id='other_project',
+                          user_id='user_2',
+                          client_id=common.fake_client_info_0['client_id'])
 
     def test_delete_client_raises_when_es_delete_raises(self):
         self.eng.client_manager.delete.side_effect = (
@@ -1200,6 +1284,10 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
                                   user_id=common.fake_job_0_user_id,
                                   job_id=common.fake_job_0_job_id)
         self.assertEqual(common.fake_job_0_job_id, res)
+        self.eng.job_manager.delete.assert_called_with(
+            doc_id=common.fake_job_0_job_id,
+            project_id='tecs'
+        )
 
     def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
             self):
@@ -1242,6 +1330,84 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
                                   job_id=common.fake_job_0_job_id,
                                   patch_doc=patch)
         self.assertEqual(11, res)
+        self.eng.job_manager.get.assert_called_with(
+            project_id='tecs',
+            doc_id=common.fake_job_0_job_id
+        )
+        self.eng.job_manager.update.assert_called_with(
+            common.fake_job_0_job_id,
+            {'user_id': common.fake_job_0_user_id}
+        )
+
+    def test_add_job_ignores_user_id_in_doc(self):
+        doc = copy.deepcopy(common.get_fake_job_0())
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.job_manager.insert.return_value = (True, 1)
+        self.eng.client_manager.search.return_value = [
+            common.get_fake_client_job_0()]
+        self.eng.add_job(user_id=common.fake_job_0_user_id,
+                         doc=doc,
+                         project_id='tecs')
+        call_args = self.eng.job_manager.insert.call_args[0]
+        self.assertEqual(common.fake_job_0_user_id, call_args[0]['user_id'])
+
+    def test_update_job_ignores_user_id_in_patch_and_updates_user_id(self):
+        self.eng.job_manager.get.return_value = common.get_fake_job_0()
+        patch = {'user_id': 'spoofed_user_id', 'description': 'updated_desc'}
+        self.eng.job_manager.update.return_value = 11
+        res = self.eng.update_job(project_id='tecs',
+                                  user_id='user_2',
+                                  job_id=common.fake_job_0_job_id,
+                                  patch_doc=patch)
+        self.assertEqual(11, res)
+        self.eng.job_manager.update.assert_called_with(
+            common.fake_job_0_job_id,
+            {'description': 'updated_desc', 'user_id': 'user_2'}
+        )
+
+    def test_replace_job_ignores_user_id_in_doc(self):
+        doc = copy.deepcopy(common.get_fake_job_0())
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.job_manager.get.return_value = common.get_fake_job_0()
+        self.eng.job_manager.insert.return_value = (False, 3)
+        self.eng.client_manager.search.return_value = [
+            common.get_fake_client_job_0()]
+        self.eng.replace_job(project_id='tecs',
+                             user_id='user_2',
+                             job_id=common.fake_job_0_job_id,
+                             doc=doc)
+        call_args = self.eng.job_manager.insert.call_args[0]
+        self.assertEqual('user_2', call_args[0]['user_id'])
+
+    def test_update_job_cross_project_fails(self):
+        self.eng.job_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.update_job,
+                          project_id='other_project',
+                          user_id='user_2',
+                          job_id=common.fake_job_0_job_id,
+                          patch_doc={'description': 'hijack'})
+
+    def test_replace_job_cross_project_fails(self):
+        self.eng.job_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.replace_job,
+                          project_id='other_project',
+                          user_id='user_2',
+                          job_id=common.fake_job_0_job_id,
+                          doc=common.get_fake_job_0())
+
+    def test_delete_job_cross_project_fails(self):
+        self.eng.job_manager.delete.side_effect = (
+            exceptions.DocumentNotFound('Document not found')
+        )
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.eng.delete_job,
+                          project_id='other_project',
+                          user_id='user_2',
+                          job_id=common.fake_job_0_job_id)
 
     def test_replace_job_raises_AccessForbidden_when_job_manager_raises(
             self):
@@ -1276,6 +1442,10 @@ class TestElasticSearchEngine_job(common.FreezerBaseTestCase, ElasticSearchDB):
                                    job_id=common.fake_job_0_job_id,
                                    doc=common.get_fake_job_0())
         self.assertEqual(3, res)
+        self.eng.job_manager.get.assert_called_with(
+            project_id='tecs',
+            doc_id=common.fake_job_0_job_id
+        )
 
 
 class TestElasticSearchEngine_action(
@@ -1371,6 +1541,10 @@ class TestElasticSearchEngine_action(
             user_id=common.fake_action_0['user_id'],
             action_id=common.fake_action_0['action_id'])
         self.assertEqual(common.fake_action_0['action_id'], res)
+        self.eng.action_manager.delete.assert_called_with(
+            doc_id=common.fake_action_0['action_id'],
+            project_id='tecs'
+        )
 
     def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
             self):
@@ -1416,6 +1590,79 @@ class TestElasticSearchEngine_action(
             action_id=common.fake_action_0['action_id'],
             patch_doc=patch)
         self.assertEqual(11, res)
+        self.eng.action_manager.update.assert_called_with(
+            common.fake_action_0['action_id'],
+            {'user_id': common.fake_action_0['user_id']}
+        )
+
+    def test_add_action_ignores_user_id_in_doc(self):
+        doc = copy.deepcopy(common.get_fake_action_0())
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.action_manager.insert.return_value = (True, 1)
+        res = self.eng.add_action(project_id='tecs',
+                                  user_id=common.fake_action_0['user_id'],
+                                  doc=doc)
+        self.assertEqual(common.fake_action_0['action_id'], res)
+        call_args = self.eng.action_manager.insert.call_args[0]
+        self.assertEqual(common.fake_action_0['user_id'],
+                         call_args[0]['user_id'])
+
+    def test_update_action_ignores_user_id_in_patch_and_updates_user_id(self):
+        self.eng.action_manager.get.return_value = common.get_fake_action_0()
+        patch = {'user_id': 'spoofed_user_id', 'action': 'backup'}
+        self.eng.action_manager.update.return_value = 11
+        res = self.eng.update_action(
+            project_id='tecs',
+            user_id='user_2',
+            action_id=common.fake_action_0['action_id'],
+            patch_doc=patch)
+        self.assertEqual(11, res)
+        self.eng.action_manager.update.assert_called_with(
+            common.fake_action_0['action_id'],
+            {'action': 'backup', 'user_id': 'user_2'}
+        )
+
+    def test_replace_action_ignores_user_id_in_doc(self):
+        doc = copy.deepcopy(common.get_fake_action_0())
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.action_manager.get.return_value = common.get_fake_action_0()
+        self.eng.action_manager.insert.return_value = (False, 3)
+        self.eng.replace_action(project_id='tecs',
+                                user_id='user_2',
+                                action_id=common.fake_action_0['action_id'],
+                                doc=doc)
+        call_args = self.eng.action_manager.insert.call_args[0]
+        self.assertEqual('user_2', call_args[0]['user_id'])
+
+    def test_update_action_cross_project_fails(self):
+        self.eng.action_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.update_action,
+                          project_id='other_project',
+                          user_id='user_2',
+                          action_id=common.fake_action_0['action_id'],
+                          patch_doc={'action': 'backup'})
+
+    def test_replace_action_cross_project_fails(self):
+        self.eng.action_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.replace_action,
+                          project_id='other_project',
+                          user_id='user_2',
+                          action_id=common.fake_action_0['action_id'],
+                          doc=common.get_fake_action_0())
+
+    def test_delete_action_cross_project_fails(self):
+        self.eng.action_manager.delete.side_effect = (
+            exceptions.DocumentNotFound('Document not found')
+        )
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.eng.delete_action,
+                          project_id='other_project',
+                          user_id='user_2',
+                          action_id=common.fake_action_0['action_id'])
 
     def test_replace_action_raises_AccessForbidden_when_action_manager_raises(
             self):
@@ -1547,6 +1794,10 @@ class TestElasticSearchEngine_session(
             user_id=common.fake_session_0['user_id'],
             session_id=common.fake_session_0['session_id'])
         self.assertEqual(common.fake_session_0['session_id'], res)
+        self.eng.session_manager.delete.assert_called_with(
+            doc_id=common.fake_session_0['session_id'],
+            project_id='tecs'
+        )
 
     def test_delete_client_raises_StorageEngineError_when_es_delete_raises(
             self):
@@ -1592,6 +1843,80 @@ class TestElasticSearchEngine_session(
             session_id=common.fake_session_0['session_id'],
             patch_doc=patch)
         self.assertEqual(11, res)
+        self.eng.session_manager.update.assert_called_with(
+            common.fake_session_0['session_id'],
+            {'user_id': common.fake_session_0['user_id']}
+        )
+
+    def test_add_session_ignores_user_id_in_doc(self):
+        doc = copy.deepcopy(common.get_fake_session_0())
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.session_manager.insert.return_value = (True, 1)
+        res = self.eng.add_session(project_id='tecs',
+                                   user_id=common.fake_session_0['user_id'],
+                                   doc=doc)
+        call_args = self.eng.session_manager.insert.call_args[0]
+        self.assertEqual(res, call_args[0]['session_id'])
+        self.assertEqual(common.fake_session_0['user_id'],
+                         call_args[0]['user_id'])
+
+    def test_update_session_ignores_user_id_in_patch_and_updates_user_id(self):
+        self.eng.session_manager.get.return_value = common.get_fake_session_0()
+        patch = {'user_id': 'spoofed_user_id', 'description': 'updated_desc'}
+        self.eng.session_manager.update.return_value = 11
+        res = self.eng.update_session(
+            project_id='tecs',
+            user_id='user_2',
+            session_id=common.fake_session_0['session_id'],
+            patch_doc=patch)
+        self.assertEqual(11, res)
+        self.eng.session_manager.update.assert_called_with(
+            common.fake_session_0['session_id'],
+            {'description': 'updated_desc', 'user_id': 'user_2'}
+        )
+
+    def test_replace_session_ignores_user_id_in_doc(self):
+        doc = copy.deepcopy(common.get_fake_session_0())
+        doc['user_id'] = 'spoofed_user_id'
+        self.eng.session_manager.get.return_value = common.get_fake_session_0()
+        self.eng.session_manager.insert.return_value = (False, 3)
+        self.eng.replace_session(
+            project_id='tecs',
+            user_id='user_2',
+            session_id=common.fake_session_0['session_id'],
+            doc=doc)
+        call_args = self.eng.session_manager.insert.call_args[0]
+        self.assertEqual('user_2', call_args[0]['user_id'])
+
+    def test_update_session_cross_project_fails(self):
+        self.eng.session_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.update_session,
+                          project_id='other_project',
+                          user_id='user_2',
+                          session_id=common.fake_session_0['session_id'],
+                          patch_doc={'description': 'hijack'})
+
+    def test_replace_session_cross_project_fails(self):
+        self.eng.session_manager.get.side_effect = exceptions.AccessForbidden(
+            'Cross-project access forbidden')
+        self.assertRaises(exceptions.AccessForbidden,
+                          self.eng.replace_session,
+                          project_id='other_project',
+                          user_id='user_2',
+                          session_id=common.fake_session_0['session_id'],
+                          doc=common.get_fake_session_0())
+
+    def test_delete_session_cross_project_fails(self):
+        self.eng.session_manager.delete.side_effect = (
+            exceptions.DocumentNotFound('Document not found')
+        )
+        self.assertRaises(exceptions.DocumentNotFound,
+                          self.eng.delete_session,
+                          project_id='other_project',
+                          user_id='user_2',
+                          session_id=common.fake_session_0['session_id'])
 
     def test_replace_session_raises_AccessForbidden_when_session_manager_raise(
             self):
