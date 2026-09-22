@@ -170,6 +170,80 @@ class DbSessionTestCase(base.DbTestCase):
                                         session_id=self.fake_session_id)
         self.assertEqual(result.get('session_id'), self.fake_session_id)
 
+    def test_add_session_ignores_user_id_in_doc(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_doc['user_id'] = 'spoofed_user_id'
+        session_id = self.dbapi.add_session(project_id=self.fake_project_id,
+                                            user_id=self.fake_user_id,
+                                            doc=session_doc)
+        result = self.dbapi.get_session(project_id=self.fake_project_id,
+                                        session_id=session_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+
+    def test_update_session_ignores_user_id_in_patch(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_id = self.dbapi.add_session(project_id=self.fake_project_id,
+                                            user_id=self.fake_user_id,
+                                            doc=session_doc)
+        patch_doc = {'user_id': 'spoofed_user_id',
+                     'description': 'updated_desc'}
+        self.dbapi.update_session(user_id=self.fake_user_id,
+                                  session_id=session_id,
+                                  patch_doc=patch_doc,
+                                  project_id=self.fake_project_id)
+        result = self.dbapi.get_session(project_id=self.fake_project_id,
+                                        session_id=session_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+        self.assertEqual(result.get('description'), 'updated_desc')
+
+    def test_update_session_cross_project_fails(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_id = self.dbapi.add_session(project_id=self.fake_project_id,
+                                            user_id=self.fake_user_id,
+                                            doc=session_doc)
+        patch_doc = {'description': 'hijack'}
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.update_session,
+                          user_id='user_2',
+                          session_id=session_id,
+                          patch_doc=patch_doc,
+                          project_id='other_project')
+        result = self.dbapi.get_session(project_id=self.fake_project_id,
+                                        session_id=session_id)
+        self.assertEqual(result.get('description'),
+                         self.fake_session_0.get('description'))
+
+    def test_replace_session_cross_project_fails(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_id = self.dbapi.add_session(project_id=self.fake_project_id,
+                                            user_id=self.fake_user_id,
+                                            doc=session_doc)
+        replace_doc = copy.deepcopy(self.fake_session_2)
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.replace_session,
+                          user_id='user_2',
+                          session_id=session_id,
+                          doc=replace_doc,
+                          project_id='other_project')
+        result = self.dbapi.get_session(project_id=self.fake_project_id,
+                                        session_id=session_id)
+        self.assertEqual(result.get('description'),
+                         self.fake_session_0.get('description'))
+
+    def test_delete_session_cross_project_fails(self):
+        session_doc = copy.deepcopy(self.fake_session_0)
+        session_id = self.dbapi.add_session(project_id=self.fake_project_id,
+                                            user_id=self.fake_user_id,
+                                            doc=session_doc)
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_session,
+                          user_id='user_2',
+                          session_id=session_id,
+                          project_id='other_project')
+        result = self.dbapi.get_session(project_id=self.fake_project_id,
+                                        session_id=session_id)
+        self.assertIsNotNone(result)
+
     def test_session_list_without_search(self):
         count = 0
         sessionids = []

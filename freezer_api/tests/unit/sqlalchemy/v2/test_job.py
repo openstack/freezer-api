@@ -212,6 +212,98 @@ class DbJobTestCase(base.DbTestCase):
                                     job_id=self.fake_job_id)
         self.assertEqual(result.get('job_id'), self.fake_job_id)
 
+    def test_add_job_ignores_user_id_in_doc(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_doc['user_id'] = 'spoofed_user_id'
+        job_id = self.dbapi.add_job(user_id=self.fake_user_id,
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    job_id=job_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+
+    def test_update_job_ignores_user_id_in_patch(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_user_id,
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        patch_doc = {'user_id': 'spoofed_user_id',
+                     'description': 'updated_desc'}
+        self.dbapi.update_job(user_id=self.fake_user_id,
+                              job_id=job_id,
+                              patch_doc=patch_doc,
+                              project_id=self.fake_project_id)
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    job_id=job_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+        self.assertEqual(result.get('description'), 'updated_desc')
+
+    def test_replace_job_ignores_user_id_in_doc(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_user_id,
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        replace_doc = copy.deepcopy(self.fake_job_2)
+        replace_doc['user_id'] = 'spoofed_user_id'
+        self.dbapi.replace_job(user_id=self.fake_user_id,
+                               job_id=job_id,
+                               doc=replace_doc,
+                               project_id=self.fake_project_id)
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    job_id=job_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+
+    def test_update_job_cross_project_fails(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_user_id,
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        patch_doc = {'description': 'hijack'}
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.update_job,
+                          user_id='user_2',
+                          job_id=job_id,
+                          patch_doc=patch_doc,
+                          project_id='other_project')
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    job_id=job_id)
+        self.assertEqual(result.get('description'),
+                         self.fake_job_0.get('description'))
+
+    def test_replace_job_cross_project_fails(self):
+        self.setup_fake_clients('other_project')
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_user_id,
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        replace_doc = copy.deepcopy(self.fake_job_0)
+        replace_doc['description'] = 'hijack'
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.replace_job,
+                          user_id='user_2',
+                          job_id=job_id,
+                          doc=replace_doc,
+                          project_id='other_project')
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    job_id=job_id)
+        self.assertEqual(result.get('description'),
+                         self.fake_job_0.get('description'))
+
+    def test_delete_job_cross_project_fails(self):
+        job_doc = copy.deepcopy(self.fake_job_0)
+        job_id = self.dbapi.add_job(user_id=self.fake_user_id,
+                                    doc=job_doc,
+                                    project_id=self.fake_project_id)
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_job,
+                          user_id='user_2',
+                          job_id=job_id,
+                          project_id='other_project')
+        result = self.dbapi.get_job(project_id=self.fake_project_id,
+                                    job_id=job_id)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.get('job_id'), job_id)
+
     def test_job_list_without_search(self):
         count = 0
         jobids = []

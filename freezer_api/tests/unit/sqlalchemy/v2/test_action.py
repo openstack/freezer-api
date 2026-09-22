@@ -178,6 +178,80 @@ class DbActionTestCase(base.DbTestCase):
                                        action_id=self.fake_action_id)
         self.assertEqual(result.get('action_id'), self.fake_action_id)
 
+    def test_add_action_ignores_user_id_in_doc(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_doc['user_id'] = 'spoofed_user_id'
+        action_id = self.dbapi.add_action(user_id=self.fake_user_id,
+                                          doc=action_doc,
+                                          project_id=self.fake_project_id)
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       action_id=action_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+
+    def test_update_action_ignores_user_id_in_patch(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_id = self.dbapi.add_action(user_id=self.fake_user_id,
+                                          doc=action_doc,
+                                          project_id=self.fake_project_id)
+        patch_doc = {'user_id': 'spoofed_user_id',
+                     'max_retries': 5}
+        self.dbapi.update_action(user_id=self.fake_user_id,
+                                 action_id=action_id,
+                                 patch_doc=patch_doc,
+                                 project_id=self.fake_project_id)
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       action_id=action_id)
+        self.assertEqual(result.get('user_id'), self.fake_user_id)
+        self.assertEqual(result.get('max_retries'), 5)
+
+    def test_update_action_cross_project_fails(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_id = self.dbapi.add_action(user_id=self.fake_user_id,
+                                          doc=action_doc,
+                                          project_id=self.fake_project_id)
+        patch_doc = {'max_retries': 5}
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.update_action,
+                          user_id='user_2',
+                          action_id=action_id,
+                          patch_doc=patch_doc,
+                          project_id='other_project')
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       action_id=action_id)
+        self.assertEqual(result.get('max_retries'),
+                         self.fake_action_0.get('max_retries'))
+
+    def test_replace_action_cross_project_fails(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_id = self.dbapi.add_action(user_id=self.fake_user_id,
+                                          doc=action_doc,
+                                          project_id=self.fake_project_id)
+        replace_doc = copy.deepcopy(self.fake_action_2)
+        self.assertRaises(freezer_api_exc.DocumentExists,
+                          self.dbapi.replace_action,
+                          user_id='user_2',
+                          action_id=action_id,
+                          doc=replace_doc,
+                          project_id='other_project')
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       action_id=action_id)
+        self.assertEqual(result.get('max_retries'),
+                         self.fake_action_0.get('max_retries'))
+
+    def test_delete_action_cross_project_fails(self):
+        action_doc = copy.deepcopy(self.fake_action_0)
+        action_id = self.dbapi.add_action(user_id=self.fake_user_id,
+                                          doc=action_doc,
+                                          project_id=self.fake_project_id)
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_action,
+                          user_id='user_2',
+                          action_id=action_id,
+                          project_id='other_project')
+        result = self.dbapi.get_action(project_id=self.fake_project_id,
+                                       action_id=action_id)
+        self.assertIsNotNone(result)
+
     def test_add_and_search_action(self):
         count = 0
         actionids = []

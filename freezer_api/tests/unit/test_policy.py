@@ -14,15 +14,19 @@ from oslo_policy import policy
 from oslotest import base
 from unittest import mock
 
+from freezer_api.common import exceptions
 from freezer_api.common import policies
 from freezer_api.context import FreezerContext
 from freezer_api import policy as freezer_policy
+from freezer_api.tests.unit import common
 
 
-class TestPolicyEnforcement(base.BaseTestCase):
+class TestPolicyEnforcement(common.FreezerBaseTestCase):
+    REGISTER_CONFIG = True
+    REGISTER_POLICY = True
 
     def setUp(self):
-        super(TestPolicyEnforcement, self).setUp()
+        super().setUp()
         self.rules = list(policies.list_rules())
 
     def test_no_empty_policies(self):
@@ -93,6 +97,36 @@ class TestPolicyEnforcement(base.BaseTestCase):
         mock_can.assert_called_once_with(
             'test:rule', mock_req.env['freezer.context'],
             target=expected_target)
+
+    def test_cross_project_member_access_forbidden(self):
+        """Ensure member of project_1 cannot access/modify project_2."""
+        ctx = FreezerContext(
+            user='user_1',
+            tenant='project_1',
+            is_admin=False,
+            roles=['member']
+        )
+        target = {'project_id': 'project_2'}
+        for rule in ['jobs:update', 'jobs:delete', 'jobs:create', 'jobs:get']:
+            self.assertRaises(
+                exceptions.AccessForbidden,
+                freezer_policy.can,
+                rule, ctx, target=target
+            )
+
+    def test_same_project_member_access_allowed(self):
+        """Ensure member of project_1 can manage resources in project_1."""
+        ctx = FreezerContext(
+            user='user_2',
+            tenant='project_1',
+            is_admin=False,
+            roles=['member']
+        )
+        target = {'project_id': 'project_1'}
+        for rule in ['jobs:update', 'jobs:delete', 'jobs:create', 'jobs:get']:
+            self.assertTrue(
+                freezer_policy.can(rule, ctx, target=target)
+            )
 
 
 class TestFreezerContext(base.BaseTestCase):

@@ -331,6 +331,11 @@ class TestJobDocCreate(common.FreezerBaseTestCase):
         self.assertEqual('user1', res['user_id'])
         self.assertEqual('proj1', res['project_id'])
 
+    def test_create_overwrites_user_id_if_provided(self):
+        doc = self._doc({'user_id': 'malicious_user'})
+        res = elasticv2_utils.JobDoc.create(doc, 'proj1', 'real_user')
+        self.assertEqual('real_user', res['user_id'])
+
     def test_create_generates_job_id_when_absent(self):
         res = elasticv2_utils.JobDoc.create(self._doc(), 'p', 'u')
         self.assertIn('job_id', res)

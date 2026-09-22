@@ -195,3 +195,40 @@ class DbBackupTestCase(base.DbTestCase):
                           self.fake_user_id, backup_id,
                           {'status': 'completed'},
                           project_id=self.fake_project_id)
+
+    def test_update_backup_ignores_user_id_in_patch(self):
+        backup_doc = copy.deepcopy(self.fake_backup_metadata)
+        backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                          doc=backup_doc,
+                                          project_id=self.fake_project_id)
+        patch_doc = {'user_id': 'spoofed_user_id', 'status': 'available'}
+        self.dbapi.update_backup(self.fake_user_id, backup_id,
+                                 patch_doc,
+                                 project_id=self.fake_project_id)
+        updated = self.dbapi.get_backup(project_id=self.fake_project_id,
+                                        backup_id=backup_id)
+        self.assertEqual(updated.get('user_id'), self.fake_user_id)
+
+    def test_update_backup_cross_project_fails(self):
+        backup_doc = copy.deepcopy(self.fake_backup_metadata)
+        backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                          doc=backup_doc,
+                                          project_id=self.fake_project_id)
+        patch_doc = {'status': 'available'}
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.update_backup,
+                          'user_2', backup_id, patch_doc,
+                          project_id='other_project')
+
+    def test_delete_backup_cross_project_fails(self):
+        backup_doc = copy.deepcopy(self.fake_backup_metadata)
+        backup_id = self.dbapi.add_backup(user_id=self.fake_user_id,
+                                          doc=backup_doc,
+                                          project_id=self.fake_project_id)
+        self.assertRaises(freezer_api_exc.DocumentNotFound,
+                          self.dbapi.delete_backup,
+                          'user_2', backup_id,
+                          project_id='other_project')
+        result = self.dbapi.get_backup(project_id=self.fake_project_id,
+                                       backup_id=backup_id)
+        self.assertIsNotNone(result)
