@@ -297,7 +297,7 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
             mock_policy_can.assert_has_calls([
                 mock.call('jobs:get_all', self.fake_context, target={}),
                 mock.call('jobs:get_all_projects', self.fake_context,
-                          do_raise=False)
+                          do_raise=True)
             ])
             self.mock_db.search_job.assert_called_with(
                 project_id=common.fake_job_0_project_id,
@@ -305,6 +305,41 @@ class TestJobsCollectionResource(common.FreezerBaseTestCase):
                 offset=0, limit=10,
                 search={}
             )
+
+    def test_on_get_list_all_projects_without_permission(self):
+        self.mock_req.get_param_as_bool.side_effect = (
+            lambda k: True if k == 'all_projects' else False
+        )
+
+        def fake_can(rule, ctx, target=None, do_raise=True):
+            if rule != 'jobs:get_all_projects':
+                return True
+            if do_raise:
+                raise exceptions.AccessForbidden()
+            return False
+
+        with mock.patch('freezer_api.policy.can', side_effect=fake_can):
+            self.assertRaises(exceptions.AccessForbidden,
+                              self.resource.on_get,
+                              self.mock_req, self.mock_req,
+                              common.fake_job_0_project_id)
+        self.mock_db.search_job.assert_not_called()
+
+    def test_on_get_admin_without_all_projects_param(self):
+        self.mock_db.search_job.return_value = [common.get_fake_job_0()]
+        with mock.patch('freezer_api.policy.can') as mock_policy_can:
+            mock_policy_can.return_value = True
+            self.resource.on_get(self.mock_req, self.mock_req,
+                                 common.fake_job_0_project_id)
+            checked_rules = [c.args[0]
+                             for c in mock_policy_can.call_args_list]
+            self.assertNotIn('jobs:get_all_projects', checked_rules)
+        self.mock_db.search_job.assert_called_with(
+            project_id=common.fake_job_0_project_id,
+            all_projects=False,
+            offset=0, limit=10,
+            search={}
+        )
 
     @patch('freezer_api.policy.can')
     def test_on_get_filters_pid_in_list(self, mock_policy_can):
