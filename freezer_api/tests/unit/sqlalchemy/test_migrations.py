@@ -163,6 +163,14 @@ class MigrationsWalk(
         self.assertGreaterEqual(
             sessions_columns['user_id']['type'].length, 64)
 
+    def _check_b4e7f1a90c26(self, connection):
+        inspector = sqlalchemy.inspect(connection)
+        columns = [x['name'] for x in inspector.get_columns('clients')]
+        self.assertIn('last_heartbeat', columns)
+        self.assertIn('poll_interval', columns)
+        indexes = [x['name'] for x in inspector.get_indexes('clients')]
+        self.assertIn('ix_clients_project_client_hostname', indexes)
+
     def test_walk_versions(self):
         with self.engine.begin() as connection:
             self.config.attributes['connection'] = connection

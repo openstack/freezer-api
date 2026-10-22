@@ -86,6 +86,8 @@ class Client(BASE, FreezerBase):
         default=json.dumps(SUPPORTED_ENGINES),
     )
     is_central = Column(Boolean, default=False)
+    last_heartbeat = Column(DateTime)
+    poll_interval = Column(Integer)
 
 
 class Action(BASE, FreezerBase):
