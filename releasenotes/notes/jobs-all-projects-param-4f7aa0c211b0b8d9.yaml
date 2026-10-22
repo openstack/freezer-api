@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    The 'all_projects' parameter in the jobs API was overwritten by the policy
+    check, so admins always got jobs from all projects no matter what was in
+    the request. The policy is now checked only when 'all_projects' is set to
+    True. If the policy does not allow listing all projects, 403 Forbidden is
+    returned.

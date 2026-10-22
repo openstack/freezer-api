@@ -131,11 +131,10 @@ class JobsCollectionResource(JobsBaseResource):
         offset = req.get_param_as_int('offset') or 0
         limit = req.get_param_as_int('limit') or 10
         all_projects = req.get_param_as_bool('all_projects') or False
+        if all_projects:
+            policy.can('jobs:get_all_projects', req.env['freezer.context'],
+                       do_raise=True)
         search = self.json_body(req)
-        all_projects = policy.can(
-            'jobs:get_all_projects', req.env['freezer.context'],
-            do_raise=False
-        )
         obj_list = self.db.search_job(project_id=project_id,
                                       all_projects=all_projects,
                                       offset=offset, limit=limit,
